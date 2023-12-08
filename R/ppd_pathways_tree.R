@@ -149,7 +149,7 @@ if(file.exists(fn)){
   INT$Set(check=1)
   INT$Set(check=0,filterFun=function(x) length(x$children)>0)
   ## save out
-  tree2file(SOC,filename = here('indata/CSV/SOC2.csv'),
+  tree2file(INT,filename = here('indata/CSV/INT2.csv'),
             'p','cost','cost.screen',	'cost.tpt','cost.att','screen', 'igra', 'tpt','prevtb','att','check')
 }
 
@@ -207,6 +207,7 @@ A <- makeTestData(5e3,vrz)
 # INT.F$checkfun(A) #NOTE OK
 all(abs(SOC.F$checkfun(A)-1)<1e-10) #NOTE OK
 all(abs(INT.F$checkfun(A)-1)<1e-10) #NOTE OK
+all(SOC.F$attfun(A)>0)
 all(INT.F$attfun(A)>0)
 
 ## full graph out

@@ -1,5 +1,5 @@
 levelName,p,cost,screen,cost.screen,cost.tpt,cost.att,igra,tpt,prevtb,att,check
-Standard of care pathway                                                                                                                                                      ,,,,,,,,,,,
+Intervention pathway                                                                                                                                                      ,,,,,,,,,,,
  °--New people in PPDs                                                                                                                                                        ,1,0,0,0,0,0,0,0,0,0,0
      ¦--TB screening                                                                                                                                                          ,prop.tb.sympt.screen,0,0,0,0,0,0,0,0,0,0
      ¦   ¦--Previous TB diagnosis                                                                                                                                             ,prop.prev.tb.dx,0,0,0,0,0,0,0,0,0,0
