@@ -1,0 +1,5 @@
+TB outcomes
+	ATT
+		completed ATT
+		did not complete ATT
+	no ATT

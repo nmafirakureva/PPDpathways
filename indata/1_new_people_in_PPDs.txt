@@ -1,0 +1,75 @@
+New people in PPDs 
+	TB screening
+		Previous TB diagnosis
+			Started TB treatment
+				Still on treatment for TB
+					Refer to TB services
+				Not on treatment for TB
+					TB symptoms
+						Urgent GP referral
+							Clinical suspicion of TB
+								Urgent referral to local NHS TB service 
+									TB
+									Not TB
+										LTBI pathway
+							No clinical suspicion of TB
+								LTBI pathway
+						No urgent GP referral
+							TB
+							Not TB
+					No TB symptoms
+						Chest x-ray < 6 months
+							Abnormal chest x-ray
+								Urgent referral to local NHS TB service 
+									TB
+									Not TB
+										LTBI pathway
+								No urgent GP referral
+									TB
+									Not TB
+							Normal chest x-ray
+								LTBI pathway
+						No chest x-ray < 6 months
+							Chest x-ray
+								Abnormal chest x-ray
+									Urgent referral to local NHS TB service 
+										TB
+										Not TB
+											LTBI pathway
+									No urgent GP referral
+										TB
+										Not TB
+								Normal chest x-ray
+									LTBI pathway
+							No chest x-ray
+								LTBI pathway
+			Did not start TB treatment
+				Refer to TB services
+		No previous TB diagnosis
+			TB symptoms
+				Urgent GP referral
+					Clinical suspicion of TB
+						Urgent referral to local NHS TB service 
+							TB
+							Not TB
+								LTBI pathway
+					No clinical suspicion of TB
+						LTBI pathway
+				No urgent GP referral
+					TB
+					Not TB
+			No TB symptoms
+				Chest X-ray 
+					Abnormal chest X-ray 
+						Urgent referral to local NHS TB service  
+							TB
+							Not TB
+								LTBI pathway
+						No urgent GP referral
+							TB
+							Not TB
+					Normal chest X-ray 
+						LTBI pathway
+				No chest X-ray
+					LTBI pathway
+	No TB screening

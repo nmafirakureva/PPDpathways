@@ -1,0 +1,7 @@
+Refer to TB services
+	Attended
+		ATT
+			Completed ATT
+			did not complete ATT
+		no ATT
+	did not Attend

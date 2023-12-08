@@ -1,0 +1,10 @@
+No urgent prison GP referral
+	Clinical suspicion of TB
+		Urgent referral to local NHS TB service 
+			Attended
+				TB
+				Not TB
+					LTBI pathway
+			did not Attend
+	No clinical suspicion of TB
+		LTBI pathway
