@@ -120,6 +120,8 @@ fn <- here('indata/CSV/SOC1.csv')
 if(file.exists(fn)){
   ## read
   labz <- fread(fn)
+  labz$p <- gsub('<','u',labz$p)
+  # labz$cost <- gsub('<','u',labz$cost)
   LabelFromData(SOC,labz[,..labdat]) #add label data
   ## NOTE checks need redoing
   SOC$Set(check=1)
@@ -143,7 +145,8 @@ fn <- here('indata/CSV/INT1.csv')
 if(file.exists(fn)){
   ## read
   labz <- fread(fn)
-  labz[,cost:=q]; labz[,q:=NULL]     #rename
+  labz$p <- gsub('<','u',labz$p)
+  # labz[,cost:=q]; labz[,q:=NULL]     #rename
   LabelFromData(INT,labz[,..labdat]) #add label data
   ## NOTE checks need redoing
   INT$Set(check=1)
@@ -209,6 +212,7 @@ all(abs(SOC.F$checkfun(A)-1)<1e-10) #NOTE OK
 all(abs(INT.F$checkfun(A)-1)<1e-10) #NOTE OK
 all(SOC.F$attfun(A)>0)
 all(INT.F$attfun(A)>0)
+
 
 ## full graph out
 ## plotter(SOC)
