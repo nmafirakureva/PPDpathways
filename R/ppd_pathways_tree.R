@@ -120,7 +120,8 @@ fn <- here('indata/CSV/SOC1.csv')
 if(file.exists(fn)){
   ## read
   labz <- fread(fn)
-  labz$p <- gsub('<','u',labz$p)
+  labz$p <- gsub('<3','u3.',labz$p)
+  labz$p <- gsub('3\\+', 'o3.', labz$p)
   # labz$cost <- gsub('<','u',labz$cost)
   LabelFromData(SOC,labz[,..labdat]) #add label data
   ## NOTE checks need redoing
@@ -145,7 +146,8 @@ fn <- here('indata/CSV/INT1.csv')
 if(file.exists(fn)){
   ## read
   labz <- fread(fn)
-  labz$p <- gsub('<','u',labz$p)
+  labz$p <- gsub('<3','u3.',labz$p)
+  labz$p <- gsub('3\\+', 'o3.', labz$p)
   # labz[,cost:=q]; labz[,q:=NULL]     #rename
   LabelFromData(INT,labz[,..labdat]) #add label data
   ## NOTE checks need redoing
@@ -192,8 +194,6 @@ runallfuns <- function(D,arm='all'){
         return(D)
 }
 
-
-
 ## checking
 vrz.soc <- showAllParmz(SOC)
 vrz.int <- showAllParmz(INT)
@@ -203,17 +203,52 @@ vrz <- c(vrz.soc,
 )
 
 vrz <- unique(vrz) #NOTE
+
+# write out as csv
+write.csv(data.frame(vrz),here('indata/CSV/parmz.csv'),row.names=FALSE)
+
+# save all as R.data
+
+# Save an object to a file
+save.image(file = here("outdata/temp.RData"))
+
+# Restore the object
+load(here("outdata/temp.RData"))
+
 A <- makeTestData(5e3,vrz)
 
+# Switch different parms on and off to test
+A$prop.prev.tb.dx <- 1
+A$prop.prev.tb.dx.started.att <- 1
+A$prop.prev.tb.dx.still.on.att <- 1
+A$prop.prev.tb.dx.on.attend.referral <- 1
+# A$prop.prev.tb.tx.symp <- 1
+# A$prop.prev.xray <- 1
+# A$prop.abnormal.xray <- 1
+# A$prop.abn.xray.nhs.referral <- 1
+# A$prop.no.prev.tb.tx.symp <- 0
+# A$prop.no.prev.tb.tx.symp.gp.assess <- 0
+# A$prop.prev.xray <- 0
+
 ## checks
-# SOC.F$checkfun(A) #NOTE OK
+any(SOC.F$checkfun(A)!=1) #NOTE OK
+any(round(SOC.F$checkfun(A))!=1) # Looks like there are some rounding errors
+
 # INT.F$checkfun(A) #NOTE OK
 all(abs(SOC.F$checkfun(A)-1)<1e-10) #NOTE OK
 all(abs(INT.F$checkfun(A)-1)<1e-10) #NOTE OK
 all(SOC.F$attfun(A)>0)
 all(INT.F$attfun(A)>0)
 
-
 ## full graph out
 ## plotter(SOC)
 ## plotter(INT)
+## full graph out
+DiagrammeR::export_graph(ToDiagrammeRGraph(SOC),
+             file_name=here('plots/SOC.pdf'))
+
+DiagrammeR::export_graph(ToDiagrammeRGraph(ltbi_pathway),
+                         file_name=here('plots/ltbi_pathway.pdf'))
+
+DiagrammeR::export_graph(ToDiagrammeRGraph(new_people_in_PPDs),
+                         file_name=here('plots/new_people_in_PPDs.pdf'))
