@@ -217,18 +217,6 @@ load(here("outdata/temp.RData"))
 
 A <- makeTestData(5e3,vrz)
 
-# Switch different parms on and off to test
-A$prop.prev.tb.dx <- 1
-A$prop.prev.tb.dx.started.att <- 1
-A$prop.prev.tb.dx.still.on.att <- 1
-A$prop.prev.tb.dx.on.attend.referral <- 1
-# A$prop.prev.tb.tx.symp <- 1
-# A$prop.prev.xray <- 1
-# A$prop.abnormal.xray <- 1
-# A$prop.abn.xray.nhs.referral <- 1
-# A$prop.no.prev.tb.tx.symp <- 0
-# A$prop.no.prev.tb.tx.symp.gp.assess <- 0
-# A$prop.prev.xray <- 0
 
 ## checks
 any(SOC.F$checkfun(A)!=1) #NOTE OK
@@ -244,11 +232,11 @@ all(INT.F$attfun(A)>0)
 ## plotter(SOC)
 ## plotter(INT)
 ## full graph out
-DiagrammeR::export_graph(ToDiagrammeRGraph(SOC),
-             file_name=here('plots/SOC.pdf'))
-
-DiagrammeR::export_graph(ToDiagrammeRGraph(ltbi_pathway),
-                         file_name=here('plots/ltbi_pathway.pdf'))
-
-DiagrammeR::export_graph(ToDiagrammeRGraph(new_people_in_PPDs),
-                         file_name=here('plots/new_people_in_PPDs.pdf'))
+# DiagrammeR::export_graph(ToDiagrammeRGraph(SOC),
+#              file_name=here('plots/SOC.pdf'))
+# 
+# DiagrammeR::export_graph(ToDiagrammeRGraph(ltbi_pathway),
+#                          file_name=here('plots/ltbi_pathway.pdf'))
+# 
+# DiagrammeR::export_graph(ToDiagrammeRGraph(new_people_in_PPDs),
+#                          file_name=here('plots/new_people_in_PPDs.pdf'))
