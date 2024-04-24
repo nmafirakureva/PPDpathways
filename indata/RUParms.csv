@@ -1,0 +1,15 @@
+ParameterName,Mean,Range,Year,Description,Units,Source
+pIsolation,,,,Proportion of prisoners isolated in single cells,,
+pDSTB,,,,Proportion of DSTB,,
+dstb.visits,6.10,,,Outpatient visits: DSTB,,
+mdrtb.visits,20.33,,,Outpatient visits: MDRTB,,
+DurDSTB,183.0,,,Treatment duration: DSTB (completers),,Drobniewski et al. (2015)
+DurMDRTB,610.0,,,Treatment duration: MDRTB (completers),,Drobniewski et al. (2015)
+IncompDurDSTB,92.0,,,Treatment duration: DSTB (non-completers),,Drobniewski et al. (2015)
+IncompDurMDRTB,305.0,,,Treatment duration: MDRTB (non-completers),,Drobniewski et al. (2015)
+DurMDRTB,610.0,,,Treatment duration: MDRTB (completers),,Drobniewski et al. (2015)
+pXray,,,,Proportion of prisoners receiving a chest xray,,
+pAttending,,,,Proportion of prisoners attending NHS referral,,
+DurTPT,90.00,,,Treatment duration: LTBI (completers),,Drobniewski et al. (2015)
+TPT.visits,3.00,,,Outpatient visits: LTBI,,
+IncompDurTPT,45.00,,,Treatment duration: LTBI (non-completers),,Drobniewski et al. (2015)
