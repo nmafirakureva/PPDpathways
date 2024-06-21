@@ -1,47 +1,18 @@
-ParameterName,Mean,Range,Year of cost,Description,Source
-prop.prev.tb.dx.complete.att,,,,"Attending NHS TB services referral, continue & completing anti-TB treatment",
-prop.prev.tb.dx.continue.att,,,,Attending NHS TB services referral & continue anti-TB treatment,
-prop.prev.tb.dx.on.attend.referral,,,,"Past TB diagnosis, still on anti-TB treatment, attending NHS TB services referral",
-prop.prev.tb.dx.still.on.att,,,,"Past TB diagnosis, started & still on anti-TB treatment",
-prop.prev.tb.tx.symp.complete.att,,,,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms, attending NHS TB service, complete anti-TB treatment",
-prop.prev.tb.tx.symp.att,,,,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms, attending NHS TB service, start anti-TB treatment",
-prop.prev.tb.tx.symp.tb.dx,,,,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms, attending NHS TB service, TB diagnosis",
-prop.abn.xray.complete.att,,,,"Abnormal chest X-ray, attending NHS TB service, complete anti-TB treatment",
-prop.abn.xray.att,,,,"Abnormal chest X-ray, attending NHS TB service, start anti-TB treatment",
-prop.abn.xray.tb.dx,,,,"Abnormal chest X-ray, attending NHS TB service, TB diagnosis",
-prop.staying.o3.months.complete.tpt,,,,"In prison/ICRC > 3 months, complete TPT",
-prop.staying.o3.months.tpt,,,,"In prison/ICRC > 3 months, gets TPT",
-prop.staying.o3.months,,,,In prison/ICRC > 3 months,
-prop.staying.u3.months.uk.complete.tpt,,,,"In prison/ICRC <3 months, complete TPT",
-prop.staying.u3.months.uk.tpt,,,,"In prison/ICRC <3 months, gets TPT",
-prop.staying.u3.months.uk,,,,"In prison/ICRC <3 months, remaining in the UK",
-prop.abn.xray.nhs.attend.referral,,,,"Abnormal chest X-ray, attending NHS TB service",
-prop.abn.xray.nhs.referral,,,,"Abnormal chest X-ray, referred to NHS TB service",
-prop.abnormal.xray,,,,Abnormal chest X-ray,
-prop.prev.xray,,,,Previous chest X-ray < 6 months,
-prop.xray,,,,Chest x-ray               ,
-prop.no.xray.complete.att,,,,"No chest X-ray, attending NHS TB service, complete anti-TB treatment",
-prop.no.xray.att,,,,"No chest X-ray, attending NHS TB service, start anti-TB treatment",
-prop.no.xray.tb.dx,,,,"No chest X-ray, attending NHS TB service, TB diagnosis",
-prop.no.xray.nhs.attend.referral,,,,"No chest X-ray, attending NHS TB service",
-prop.no.xray.nhs.referral,,,,"No chest X-ray, referred to NHS TB service",
-prop.igra.test.positive,,,,Positive IGRA test,
-prop.igra.tested,,,,Received IGRA test,
-prop.prev.tb.tx.symp.nhs.referral,,,,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms, Prison GP assessment, TB suspect attending NHS TB service",
-prop.prev.tb.tx.symp.tb.suspicion,,,,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms, Prison GP assessment, TB suspicion",
-prop.prev.tb.tx.symp.gp.assess,,,,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms, Prison GP assessment",
-prop.prev.tb.tx.symp,,,,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms",
-prop.prev.tb.dx.started.att,,,,"Past TB diagnosis, started anti-TB treatment",
-prop.prev.tb.dx.notx.complete.att,,,,"Attending NHS TB services referral, starting & completing anti-TB treatment",
-prop.prev.tb.dx.notx.att,,,,Attending NHS TB services referral & starting anti-TB treatment,
-prop.prev.tb.dx.notx.referral,,,,"Past TB diagnosis, did not start anti-TB treatment, attending NHS TB services referral",
-prop.prev.tb.dx,,,,Past TB diagnosis,
-prop.no.prev.tb.dx.symp.complete.att,,,,"No past TB diagnosis,  with TB symptoms, attending NHS TB service, complete anti-TB treatment",
-prop.no.prev.tb.dx.symp.att,,,,"No past TB diagnosis,  with TB symptoms, attending NHS TB service, start anti-TB treatment",
-prop.no.prev.tb.dx.symp.tb.dx,,,,"No past TB diagnosis,  with TB symptoms, attending NHS TB service, TB diagnosis",
-prop.no.prev.xray,,,,Previous chest X-ray < 6 months,
-prop.no.prev.tb.dx.symp.nhs.referral,,,,"No past TB diagnosis,  with TB symptoms, Prison GP assessment, TB suspect attending NHS TB service",
-prop.no.prev.tb.dx.symp.tb.suspicion,,,,"No past TB diagnosis,  with TB symptoms, Prison GP assessment, TB suspicion",
-prop.no.prev.tb.dx.symp.gp.assess,,,,"No past TB diagnosis,  with TB symptoms, Prison GP assessment",
-prop.no.prev.tb.dx.symp,,,,"No past TB diagnosis,  with TB symptoms",
-prop.tb.sympt.screen,,,,Verbal TB symptom screening within 48 hours of arrival,
+ParameterName,Mean,Range,Description,Source
+prop.entry.screen,0.96,0.944-0.968,Proportion screened on entry,TB screening uptake within 48 hours of reception in 6 London prisons over 2.4 years (from 2021-04-30 - 2023-09-30)
+prop.prev.tb.dx,0.02,,Proportion of screened with a previous TB diagnosis,16/773 (2.1%) of residence screened at The mount had a previous history of TB 
+prop.screen.tb.sympt,0.01,0.00856-0.0186,Proportion of screened with TB symptoms,TB symptoms out of those screened within 48 hours of reception in 6 London prisons over 2.4 years (from 2021-04-30 - 2023-09-30)
+prop.previous.xray,,,Proportion with previous chest X-ray,
+prop.xray.screening,0.77,0.56-0.88,Proportion screened using an x-ray,"Data for Maidstone, Huntercombe, Lowdham Grange & Swaleside presented in CRG LTBI CENL slides"
+prop.abnormal.xray,0.09,,Proportion with an abnormal x-ray,141 out of 1491 (9%) radiographs in Story et al 2020 showed some kind of abnormality
+prop.igra.tested,0.63,0.57-0.70,Proportion receing IGRA,"Data for Maidstone, Huntercombe, Lowdham Grange & Swaleside presented in CRG LTBI CENL slides"
+prop.igra.test.positive,0.15,0.098-0.19,Positive IGRA test,"Data for Maidstone, Huntercombe, Lowdham Grange & Swaleside presented in CRG LTBI CENL slides"
+prop.prev.tb.dx.still.on.att,,,"Past TB diagnosis, started & still on anti-TB treatment",
+prop.symp.gp.assess,0.90,0.5-1,Proportion with TB symptoms assessed by Prison GP,Assumption
+prop.tb.symp.clinical.suspicion,0.01,0.00309-0.0254,Proportion clinically suspected to have TB,Referred for a specialist assessment following a positive screen result in 6 London prisons over 2.4 years (from 2021-04-30 - 2023-09-30)
+prop.attending.nhs.referral,0.60,,Proportion attending NHS referral (out of those referred),The Prisoners’ use of hospital care 2020 report suggests that around 40% of outpatient appointments for prisoners were not attended
+prop.tb.dx,0.069,,Proportion diagnosed with TB out of suspected tuberculosis cases,2 out of the 29 suspected tuberculosis cases in Story et al 2020 were diagnosed with TB
+prop.tb.dx.starting.att,,,Starting ATT,
+prop.completing.att,0.80,,Proportion completing anti-TB treatment,"From TB treatment outcomes in England, 2021"
+prop.starting.tpt,0.77,0.67,Starting TPT,
+prop.completing.tpt,0.80,,Proportion completing TPT,Rough estimate from Maidstone pilot report. 44/55 (80%) completed TPT in Swaleside
