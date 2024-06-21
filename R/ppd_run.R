@@ -449,34 +449,34 @@ int <- int[!grepl('^D', int)]
 allpout |> 
   select(all_of(int))
 
-#
-allpout2 |> 
-  select(screen.soc, screen.int, att.soc, att.int, Datt, tpt.soc, tpt.int, Dtpt)
-
-# costs
-allpout2 |> 
-  select(cost.screen.soc, cost.screen.int, cost.att.soc, cost.att.int, Dcost.att, cost.tpt.soc, cost.tpt.int, Dcost.tpt)
-
-psaout |> 
-  select(ltbi.soc, ltbi.int, tpt.soc, tpt.int, ltbinotpt.soc, ltbinotpt.int, noltbi.soc, noltbi.int,  tb, att.soc, att.int, noatt.soc, noatt.int) |> 
-  group_by(tb) |>
-  summarise(across(everything(), mean))
-
-psaout2 |> 
-  # filter(id == 1) |>
-  select(tb, ltbi.soc, ltbi.int, tpt.soc, tpt.int, att.soc, att.int) |> 
-  group_by(tb) |>
-  summarise(across(everything(), mean))
-
-# value not applied
-dc |> 
-  filter(id == 1) |>
-  select(tb, ltbi.soc, ltbi.int, tpt.soc, tpt.int, att.soc, att.int)
-
-psaout2 |> 
-  filter(id == 1) |>
-  select(tb, ltbi.soc, ltbi.int, tpt.soc, tpt.int, att.soc, att.int)
-
+# #
+# allpout2 |> 
+#   select(screen.soc, screen.int, att.soc, att.int, Datt, tpt.soc, tpt.int, Dtpt)
+# 
+# # costs
+# allpout2 |> 
+#   select(cost.screen.soc, cost.screen.int, cost.att.soc, cost.att.int, Dcost.att, cost.tpt.soc, cost.tpt.int, Dcost.tpt)
+# 
+# psaout |> 
+#   select(ltbi.soc, ltbi.int, tpt.soc, tpt.int, ltbinotpt.soc, ltbinotpt.int, noltbi.soc, noltbi.int,  tb, att.soc, att.int, noatt.soc, noatt.int) |> 
+#   group_by(tb) |>
+#   summarise(across(everything(), mean))
+# 
+# psaout2 |> 
+#   # filter(id == 1) |>
+#   select(tb, ltbi.soc, ltbi.int, tpt.soc, tpt.int, att.soc, att.int) |> 
+#   group_by(tb) |>
+#   summarise(across(everything(), mean))
+# 
+# # value not applied
+# dc |> 
+#   filter(id == 1) |>
+#   select(tb, ltbi.soc, ltbi.int, tpt.soc, tpt.int, att.soc, att.int)
+# 
+# psaout2 |> 
+#   filter(id == 1) |>
+#   select(tb, ltbi.soc, ltbi.int, tpt.soc, tpt.int, att.soc, att.int)
+# 
 
 psaout2 |> 
   # filter(id == 1) |>
@@ -484,9 +484,3 @@ psaout2 |>
   group_by(tb) |>
   summarise(across(everything(), mean))
 
-
-names(out)
-
-out |> 
-  select(screen.soc, screen.int) |> 
-  summarise(across(everything(), mean))
