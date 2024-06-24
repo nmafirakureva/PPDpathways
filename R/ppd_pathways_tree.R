@@ -12,6 +12,24 @@ library(scales)
 
 # set_here('/Users/nyashamarfirakureva/My Drive/PPD modelling/Modelling')
 
+
+
+## NOTE I will be moving this function into HEdtree: it allows restricting trees by outcome
+PruneByOutcome <- function(TREE,outcome,negate=FALSE){
+  newtree <- Clone(TREE)
+  newtree$Set(anyout=0)
+  if(negate){
+    newtree$Set(anyout=1,filterFun=function(x) !(as.numeric(x[[outcome]])>0))
+  } else {
+    newtree$Set(anyout=1,filterFun=function(x) (as.numeric(x[[outcome]])>0))
+  }
+  newtree$Do(function(x) x$anyout <- Aggregate(x, "anyout", sum),traversal='post-order')
+  Prune(newtree,function(x) x$anyout>0) #removes all subtrees with anyout==0
+  newtree$Do(function(node) node$RemoveAttribute("anyout"))
+  newtree
+}
+
+
 ## === outcomes subtree ===
 tb <- txt2tree(here('indata/4_TB_outcomes.txt')) # tb dx
 
@@ -170,10 +188,25 @@ if(file.exists(fn)){
   SOC$Set(check=0,filterFun=function(x) length(x$children)>0)
   ## save out
   tree2file(SOC,filename = here('indata/CSV/SOC2.csv'),
-            'p','cost.screen',	'cost.tpt','cost.tb.assessment','cost.att','cost.ppd', 'cost.nhs','cost',	
-            'screen', 'igra',	'ltbi', 'noltbi', 'tpt', 'ltbinotpt', 'noltbinotpt', 'prevtbdx', 'coprevtb','att', 'noatt', 'check')
+            'p','cost.screen',	'cost.tpt','cost.tb.assessment',
+            'cost.att','cost.ppd', 'cost.nhs','cost',	
+            'screen', 'igra',	'ltbi', 'noltbi', 'tpt',
+            'ltbinotpt', 'noltbinotpt', 'prevtbdx', 'coprevtb','att', 'noatt', 'check')
 }
 
+
+## NOTE this would ideally be moved up into the workflow above
+## add a notx variable = no ATT *and* no TPT
+notx <- as.integer((!SOC$Get('att')) * (!SOC$Get('tpt')))
+SOC$Set(notx = 0)
+SOC$Set(notx = notx)
+## this gives us 3 outcome functions: tpt,att, notx, which are exhaustive
+labz[,sum(tpt==1)] + labz[,sum(att==1)] + sum(notx) == nrow(labz) #check
+##  & exclusive:
+labz[tpt>1 & att > 1]
+labz[,table(tpt,att)]
+labz[,table(tpt,notx)]
+labz[,table(att,notx)]
 
 ## === INT
 INT <- Clone(SOC)
@@ -205,11 +238,44 @@ if(file.exists(fn)){
 }
 
 
+## NOTE this would ideally be moved up into the workflow above
+## add a notx variable = no ATT *and* no TPT
+notx <- as.integer((!INT$Get('att')) * (!INT$Get('tpt')))
+INT$Set(notx = 0)
+INT$Set(notx = notx)
+## this gives us 3 outcome functions: tpt,att, notx, which are exhaustive
+labz[,sum(tpt==1)] + labz[,sum(att==1)] + sum(notx) == nrow(labz) #check
+##  & exclusive:
+labz[tpt>1 & att > 1]
+labz[,table(tpt,att)]
+labz[,table(tpt,notx)]
+labz[,table(att,notx)]
+
+
 ## make functions
 fnmz <- labdat[-1]
+fnmz <- c(fnmz,'notx')
 
+## full tree
 SOC.F <- makeTfuns(SOC,fnmz)
 INT.F <- makeTfuns(INT,fnmz)
+
+## NOTE making pruned trees conditioned on outcomes (subtrees ending variable > 0)
+SOC.att <- PruneByOutcome(SOC,'att')
+SOC.tpt <- PruneByOutcome(SOC,'tpt')
+SOC.notx <- PruneByOutcome(SOC,'notx')
+INT.att <- PruneByOutcome(INT,'att')
+INT.tpt <- PruneByOutcome(INT,'tpt')
+INT.notx <- PruneByOutcome(INT,'notx')
+
+## retricted trees:
+SOC.att.F <- makeTfuns(SOC.att,fnmz)
+SOC.tpt.F <- makeTfuns(SOC.tpt,fnmz)
+SOC.notx.F <- makeTfuns(SOC.notx,fnmz)
+INT.att.F <- makeTfuns(INT.att,fnmz)
+INT.tpt.F <- makeTfuns(INT.tpt,fnmz)
+INT.notx.F <- makeTfuns(INT.notx,fnmz)
+
 
 ## running all function
 runallfuns <- function(D,arm='all'){
@@ -290,3 +356,5 @@ all(INT.F$attfun(A)>0)
 # 
 # DiagrammeR::export_graph(ToDiagrammeRGraph(new_people_in_PPDs),
 #                          file_name=here('plots/new_people_in_PPDs.pdf'))
+
+

@@ -1,0 +1,13 @@
+arm,quantity,outcome,TBD,TBI,noTB
+int,check,att,0,0,0
+int,check,notx,1,1,1
+int,check,tpt,0,0,0
+int,cost,att,0,0,0
+int,cost,notx,2649.19526769075,2911.52498430671,2911.52498430671
+int,cost,tpt,0,0,0
+soc,check,att,0,0,0
+soc,check,notx,1,1,1
+soc,check,tpt,0,0,0
+soc,cost,att,0,0,0
+soc,cost,notx,23.9225038320091,28.1579528562234,28.1579528562234
+soc,cost,tpt,0,0,0

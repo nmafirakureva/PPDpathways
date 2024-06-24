@@ -484,3 +484,7 @@ psaout2 |>
   group_by(tb) |>
   summarise(across(everything(), mean))
 
+
+psaout2[,sum(value),by=id] #TODO
+
+
