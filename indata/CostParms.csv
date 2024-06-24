@@ -1,0 +1,17 @@
+ParameterName,Unit cost,Range,Year of cost,Description,Source
+cost.tb.sympt.screen,12.50,6.25-18.75,,TB symptom screening prison/PPD nurse time,Calculated
+cost.overheads,50.00,,,TB symptom screening space & materials,Assumed
+cost.prison.cell.isolation,280.97,271-283,,Prison single-cell or healthcare unit isolation,EBW Prison costings
+cost.nhs.tb.service,195.00,,2021/22,NHS TB services outpatient visit,NHS reference costs
+cost.prison.escort,122.78,118-123,?,Prison security & transport,EBW Prison costings
+cost.tb.investigations,104.50,,2015,TB investigations,Drobniewski et al. (2015)
+cost.dstb.opd.visit,115.64,,2015,NHS TB services outpatient visit for DSTB,Drobniewski et al. (2015)
+cost.mdrtb.opd.visit,171.87,,2015,NHS TB services outpatient visit for MDRTB,Drobniewski et al. (2015)
+cost.dsatt.drugs,0.87,,2015,DSTB medicines,Drobniewski et al. (2015)
+cost.mdratt.drugs,21.20,,2015,MDR-TB medicines,Drobniewski et al. (2015)
+cost.att.dots,12.50,6.25-18.75,,DOT costs Prison/PPD officer or nurse time,Calculated
+cost.prison.gp.assess,180.00,,2009,Prison GP assessment,Unit Costs in Criminal Justice
+cost.chest.xray,24.21,,2013,Chest X-ray²,Drobniewski et al. (2015)
+cost.contact.tracing,842.00,,2015,Cost per person contact-traced,Drobniewski et al. (2015
+cost.ltbi.drugs,1.48,,,LTBI medicines,
+cost.igra.test,112.00,,,IGRA test,UK PREDICT TB study

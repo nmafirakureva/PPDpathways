@@ -1,0 +1,89 @@
+New people in PPDs 
+	TB screening
+		Previous TB diagnosis
+			Started TB treatment
+				Still on treatment for TB
+					Refer to TB services
+						Attended 
+							continue ATT
+								completed ATT
+								did not complete ATT
+							did not continue ATT
+						did not attend
+				Not on treatment for TB
+					TB symptoms
+						Prison GP assessment
+							Clinical suspicion of TB
+								Urgent referral to local NHS TB service 
+									Attended
+										TB
+										Not TB
+											LTBI pathway
+									did not Attend
+							No clinical suspicion of TB
+								LTBI pathway
+						No prison GP assessment
+					No TB symptoms
+						Chest x-ray < 6 months
+							Abornomal chest x-ray
+								Urgent referral to local NHS TB service 
+									Attended
+										TB
+										Not TB
+											LTBI pathway
+									did not Attend
+							Normal chest x-ray
+								LTBI pathway
+						No chest x-ray < 6 months
+							Chest x-ray
+								Abornomal chest x-ray
+									Urgent referral to local NHS TB service 
+										Attended
+											TB
+											Not TB
+												LTBI pathway
+										did not Attend
+								Normal chest x-ray
+									LTBI pathway
+							No chest x-ray
+								LTBI pathway
+			Did not start TB treatment
+				Refer to TB services
+		No previous TB diagnosis
+			TB symptoms
+				Prison GP assessment
+					Clinical suspicion of TB
+						Urgent referral to local NHS TB service 
+							Attended
+								TB
+								Not TB
+									LTBI pathway
+							did not attend
+					No clinical suspicion of TB
+						LTBI pathway
+				No prison GP assessment
+			No TB symptoms
+				Chest x-ray < 6 months
+					Abornomal chest x-ray
+						Urgent referral to local NHS TB service 
+							Attended
+								TB
+								Not TB
+									LTBI pathway
+							did not Attend
+					Normal chest x-ray
+						LTBI pathway
+				No chest x-ray < 6 months
+					Chest x-ray
+						Abornomal chest x-ray
+							Urgent referral to local NHS TB service 
+								Attended
+									TB
+									Not TB
+										LTBI pathway
+								did not Attend
+						Normal chest x-ray
+							LTBI pathway
+					No chest x-ray
+						LTBI pathway
+	No TB screening

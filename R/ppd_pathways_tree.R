@@ -26,7 +26,6 @@ tb$Set(cost=0)
 # notb$Set(cost=0)
 tpt$Set(cost=0)
 
-
 # TB outcomes
 tbtxo <- Node$new('TB')
 tbtxo$AddChildNode(tb)
@@ -60,8 +59,8 @@ AddOutcomes <- function(D){
   D$Set(check=0,filterFun=function(x) length(x$children)>0)
 
   ## TB screening
-  D$Set(screened=0)
-  D$Set(screened=1,filterFun=function(x) x$name=='TB screening')
+  D$Set(screen=0)
+  D$Set(screen=1,filterFun=function(x) x$name=='TB screening')
 
   ## TB dx
   D$Set(prevtb=0)
@@ -71,15 +70,36 @@ AddOutcomes <- function(D){
   D$Set(att=0)
   D$Set(att=1,
         filterFun=function(x)x$name=='ATT')
+  
+  ## prevtb no ATT 
+  D$Set(noatt=0)
+  D$Set(noatt=1,
+        filterFun=function(x)x$name=='no ATT')
 
   ## tested on IGRA
   D$Set(igra=0)
   D$Set(igra=1,filterFun=function(x) x$name=='IGRA test')
+  
+  ## positive IGRA
+  D$Set(ltbi=0)
+  D$Set(ltbi=1,filterFun=function(x) x$name=='IGRA test +')
+  
+  ## negative IGRA
+  D$Set(noltbi=0)
+  D$Set(noltbi=1,filterFun=function(x) x$name=='IGRA test -')
 
   ## TPT courses
   D$Set(tpt=0)
   D$Set(tpt=1,
         filterFun=function(x)x$name=='gets TPT')
+  
+  ## positive IGRA no TPT
+  D$Set(ltbinotpt=0)
+  D$Set(ltbinotpt=1,filterFun=function(x) x$name=='does not get TPT')
+  
+  ## negative IGRA no TPT
+  D$Set(noltbinotpt=0)
+  D$Set(noltbinotpt=1,filterFun=function(x) x$name=='IGRA test -')
 
   return(D)
 }
@@ -89,6 +109,11 @@ new_people_in_PPDs <- txt2tree(here('indata/1.2_new_people_in_PPDs.txt'))
 Refer_to_TB_services <- txt2tree(here('indata/1.2.1_Refer_to_TB_services.txt'))
 No_urgent_GP_referral <- txt2tree(here('indata/1.2.2_No_urgent_GP_referral.txt'))
 ltbi_pathway <- txt2tree(here('indata/2_LTBI_pathway.txt'))
+
+DiagrammeR::export_graph(ToDiagrammeRGraph(new_people_in_PPDs),
+                         file_name=here('plots/new_people_in_PPDs.pdf'))
+DiagrammeR::export_graph(ToDiagrammeRGraph(ltbi_pathway),
+                         file_name=here('plots/ltbi_pathway.pdf'))
 
 ## merge in extras, make model of care branches, write out
 tempTree <- AddOutcomes(new_people_in_PPDs)
@@ -103,16 +128,31 @@ SOC$name <- 'Standard of care pathway'
 ## # defining tree quantities 
 ## # p = probability/proportion
 ## # cost = cost
+## # cost.screen = screening cost
+## # cost.tpt = TPT cost
+## # cost.tb.assessment = TB assessment cost
+## # cost.att = ATT cost
+## # cost.ppd = PPD cost
+## # cost.nhs = NHS cost
 ## # screen = screened for TB
-## # igra = received IGRAS test
-## # tpt = tpt initiation 
-## # prevtb = coprevalent TB diagnosed
+## # prevtbdx = previous TB diagnosed
+## # igra = IGRAS tested
+## # ltbi = IGRAS test positive
+## # noltbi = IGRAS test negative
+## # tpt = TPT initiation 
+## # ltbinotpt = IGRAS test positive no TPT
+## # noltbinotpt = IGRAS test negative no TPT
+## # coprevtb = coprevalent TB diagnosed
 ## # att = anti-TB treatments
+## # noatt = TB no ATT
+## # check = check
 
 tree2file(SOC,filename = here('indata/CSV/SOC.csv'),
-          'p','cost', 'screen', 'igra', 'tpt', 'prevtb','att','check')
+          'p','cost','cost.screen',	'cost.tpt','cost.tb.assessment','cost.att','cost.ppd', 'cost.nhs',	
+          'screen', 'igra',	'ltbi', 'noltbi', 'tpt', 'ltbinotpt', 'noltbinotpt', 'prevtbdx', 'coprevtb', 'att', 'noatt', 'check')
 
-labdat <- c('p','cost','cost.screen',	'cost.tpt','cost.att','screen', 'igra', 'tpt','prevtb','att','check')
+labdat <- c('p','cost','cost.screen',	'cost.tpt','cost.tb.assessment','cost.att','cost.ppd', 'cost.nhs',	
+            'screen', 'igra',	'ltbi', 'noltbi', 'tpt', 'ltbinotpt', 'noltbinotpt', 'prevtbdx', 'coprevtb','att', 'noatt', 'check')
 
 
 ## create version with probs/costs
@@ -120,13 +160,18 @@ fn <- here('indata/CSV/SOC1.csv')
 if(file.exists(fn)){
   ## read
   labz <- fread(fn)
+  labz$p <- gsub('<3','u3.',labz$p)
+  labz$p <- gsub('3\\+', 'o3.', labz$p)
+  # labz$p <- gsub('soc.', '', labz$p)
+  # labz$cost <- gsub('<','u',labz$cost)
   LabelFromData(SOC,labz[,..labdat]) #add label data
   ## NOTE checks need redoing
   SOC$Set(check=1)
   SOC$Set(check=0,filterFun=function(x) length(x$children)>0)
   ## save out
   tree2file(SOC,filename = here('indata/CSV/SOC2.csv'),
-            'p','cost','cost.screen',	'cost.tpt','cost.att','screen', 'igra', 'tpt','prevtb','att','check')
+            'p','cost.screen',	'cost.tpt','cost.tb.assessment','cost.att','cost.ppd', 'cost.nhs','cost',	
+            'screen', 'igra',	'ltbi', 'noltbi', 'tpt', 'ltbinotpt', 'noltbinotpt', 'prevtbdx', 'coprevtb','att', 'noatt', 'check')
 }
 
 
@@ -135,7 +180,8 @@ INT <- Clone(SOC)
 INT$name <- 'Intervention model'
 
 tree2file(INT,filename = here('indata/CSV/INT.csv'),
-          'p','cost', 'screen', 'igra', 'tpt', 'prevtb','att','check')
+          'p','cost','cost.screen',	'cost.tpt','cost.tb.assessment','cost.att','cost.ppd', 'cost.nhs',	
+          'screen', 'igra',	'ltbi', 'noltbi', 'tpt', 'ltbinotpt', 'noltbinotpt', 'prevtbdx', 'coprevtb','att', 'noatt', 'check')
 
 
 ## create version with probs/costs
@@ -143,14 +189,19 @@ fn <- here('indata/CSV/INT1.csv')
 if(file.exists(fn)){
   ## read
   labz <- fread(fn)
-  labz[,cost:=q]; labz[,q:=NULL]     #rename
+  labz$p <- gsub('<3','u3.',labz$p)
+  labz$p <- gsub('3\\+', 'o3.', labz$p)
+  # labz$p <- gsub('int.', '', labz$p)
+  # labz$cost <- gsub('int.', '', labz$cost)
+  # labz[,cost:=q]; labz[,q:=NULL]     #rename
   LabelFromData(INT,labz[,..labdat]) #add label data
   ## NOTE checks need redoing
   INT$Set(check=1)
   INT$Set(check=0,filterFun=function(x) length(x$children)>0)
   ## save out
   tree2file(INT,filename = here('indata/CSV/INT2.csv'),
-            'p','cost','cost.screen',	'cost.tpt','cost.att','screen', 'igra', 'tpt','prevtb','att','check')
+            'p','cost.screen',	'cost.tpt','cost.tb.assessment','cost.att','cost.ppd', 'cost.nhs','cost',	
+            'screen', 'igra',	'ltbi', 'noltbi', 'tpt', 'ltbinotpt', 'noltbinotpt', 'prevtbdx', 'coprevtb','att', 'noatt', 'check')
 }
 
 
@@ -189,8 +240,6 @@ runallfuns <- function(D,arm='all'){
         return(D)
 }
 
-
-
 ## checking
 vrz.soc <- showAllParmz(SOC)
 vrz.int <- showAllParmz(INT)
@@ -200,16 +249,44 @@ vrz <- c(vrz.soc,
 )
 
 vrz <- unique(vrz) #NOTE
+vrz.soc[grepl('prop',vrz.soc)]
+vrz.soc[!grepl('cost|prop',vrz.soc)]
+vrz.soc[grepl('cost',vrz.soc)]
+
+# write out as csv
+write.csv(data.frame(vrz),here('indata/CSV/parmz.csv'),row.names=FALSE)
+
+# save all as R.data
+
+# Save an object to a file
+save.image(file = here("outdata/temp.RData"))
+
+# Restore the object
+load(here("outdata/temp.RData"))
+
 A <- makeTestData(5e3,vrz)
 
+
 ## checks
-# SOC.F$checkfun(A) #NOTE OK
+any(SOC.F$checkfun(A)!=1) #NOTE OK
+any(round(SOC.F$checkfun(A))!=1) # Looks like there are some rounding errors
+
 # INT.F$checkfun(A) #NOTE OK
 all(abs(SOC.F$checkfun(A)-1)<1e-10) #NOTE OK
 all(abs(INT.F$checkfun(A)-1)<1e-10) #NOTE OK
 all(SOC.F$attfun(A)>0)
 all(INT.F$attfun(A)>0)
 
+# plotter(new_people_in_PPDs)
 ## full graph out
 ## plotter(SOC)
 ## plotter(INT)
+## full graph out
+# DiagrammeR::export_graph(ToDiagrammeRGraph(SOC),
+#              file_name=here('plots/SOC.pdf'))
+# 
+# DiagrammeR::export_graph(ToDiagrammeRGraph(ltbi_pathway),
+#                          file_name=here('plots/ltbi_pathway.pdf'))
+# 
+# DiagrammeR::export_graph(ToDiagrammeRGraph(new_people_in_PPDs),
+#                          file_name=here('plots/new_people_in_PPDs.pdf'))

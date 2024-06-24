@@ -62,28 +62,28 @@ New people in PPDs
 					No clinical suspicion of TB
 						LTBI pathway
 				No prison GP assessment
-					No TB symptoms
-						Chest x-ray < 6 months
-							Abornomal chest x-ray
-								Urgent referral to local NHS TB service 
-									Attended
-										TB
-										Not TB
-											LTBI pathway
-									did not Attend
-							Normal chest x-ray
-								LTBI pathway
-						No chest x-ray < 6 months
-							Chest x-ray
-								Abornomal chest x-ray
-									Urgent referral to local NHS TB service 
-										Attended
-											TB
-											Not TB
-												LTBI pathway
-										did not Attend
-								Normal chest x-ray
+			No TB symptoms
+				Chest x-ray < 6 months
+					Abornomal chest x-ray
+						Urgent referral to local NHS TB service 
+							Attended
+								TB
+								Not TB
 									LTBI pathway
-							No chest x-ray
-								LTBI pathway
+							did not Attend
+					Normal chest x-ray
+						LTBI pathway
+				No chest x-ray < 6 months
+					Chest x-ray
+						Abornomal chest x-ray
+							Urgent referral to local NHS TB service 
+								Attended
+									TB
+									Not TB
+										LTBI pathway
+								did not Attend
+						Normal chest x-ray
+							LTBI pathway
+					No chest x-ray
+						LTBI pathway
 	No TB screening
