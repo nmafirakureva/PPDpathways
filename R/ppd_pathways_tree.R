@@ -14,22 +14,6 @@ library(scales)
 
 
 
-## NOTE I will be moving this function into HEdtree: it allows restricting trees by outcome
-PruneByOutcome <- function(TREE,outcome,negate=FALSE){
-  newtree <- Clone(TREE)
-  newtree$Set(anyout=0)
-  if(negate){
-    newtree$Set(anyout=1,filterFun=function(x) !(as.numeric(x[[outcome]])>0))
-  } else {
-    newtree$Set(anyout=1,filterFun=function(x) (as.numeric(x[[outcome]])>0))
-  }
-  newtree$Do(function(x) x$anyout <- Aggregate(x, "anyout", sum),traversal='post-order')
-  Prune(newtree,function(x) x$anyout>0) #removes all subtrees with anyout==0
-  newtree$Do(function(node) node$RemoveAttribute("anyout"))
-  newtree
-}
-
-
 ## === outcomes subtree ===
 tb <- txt2tree(here('indata/4_TB_outcomes.txt')) # tb dx
 
@@ -261,12 +245,17 @@ SOC.F <- makeTfuns(SOC,fnmz)
 INT.F <- makeTfuns(INT,fnmz)
 
 ## NOTE making pruned trees conditioned on outcomes (subtrees ending variable > 0)
+## SOC.check <- PruneByOutcome(SOC,'check')
+## print(SOC.check)
+
 SOC.att <- PruneByOutcome(SOC,'att')
 SOC.tpt <- PruneByOutcome(SOC,'tpt')
 SOC.notx <- PruneByOutcome(SOC,'notx')
 INT.att <- PruneByOutcome(INT,'att')
 INT.tpt <- PruneByOutcome(INT,'tpt')
 INT.notx <- PruneByOutcome(INT,'notx')
+
+## print(SOC.notx,'check')
 
 ## retricted trees:
 SOC.att.F <- makeTfuns(SOC.att,fnmz)
