@@ -257,7 +257,18 @@ D[['int_tpt_cost']] <- INT.tpt.F$costfun(D)
 D[['int_notx_check']] <- INT.notx.F$checkfun(D)
 D[['int_notx_cost']] <- INT.notx.F$costfun(D)
 
+## cross checks: compute probability of endpoints from whole tree vs pruned trees
+head(D[,int_att_check])
+head(D[, attend.int])
 
+## NOTE OK
+all(D[, attend.int] == D[, int_att_check])
+all(D[, attend.soc] == D[, soc_att_check])
+all(D[, tptend.int] == D[, int_tpt_check])
+all(D[, tptend.soc] == D[, soc_tpt_check])
+## NOTE confusingly there is also a notxend variable, which is different
+all(D[, notx.int] == D[, int_notx_check])
+all(D[, notx.soc] == D[, soc_notx_check])
 
 
 D[,table(tb)]
@@ -284,5 +295,5 @@ save(DR,file=here('outdata/DR.Rdata'))
 DRS <- DR[,lapply(.SD,mean),.SDcols=names(DR)[-c(1,2)],by=tb]
 DRS <- melt(DRS,id='tb')
 DRS[,c('arm','outcome','quantity'):=tstrsplit(variable,split='_')]
-DRS <- dcast(data=DRS,formula=arm+quantity+outcome~tb,value.var='value')
+(DRS <- dcast(data=DRS,formula=arm+quantity+outcome~tb,value.var='value'))
 fwrite(DRS,file=here('outdata/DRS.csv'))

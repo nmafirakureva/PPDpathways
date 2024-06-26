@@ -13,23 +13,6 @@ library(scales)
 # set_here('/Users/nyashamarfirakureva/My Drive/PPD modelling/Modelling')
 
 
-
-## NOTE I will be moving this function into HEdtree: it allows restricting trees by outcome
-PruneByOutcome <- function(TREE,outcome,negate=FALSE){
-  newtree <- Clone(TREE)
-  newtree$Set(anyout=0)
-  if(negate){
-    newtree$Set(anyout=1,filterFun=function(x) !(as.numeric(x[[outcome]])>0))
-  } else {
-    newtree$Set(anyout=1,filterFun=function(x) (as.numeric(x[[outcome]])>0))
-  }
-  newtree$Do(function(x) x$anyout <- Aggregate(x, "anyout", sum),traversal='post-order')
-  Prune(newtree,function(x) x$anyout>0) #removes all subtrees with anyout==0
-  newtree$Do(function(node) node$RemoveAttribute("anyout"))
-  newtree
-}
-
-
 ## === outcomes subtree ===
 tb <- txt2tree(here('indata/4_TB_outcomes.txt')) # tb dx
 
@@ -212,11 +195,15 @@ if(file.exists(fn)){
 
 ## NOTE this would ideally be moved up into the workflow above
 ## add a notx variable = no ATT *and* no TPT
-notx <- as.integer((!SOC$Get('attend')) * (!SOC$Get('tptend')))
+leaves <- as.integer(SOC$Get('check')) #indicator for being a leaf
+sum(leaves) == SOC$leafCount
+notx <- as.integer((!SOC$Get('attend')) * (!SOC$Get('tptend'))) * leaves #only 1 on leaves
+
 SOC$Set(notx = 0)
 SOC$Set(notx = notx)
+
 ## this gives us 3 outcome functions: tpt,att, notx, which are exhaustive
-labz[,sum(tptend==1)] + labz[,sum(attend==1)] + sum(notx) == nrow(labz) #check
+labz[,sum(tptend==1)] + labz[,sum(attend==1)] + sum(notx) == sum(leaves) #only 1 on leaves
 # labz[,sum(tptend==1)] + labz[,sum(attend==1)] + labz[,sum(notxend==1)] == nrow(labz) #check
 ##  & exclusive:
 labz[tptend>1 & attend > 1]
@@ -256,11 +243,14 @@ if(file.exists(fn)){
 
 ## NOTE this would ideally be moved up into the workflow above
 ## add a notx variable = no ATT *and* no TPT
-notx <- as.integer((!INT$Get('attend')) * (!INT$Get('tptend')))
+leaves <- as.integer(INT$Get("check")) # indicator for being a leaf
+sum(leaves) == INT$leafCount
+
+notx <- as.integer((!INT$Get('attend')) * (!INT$Get('tptend'))) * leaves
 INT$Set(notx = 0)
 INT$Set(notx = notx)
 ## this gives us 3 outcome functions: tpt,att, notx, which are exhaustive
-labz[,sum(tptend==1)] + labz[,sum(attend==1)] + sum(notx) == nrow(labz) #check
+labz[,sum(tptend==1)] + labz[,sum(attend==1)] + sum(notx) == sum(leaves) #check
 ##  & exclusive:
 labz[tptend>1 & attend > 1]
 labz[,table(tptend,attend)]
@@ -276,13 +266,40 @@ fnmz <- c(fnmz,'notx')
 SOC.F <- makeTfuns(SOC,fnmz)
 INT.F <- makeTfuns(INT,fnmz)
 
+
 ## NOTE making pruned trees conditioned on outcomes (subtrees ending variable > 0)
 SOC.att <- PruneByOutcome(SOC,'attend')
 SOC.tpt <- PruneByOutcome(SOC,'tptend')
-SOC.notx <- PruneByOutcome(SOC,'notx')
-INT.att <- PruneByOutcome(INT,'attend')
-INT.tpt <- PruneByOutcome(INT,'tptend')
-INT.notx <- PruneByOutcome(INT,'notx')
+SOC.notx <- PruneByOutcome(SOC, "notx")
+INT.att <- PruneByOutcome(INT, "attend")
+INT.tpt <- PruneByOutcome(INT, "tptend")
+INT.notx <- PruneByOutcome(INT, "notx")
+
+## checking...
+leaves <- as.integer(SOC.notx$Get("check")) # indicator for being a leaf
+sum(leaves) == SOC.notx$leafCount
+
+notx <- as.integer(SOC.notx$Get("notx"))
+attend <- as.integer(SOC.notx$Get("attend"))
+tptend <- as.integer(SOC.notx$Get("tptend"))
+
+sum(notx+attend+tptend)==sum(leaves)  #each leaf has outcome
+sum((notx + attend + tptend)*!leaves) #only on leaves
+which(leaves == 1 & (notx + attend + tptend) == 0) #but I see them in the CSV??
+
+tree2file(SOC.att,
+  filename = here("indata/CSV/SOC.att.csv"),
+  "notx", "attend", "tptend", "check"
+)
+tree2file(SOC.tpt,
+  filename = here("indata/CSV/SOC.tpt.csv"),
+  "notx", "attend", "tptend",  "check"
+)
+tree2file(SOC.notx,
+  filename = here("indata/CSV/SOC.notx.csv"),
+  "notx", "attend", "tptend", "check"
+)
+
 
 ## retricted trees:
 SOC.att.F <- makeTfuns(SOC.att,fnmz)
@@ -291,6 +308,7 @@ SOC.notx.F <- makeTfuns(SOC.notx,fnmz)
 INT.att.F <- makeTfuns(INT.att,fnmz)
 INT.tpt.F <- makeTfuns(INT.tpt,fnmz)
 INT.notx.F <- makeTfuns(INT.notx,fnmz)
+
 
 
 ## running all function
@@ -356,6 +374,12 @@ any(round(SOC.F$checkfun(A))!=1) # Looks like there are some rounding errors
 # INT.F$checkfun(A) #NOTE OK
 all(abs(SOC.F$checkfun(A)-1)<1e-10) #NOTE OK
 all(abs(INT.F$checkfun(A)-1)<1e-10) #NOTE OK
+
+summary(SOC.F$checkfun(A)) # NOTE OK
+summary(INT.F$checkfun(A)) # NOTE OK
+
+## BUG? up to 1% off
+
 all(SOC.F$attfun(A)>0)
 all(INT.F$attfun(A)>0)
 
