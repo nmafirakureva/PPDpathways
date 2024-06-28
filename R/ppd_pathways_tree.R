@@ -294,15 +294,15 @@ which(leaves == 1 & (notx + attend + tptend) == 0) #but I see them in the CSV??
 
 tree2file(SOC.att,
   filename = here("indata/CSV/SOC.att.csv"),
-  "p", "notx", "attend", "tptend", "check"
+  "p", "cost","notx", "attend", "tptend", "check"
 )
 tree2file(SOC.tpt,
   filename = here("indata/CSV/SOC.tpt.csv"),
-  "notx", "attend", "tptend",  "check"
+  "p","cost","notx", "attend", "tptend",  "check"
 )
 tree2file(SOC.notx,
   filename = here("indata/CSV/SOC.notx.csv"),
-  "notx", "attend", "tptend", "check"
+  "p","cost","notx", "attend", "tptend", "check"
 )
 
 ## retricted trees:
