@@ -143,7 +143,7 @@ tmp1 <- getAB(tmp[,mid],(tmp[,hi]-tmp[,lo])^2/3.92^2)
 tmp[,DISTRIBUTION:=paste0("B(",tmp1$a,",",tmp1$b,")")] # Beta distributions
 
 AD1 <- tmp |> 
-  filter(grepl('symptom|any.abn.xray', NAME)) |>
+  filter(grepl('symptom|any.abn.xray|xpert', NAME)) |>
   select(NAME, DISTRIBUTION) |> 
   as.data.frame() 
 
@@ -290,6 +290,21 @@ DR <- D[,.(id,tb,
            int_notx_cost
            )]
 
+## condition costs on outcome
+DR[,c('soc_att_cost',
+      'soc_tpt_cost',
+      'soc_notx_cost',
+      'int_att_cost',
+      'int_tpt_cost',
+      'int_notx_cost'):=.(
+        soc_att_cost/soc_att_check,
+        soc_tpt_cost/soc_tpt_check,
+        soc_notx_cost/soc_notx_check,
+        int_att_cost/int_att_check,
+        int_tpt_cost/int_tpt_check,
+        int_notx_cost/int_notx_check
+      )]
+
 save(DR,file=here('outdata/DR.Rdata'))
 
 ## summary
@@ -299,15 +314,15 @@ DRS[,c('arm','outcome','quantity'):=tstrsplit(variable,split='_')]
 (DRS <- dcast(data=DRS,formula=arm+quantity+outcome~tb,value.var='value'))
 fwrite(DRS,file=here('outdata/DRS.csv'))
 
-D[tb=='noTB',.(soc.prop.prev.tb.dx,
-    soc.prop.no.prev.tb.dx.symp,
-    soc.prop.no.prev.tb.dx.symp.gp.assess,
-    soc.prop.no.prev.tb.dx.symp.tb.suspicion,
-    soc.prop.no.prev.tb.dx.symp.nhs.referral,
-    soc.prop.no.prev.tb.dx.symp.tb.dx,
-    soc.prop.starting.att,
-    soc.prop.completing.att,
-    sens.any.abn.xray,spec.any.abn.xray)]
+# D[tb=='noTB',.(soc.prop.prev.tb.dx,
+#     soc.prop.no.prev.tb.dx.symp,
+#     soc.prop.no.prev.tb.dx.symp.gp.assess,
+#     soc.prop.no.prev.tb.dx.symp.tb.suspicion,
+#     soc.prop.no.prev.tb.dx.symp.nhs.referral,
+#     soc.prop.no.prev.tb.dx.symp.tb.dx,
+#     soc.prop.starting.att,
+#     soc.prop.completing.att,
+#     sens.any.abn.xray,spec.any.abn.xray)]
 
 ## soc.prop.no.prev.tb.dx.symp.tb.dx??
 

@@ -7,3 +7,5 @@ sens.sug.abn.xray,,Sensitivity for Chest radiography (suggestive abnormality),WH
 spec.sug.abn.xray,,Specificity for Chest radiography (suggestive abnormality),WHO consolidated guidelines on tuberculosis: Module 2 Available from: https://www.ncbi.nlm.nih.gov/books/NBK569339/,0.96 (0.93 to 0.97)
 sens.mWRD.test,,Sensitivity for Molecular WHO-recommended rapid diagnostic test,WHO consolidated guidelines on tuberculosis: Module 2 Available from: https://www.ncbi.nlm.nih.gov/books/NBK569339/,0.69 (0.48 to 0.86)
 spec.mWRD.test,,Specificity for Molecular WHO-recommended rapid diagnostic test,WHO consolidated guidelines on tuberculosis: Module 2 Available from: https://www.ncbi.nlm.nih.gov/books/NBK569339/,0.99 (0.97 to 0.99)
+sens.xpert,,Sensitivity Xpert Ultra for pulmonary TB,,0.909 (0.862 to 0.947)
+spec.xpert,,Specificity Xpert Ultra for pulmonary TB,,0.956 (0.93 to 0.974)

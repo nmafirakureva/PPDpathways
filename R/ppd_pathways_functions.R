@@ -164,181 +164,185 @@ aCDR <- function(mn,ab){
 
 ## additional labels from data (may overwrite some initial version currently)
 AddDataDrivenLabels <- function(D){
-
-          # setting SOC parameters
-          # just assuming a baseline half lower than INT for screening & xray
-          D[,soc.fac:=1]
   
-          # symptom screening
-          # D[,int.prop.tb.sympt.screen:=1]
-          D[,soc.prop.tb.sympt.screen:=int.prop.tb.sympt.screen*soc.fac]
-          
-          # previous TB diagnosis
-          # D[,soc.prop.prev.tb.dx:=0]
-          # D[,int.prop.prev.tb.dx:=0]
-          D[,int.prop.prev.tb.dx:=ifelse(tb=='TBD',int.prop.prev.tb.dx,0)]
-          D[,soc.prop.prev.tb.dx:=ifelse(tb=='TBD',soc.prop.prev.tb.dx,0)]
-
+  # Setting some SOC/INT parameters by TB status
+  # For ATT: TB symptoms -> Clinical suspicion -> abnormal x-ray -> GP assessment -> tb dx
+  # For TPT: IGRA tested -> IGRA positive
+  # For setting SOC parameters
+  # assuming a baseline some fraction lower than INT for TB screening & prop.xray
+  # could also use any TB symptom sensitivity/specificity for TB screening assuming no xray in SOC
+  D[,soc.fac:=1]
   
-          # Temporarily setting these SOC/INT parameters to 1
-          # ATT: abnormal x-ray -> GP assessment -> attend referral -> tb dx -> tx
-          # D[,int.prop.prev.tb.dx:=0]
-        
-          # D[,int.prop.xray:=1]
-          # D[,int.prop.prev.xray:=1]
-           
-          # Find all columns with 'suspicion' in their names
-          attend.referral <- grep('attend.referral|nhs.referral', names(D), value = TRUE)
-          attend.referral <- attend.referral[!grepl('tpt', attend.referral)]
-          # Recode these columns based on a condition
-          for (col in attend.referral) {
-            D[, (col) := 1]
-          }
-          
-          summary(D[, ..attend.referral])
-          
-          # checks <- names(D)[grepl('spec', names(D))]
-          # (checks <- checks[grepl('soc.', checks)])
-          
-          (checks <- vrz[grepl('spec', vrz)])
-          
-          D[,soc.prop.prev.tb.tx.symp:=ifelse(tb=='TBD',1,0.1)]
-          D[,int.prop.prev.tb.tx.symp:=ifelse(tb=='TBD',1,0.1)]
-          D[,soc.prop.no.prev.tb.dx.symp:=ifelse(tb=='TBD',1,0.1)] #some folk have symptoms
-          D[,int.prop.no.prev.tb.dx.symp:=ifelse(tb=='TBD',1,0.1)]
-          
-          
-          D[,int.prop.no.prev.tb.dx.symp.gp.assess:=1]
-          D[,soc.prop.no.prev.tb.dx.symp.gp.assess:=1]
-          
-          
-          (suspicion_cols <- grep('suspicion', names(D), value = TRUE))
-          
-          D[,soc.prop.prev.tb.tx.symp.tb.suspicion:=ifelse(tb=='TBD',1,0)]
-          D[,int.prop.prev.tb.tx.symp.tb.suspicion:=ifelse(tb=='TBD',1,0)]
-          D[,soc.prop.no.prev.tb.dx.symp.tb.suspicion:=ifelse(tb=='TBD',1,0.8)] #should still be considering?
-          D[,int.prop.no.prev.tb.dx.symp.tb.suspicion:=ifelse(tb=='TBD',1,0.8)]
-          
-          
-          # chest x-ray
-          # D[,int.prop.xray:=0]
-          # D[,soc.prop.xray:=int.prop.xray*soc.fac]
-          # 
-          
-          
-          (xray_cols <- grep('abnormal.xray', names(D), value = TRUE))
-          
-          
-          # D[,soc.prop.abnormal.xray:=ifelse(tb=='TBD',1,0)]
-          # D[,int.prop.abnormal.xray:=ifelse(tb=='TBD',1,0)]
-          
-          # Assuming SOC sensitivity/specificity based on diagnostic accuracy of using symptoms
-          # TODO: check assignment for TBI & noTB
-          checks <- names(D)[grepl('.att$', names(D))]
-          (checks <- checks[grepl('starting.att$', checks)])
-          
-          summary(D[,..checks])
-          
-          # D[,sens.symptom:=1]
-          # D[,sens.any.abn.xray:=1]
-
-          D[,spec.any.abn.xray:=0.8] #TODO NOTE placeholder <1 
-          D[,soc.prop.prev.tb.tx.symp.tb.dx:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
-          D[,soc.prop.abn.xray.tb.dx:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
-          D[,soc.prop.no.xray.tb.dx:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
-          # D[,soc.prop.prev.tb.dx:=ifelse(tb=='TBD',sens.symptom,1-spec.symptom)]
-          D[,soc.prop.no.prev.tb.dx.symp.tb.dx:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
-          
-          checks <- names(D)[grepl('.tb.dx$', names(D))]
-          (checks <- checks[grepl('int.', checks)])
-          
-          # Assuming SOC sensitivity/specificity based on diagnostic accuracy of using chest radiography
-          D[,int.prop.prev.tb.tx.symp.tb.dx:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
-          D[,int.prop.abn.xray.tb.dx:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
-          D[,int.prop.no.xray.tb.dx:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
-          # D[,int.prop.prev.tb.dx:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
-          D[,int.prop.no.prev.tb.dx.symp.tb.dx:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
-          
-          # starting ATT
-          D[,int.prop.starting.att:=1]
-          D[,soc.prop.starting.att:=int.prop.starting.att*soc.fac]
-          
-          # TPT: IGRA tested -> IGRA positive -> stying 3+ months -> starting TPT
-          (check <- names(D)[grepl('tested|test.positive|staying.o3.months$', names(D))])
-          summary(D[,..check])
-          
-          # IGRA tested          
-          D[,int.prop.igra.tested:=1] # Temporary assignment to 1
-          D[,soc.prop.igra.tested:=int.prop.igra.tested*soc.fac]
-          # D[,soc.prop.igra.test.positive:=1]
-          # D[,int.prop.igra.test.positive:=1]
-
-          D[,soc.prop.igra.tested:=ifelse(tb=='TBI',soc.prop.igra.tested,0)]
-          D[,int.prop.igra.tested:=ifelse(tb=='TBI',int.prop.igra.tested,0)]
-          
-          # IGRA positive
-          D[,soc.prop.igra.test.positive:=ifelse(tb=='TBI',soc.prop.igra.test.positive,0)]
-          D[,int.prop.igra.test.positive:=ifelse(tb=='TBI',int.prop.igra.test.positive,0)]
-          # 
-          # (check <- names(D)[grepl('prop.prev.x', names(D))])
-          # summary(D[,..check])
-          # 
-          # # previous x-ray
-          D[,int.prop.prev.xray:=0] # Temporary assignment to 1
-          D[,soc.prop.prev.xray:=int.prop.prev.xray*soc.fac]
-          # 
-          # (check <- names(D)[grepl('norm', names(D))])
-          # summary(D[,..check])
-          # 
-          # # previous x-ray
-          D[,int.prop.abnormal.xray:=0] # Temporary assignment to 0
-          D[,soc.prop.abnormal.xray:=int.prop.abnormal.xray*soc.fac]
-          # 
-          # (check <- names(D)[grepl('staying.o3.months.tpt|staying.u3.months.uk.tpt', names(D))])
-          # summary(D[,..check])
-          # 
-
-          # 
-          # # staying longer that 3 months
-          D[,int.prop.staying.o3.months:=1] # Temporary assignment to 1
-          D[,soc.prop.staying.o3.months:=int.prop.staying.o3.months*soc.fac]
-          # D[,int.prop.staying.o3.months:=ifelse(tb=='TBI',int.prop.staying.o3.months,0)]
-          # D[,soc.prop.staying.o3.months:=ifelse(tb=='TBI',soc.prop.staying.o3.months,0)]
-          
-          # # referral to TPT
-          D[,tpt.nhs.referral:=ifelse(tb=='TBI',1,0)]
-          
-          # 
-          # # starting TPT
-          # D[,int.prop.staying.o3.months.tpt:=1] # Temporary assignment to 1
-          # D[,soc.prop.staying.o3.months.tpt:=int.prop.staying.o3.months.tpt*soc.fac]
-          # D[,int.prop.staying.o3.months.tpt:=ifelse(tb=='TBI',int.prop.staying.o3.months.tpt,0)]
-          # D[,soc.prop.staying.o3.months.tpt:=ifelse(tb=='TBI',soc.prop.staying.o3.months.tpt,0)]
-          # D[,int.prop.staying.u3.months.uk.tpt:=ifelse(tb=='TBI',int.prop.staying.u3.months.uk.tpt,0)]
-          # D[,soc.prop.staying.u3.months.uk.tpt:=ifelse(tb=='TBI',soc.prop.staying.u3.months.uk.tpt,0)]
-          # 
-          # # complete TPT
-          # D[,int.prop.staying.o3.months.complete.tpt:=1] # Temporary assignment to 1
-          # D[,soc.prop.staying.o3.months.complete.tpt:=int.prop.staying.o3.months.complete.tpt*soc.fac]
-          # D[,soc.prop.staying.o3.months.complete.tpt:=ifelse(tb=='TBI',soc.prop.staying.o3.months.complete.tpt,0)]
-          # D[,int.prop.staying.o3.months.complete.tpt:=ifelse(tb=='TBI',int.prop.staying.o3.months.complete.tpt,0)]
-          # 
-          # D[,int.prop.staying.u3.months.uk.complete.tpt:=1] # Temporary assignment to 1
-          # D[,soc.prop.staying.u3.months.uk.complete.tpt:=int.prop.staying.u3.months.uk.complete.tpt*soc.fac]
-          # D[,soc.prop.staying.u3.months.uk.complete.tpt:=ifelse(tb=='TBI',soc.prop.staying.u3.months.uk.complete.tpt,0)]
-          # D[,int.prop.staying.u3.months.uk.complete.tpt:=ifelse(tb=='TBI',int.prop.staying.u3.months.uk.complete.tpt,0)]
-          # 
-          names(D)[grepl('.dots', names(D))]
-          D[,cost.dots:=cost.att.dots]
-          D[,cost.tpt.opd.visit:=cost.dstb.opd.visit]
-          D[,cost.mdrtb.opd.visits:=cost.mdrtb.opd.visit]
-          D[,cost.dstb.opd.visits:=cost.dstb.opd.visit]
-          D[,durTPT:=DurTPT]
-          D[,pAttending:=1]
-          D[,pIsolation:=0]
-          D[,soc.fac:=NULL] # remove temporary variable
-
+  # TB symptom screening
+  # D[,int.prop.tb.sympt.screen:=1]
+  D[,soc.prop.tb.sympt.screen:=int.prop.tb.sympt.screen*soc.fac]
+  
+  # previous TB diagnosis
+  # D[,soc.prop.prev.tb.dx:=0]
+  # D[,int.prop.prev.tb.dx:=0]
+  D[,int.prop.prev.tb.dx:=ifelse(tb=='TBD',int.prop.prev.tb.dx,0)]
+  D[,soc.prop.prev.tb.dx:=ifelse(tb=='TBD',soc.prop.prev.tb.dx,0)]
+  
+  # Diagnostic accuracy of tools for systematic screening for TB disease
+  # SOC: Assume any TB symptom (cough, haemoptysis, fever, night sweats, weight loss)
+  # checks <- names(D)[grepl('spec', names(D))]
+  # (checks <- vrz[grepl('spec', vrz)])
+  
+  # (checks <- vrz[grepl('.symp$', vrz)])
+  # summary(D[tb=='TBI',..checks])
+  
+  # D[,sens.any.abn.xray:=1]
+  D[,soc.prop.prev.tb.tx.symp:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
+  D[,soc.prop.no.prev.tb.dx.symp:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
+  
+  # INT: Assume Chest radiography (any abnormality)
+  D[,int.prop.prev.tb.tx.symp:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
+  D[,int.prop.no.prev.tb.dx.symp:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
+  
+  # --------------------------------------------------------------------------------------
+  
+  # Prison GP assessment
+  # Setting to one to avoid LTFU
+  D[,int.prop.no.prev.tb.dx.symp.gp.assess:=1]
+  D[,soc.prop.no.prev.tb.dx.symp.gp.assess:=1]
+  
+  # --------------------------------------------------------------------------------------
+  # Clinical suspicion of TB disease
+  # Based on sensitivity/specificty as above
+  (suspicion_cols <- grep('suspicion', names(D), value = TRUE))
+  
+  D[,soc.prop.prev.tb.tx.symp.tb.suspicion:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
+  D[,soc.prop.no.prev.tb.dx.symp.tb.suspicion:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
+  D[,int.prop.prev.tb.tx.symp.tb.suspicion:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
+  D[,int.prop.no.prev.tb.dx.symp.tb.suspicion:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
+  
+  # --------------------------------------------------------------------------------------
+  
+  # chest x-rays
+  (xray_cols <- grep('.xray', names(D), value = TRUE))
+  
+  # # previous x-ray
+  # D[,int.prop.prev.xray:=1] # Temporary assignment to 1
+  D[,soc.prop.prev.xray:=int.prop.prev.xray*soc.fac]
+  
+  # getting a chest x-ray
+  # D[,int.prop.xray:=0]
+  D[,soc.prop.xray:=int.prop.xray*soc.fac]
+  
+  # abnormal x-ray
+  # TODO: Could use sensitivity/specificty as above
+  # D[,int.prop.abnormal.xray:=0] # Temporary assignment to 0
+  # D[,soc.prop.abnormal.xray:=int.prop.abnormal.xray*soc.fac]
+  # D[,soc.prop.abnormal.xray:=ifelse(tb=='TBD',1,0)]
+  # D[,int.prop.abnormal.xray:=ifelse(tb=='TBD',1,0)]
+  
+  # Using diagnostic accuracy of Xpert MTB/RIF for pulmonary TB in adults
+  # from Cochrane Database Syst Rev. 2021 Feb 22:2:CD009593.
+  # sensitivity 90.9% (86.2 to 94.7), specificity 95.6% (93.0 to 97.4) 
+  # same for both SOC and INT
+  
+  # Comment out 3 lines below to apply Xpert MTB/RIF sensitivity and specificity 
+  # Higher specicity results in fewer false positives - hence higher costs for TBI & noTB
+  D[,spec.any.abn.xray:=0.8] #TODO: NOTE placeholder <1. Keeps things a bit sane! 
+  D[,sens.xpert:=sens.any.abn.xray]
+  D[,spec.xpert:=spec.any.abn.xray]
+  
+  # checks <- names(D)[grepl('.att$', names(D))]
+  # (checks <- checks[grepl('starting.att$', checks)])
+  # summary(D[,..checks])
+  
+  D[,soc.prop.prev.tb.tx.symp.tb.dx:=ifelse(tb=='TBD',sens.xpert,1-spec.xpert)]
+  D[,soc.prop.abn.xray.tb.dx:=ifelse(tb=='TBD',sens.xpert,1-spec.xpert)]
+  D[,soc.prop.no.xray.tb.dx:=ifelse(tb=='TBD',sens.xpert,1-spec.xpert)]
+  D[,soc.prop.no.prev.tb.dx.symp.tb.dx:=ifelse(tb=='TBD',sens.xpert,1-spec.xpert)]
+  
+  D[,int.prop.prev.tb.tx.symp.tb.dx:=ifelse(tb=='TBD',sens.xpert,1-spec.xpert)]
+  D[,int.prop.abn.xray.tb.dx:=ifelse(tb=='TBD',sens.xpert,1-spec.xpert)]
+  D[,int.prop.no.xray.tb.dx:=ifelse(tb=='TBD',sens.xpert,1-spec.xpert)]
+  D[,int.prop.no.prev.tb.dx.symp.tb.dx:=ifelse(tb=='TBD',sens.xpert,1-spec.xpert)]
+  
+  # starting ATT
+  # Not changed here
+  # D[,int.prop.starting.att:=1]
+  # D[,int.prop.completing.att:=1]
+  # D[,soc.prop.starting.att:=int.prop.starting.att*soc.fac]
+  
+  # LTBI pathway stuff
+  # For TPT: IGRA tested -> IGRA positive -> stying 3+ months -> starting TPT
+  # (check <- names(D)[grepl('tested|test.positive|staying.o3.months$', names(D))])
+  # summary(D[,..check])
+  
+  # IGRA tested          
+  # D[,int.prop.igra.tested:=1] # Temporary assignment to 1
+  D[,soc.prop.igra.tested:=int.prop.igra.tested*soc.fac]
+  # D[,soc.prop.igra.test.positive:=1]
+  # D[,int.prop.igra.test.positive:=1]
+  
+  D[,soc.prop.igra.tested:=ifelse(tb=='TBI',soc.prop.igra.tested,0)]
+  D[,int.prop.igra.tested:=ifelse(tb=='TBI',int.prop.igra.tested,0)]
+  
+  # IGRA positive
+  # D[,sens.igra:=0.89] # Not being used
+  # D[,spec.igra:=0.98]
+  D[,soc.prop.igra.test.positive:=ifelse(tb=='TBI',soc.prop.igra.test.positive,0)]
+  D[,int.prop.igra.test.positive:=ifelse(tb=='TBI',int.prop.igra.test.positive,0)]
+  
+  # (check <- names(D)[grepl('staying.o3.months.tpt|staying.u3.months.uk.tpt', names(D))])
+  # summary(D[,..check])
+  #
+  # The rest of these probably don't need to be changed
+  # # staying longer that 3 months
+  # D[,int.prop.staying.o3.months:=1] # Temporary assignment to 1
+  # D[,soc.prop.staying.o3.months:=int.prop.staying.o3.months*soc.fac]
+  # D[,int.prop.staying.o3.months:=ifelse(tb=='TBI',int.prop.staying.o3.months,0)]
+  # D[,soc.prop.staying.o3.months:=ifelse(tb=='TBI',soc.prop.staying.o3.months,0)]
+  
+  # #remaining in the UK
+  # D[,int.prop.staying.u3.months.uk:=1] # Temporary assignment to 1
+  # D[,soc.prop.staying.u3.months.uk:=int.prop.staying.u3.months.uk*soc.fac]
+  # D[,int.prop.staying.u3.months.uk:=ifelse(tb=='TBI',int.prop.staying.u3.months.uk,0)]
+  # D[,soc.prop.staying.u3.months.uk:=ifelse(tb=='TBI',soc.prop.staying.u3.months.uk,0)]
+  
+  # # referral to TPT
+  # Nolonger needed
+  # D[,tpt.nhs.referral:=1]
+  
+  # 
+  # # starting TPT
+  # D[,int.prop.staying.o3.months.tpt:=1] # Temporary assignment to 1
+  # D[,soc.prop.staying.o3.months.tpt:=int.prop.staying.o3.months.tpt*soc.fac]
+  # D[,int.prop.staying.o3.months.tpt:=ifelse(tb=='TBI',int.prop.staying.o3.months.tpt,0)]
+  # D[,soc.prop.staying.o3.months.tpt:=ifelse(tb=='TBI',soc.prop.staying.o3.months.tpt,0)]
+  # D[,int.prop.staying.u3.months.uk.tpt:=ifelse(tb=='TBI',int.prop.staying.u3.months.uk.tpt,0)]
+  # D[,soc.prop.staying.u3.months.uk.tpt:=ifelse(tb=='TBI',soc.prop.staying.u3.months.uk.tpt,0)]
+  # 
+  # # complete TPT
+  # D[,int.prop.staying.o3.months.complete.tpt:=1] # Temporary assignment to 1
+  # D[,soc.prop.staying.o3.months.complete.tpt:=int.prop.staying.o3.months.complete.tpt*soc.fac]
+  # D[,soc.prop.staying.o3.months.complete.tpt:=ifelse(tb=='TBI',soc.prop.staying.o3.months.complete.tpt,0)]
+  # D[,int.prop.staying.o3.months.complete.tpt:=ifelse(tb=='TBI',int.prop.staying.o3.months.complete.tpt,0)]
+  # 
+  # D[,int.prop.staying.u3.months.uk.complete.tpt:=1] # Temporary assignment to 1
+  # D[,soc.prop.staying.u3.months.uk.complete.tpt:=int.prop.staying.u3.months.uk.complete.tpt*soc.fac]
+  # D[,soc.prop.staying.u3.months.uk.complete.tpt:=ifelse(tb=='TBI',soc.prop.staying.u3.months.uk.complete.tpt,0)]
+  # D[,int.prop.staying.u3.months.uk.complete.tpt:=ifelse(tb=='TBI',int.prop.staying.u3.months.uk.complete.tpt,0)]
+  # 
+  
+  # Just a few more changes/naming
+  # names(D)[grepl('.dots', names(D))]
+  D[,cost.dots:=cost.att.dots]
+  D[,cost.tpt.opd.visit:=cost.dstb.opd.visit]
+  D[,cost.mdrtb.opd.visits:=cost.mdrtb.opd.visit]
+  D[,cost.dstb.opd.visits:=cost.dstb.opd.visit]
+  D[,durTPT:=DurTPT]
+  # D[,pAttending:=1] # changed to attend.nhs.referral
+  D[,pIsolation:=0]
+  D[,nhs.referral:=1]
+  D[,attend.nhs.referral:=1]
+  D[,soc.fac:=NULL] # remove temporary variable
+  
 }
+
 
 ## combined function to add the labels to the tree prior to calculations
 MakeTreeParms <- function(D,P){
