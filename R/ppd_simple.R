@@ -161,33 +161,33 @@ names(P)
 ## make base PSA dataset
 set.seed(1234) #random number seed
 
-D <- makePSA(nreps,P)
+D0 <- makePSA(nreps,P)
 
 # some checks
 prob_vrz <- names(P)
 prob_vrz <- prob_vrz[!grepl('verbal_screen_time', prob_vrz)]
-summary(D[,..prob_vrz])
+summary(D0[,..prob_vrz])
 
 ## some probabilities are > 1, `quick fix` set to 1
 # TODO: check for better distribution assumptioms
-D[, (prob_vrz) := lapply(.SD, function(x) ifelse(x > 1, 1, x)), .SDcols = prob_vrz]
+D0[, (prob_vrz) := lapply(.SD, function(x) ifelse(x > 1, 1, x)), .SDcols = prob_vrz]
 
 # Filter variables in prob_vrz that have values > 1
-impossible_values <- sapply(D[, ..prob_vrz], function(x) any(x > 1))
+impossible_values <- sapply(D0[, ..prob_vrz], function(x) any(x > 1))
 filtered_cols <- prob_vrz[impossible_values]
 
 # Summary of filtered columns
-summary(D[, ..filtered_cols])
+summary(D0[, ..filtered_cols])
 
-summary(D[,.(ltbi.prev, prog.tb, progInf, progNInf)])
+summary(D0[,.(ltbi.prev, prog.tb, progInf, progNInf)])
 
 ## use these parameters to construct input data by attribute
-D <- makeAttributes(D)
-D[,sum(value),by=.(isoz,id)] #CHECK
-D[,sum(value),by=.(id, tb)] #CHECK
+D0 <- makeAttributes(D0)
+D0[,sum(value),by=.(isoz,id)] #CHECK
+D0[,sum(value),by=.(id, tb)] #CHECK
 
 # merge in fixed parameters
-D <- cbind(D, PD3)
+D0 <- cbind(D0, PD3)
   
 ## read and make cost data
 rcsts <- CD
@@ -217,8 +217,9 @@ allcosts <- rcsts[,.(iso3=isoz, cost=ParameterName, cost.m, cost.sd)]
 
 C <- MakeCostData(allcosts[iso3=='GBR'],nreps)               # make cost PSA NOTE using CMR cost data
 
+## NOTE can re-run from here to implement changes to MakeTreeParms
 ## add cost data
-D <- merge(D,C,by=c('id'),all.x=TRUE)       # merge into PSA
+D <- merge(D0,C,by=c('id'),all.x=TRUE)       # merge into PSA (differentiated D and D0 to facilitate rerunning)
 
 ## compute other parameters (adds by side-effect)
 MakeTreeParms(D,P)
@@ -297,3 +298,15 @@ DRS <- melt(DRS,id='tb')
 DRS[,c('arm','outcome','quantity'):=tstrsplit(variable,split='_')]
 (DRS <- dcast(data=DRS,formula=arm+quantity+outcome~tb,value.var='value'))
 fwrite(DRS,file=here('outdata/DRS.csv'))
+
+D[tb=='noTB',.(soc.prop.prev.tb.dx,
+    soc.prop.no.prev.tb.dx.symp,
+    soc.prop.no.prev.tb.dx.symp.gp.assess,
+    soc.prop.no.prev.tb.dx.symp.tb.suspicion,
+    soc.prop.no.prev.tb.dx.symp.nhs.referral,
+    soc.prop.no.prev.tb.dx.symp.tb.dx,
+    soc.prop.starting.att,
+    soc.prop.completing.att,
+    sens.any.abn.xray,spec.any.abn.xray)]
+
+## soc.prop.no.prev.tb.dx.symp.tb.dx??

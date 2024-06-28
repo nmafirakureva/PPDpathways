@@ -202,10 +202,10 @@ AddDataDrivenLabels <- function(D){
           
           (checks <- vrz[grepl('spec', vrz)])
           
-          D[,soc.prop.prev.tb.tx.symp:=ifelse(tb=='TBD',1,0)]
-          D[,int.prop.prev.tb.tx.symp:=ifelse(tb=='TBD',1,0)]
-          D[,soc.prop.no.prev.tb.dx.symp:=ifelse(tb=='TBD',1,0)]
-          D[,int.prop.no.prev.tb.dx.symp:=ifelse(tb=='TBD',1,0)]
+          D[,soc.prop.prev.tb.tx.symp:=ifelse(tb=='TBD',1,0.1)]
+          D[,int.prop.prev.tb.tx.symp:=ifelse(tb=='TBD',1,0.1)]
+          D[,soc.prop.no.prev.tb.dx.symp:=ifelse(tb=='TBD',1,0.1)] #some folk have symptoms
+          D[,int.prop.no.prev.tb.dx.symp:=ifelse(tb=='TBD',1,0.1)]
           
           
           D[,int.prop.no.prev.tb.dx.symp.gp.assess:=1]
@@ -216,8 +216,8 @@ AddDataDrivenLabels <- function(D){
           
           D[,soc.prop.prev.tb.tx.symp.tb.suspicion:=ifelse(tb=='TBD',1,0)]
           D[,int.prop.prev.tb.tx.symp.tb.suspicion:=ifelse(tb=='TBD',1,0)]
-          D[,soc.prop.no.prev.tb.dx.symp.tb.suspicion:=ifelse(tb=='TBD',1,0)]
-          D[,int.prop.no.prev.tb.dx.symp.tb.suspicion:=ifelse(tb=='TBD',1,0)]
+          D[,soc.prop.no.prev.tb.dx.symp.tb.suspicion:=ifelse(tb=='TBD',1,0.8)] #should still be considering?
+          D[,int.prop.no.prev.tb.dx.symp.tb.suspicion:=ifelse(tb=='TBD',1,0.8)]
           
           
           # chest x-ray
@@ -242,7 +242,7 @@ AddDataDrivenLabels <- function(D){
           # D[,sens.symptom:=1]
           # D[,sens.any.abn.xray:=1]
 
-          D[,spec.any.abn.xray:=1]
+          D[,spec.any.abn.xray:=0.8] #TODO NOTE placeholder <1 
           D[,soc.prop.prev.tb.tx.symp.tb.dx:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
           D[,soc.prop.abn.xray.tb.dx:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
           D[,soc.prop.no.xray.tb.dx:=ifelse(tb=='TBD',sens.any.abn.xray,1-spec.any.abn.xray)]
