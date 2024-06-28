@@ -310,3 +310,6 @@ D[tb=='noTB',.(soc.prop.prev.tb.dx,
     sens.any.abn.xray,spec.any.abn.xray)]
 
 ## soc.prop.no.prev.tb.dx.symp.tb.dx??
+
+## cost of getting ATT (from CSV output)
+D[,mean((pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB)),by=tb]
