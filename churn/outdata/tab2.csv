@@ -1,0 +1,6 @@
+name,variable,mean,sd
+inflow,E,13000,130
+sentenced,SI,6200,62
+outflow,TO,12000,130
+duration at release,DR,2.3,0.1
+fraction open,FO,0.11,0.038
