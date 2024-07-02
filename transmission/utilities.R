@@ -100,7 +100,8 @@ revise.flow.parms <- function(parms, # original parameter template
 revise.HE.parms <- function(parms, # original parameter template
                             DR,    # sample of outputs from tree
                             j,     # which row of sample to use
-                            arm='soc' #soc/int
+                            arm='soc', #soc/int
+                            zero.nonscreen.costs=FALSE #for debugging
                             ){
 
   ## NOTE notx flow calculated from others in model
@@ -162,8 +163,13 @@ revise.HE.parms <- function(parms, # original parameter template
   }
 
   ## other unit costs
-  parms$uc_attppd <- 20e3 # ATT for those found passively within the system
-  parms$uc_attout <- 15e3 # ATT following release
+  if(zero.nonscreen.costs){
+    parms$uc_attppd <- 0
+    parms$uc_attout <- 0
+  } else {                  #TODO update
+    parms$uc_attppd <- 20e3 # ATT for those found passively within the system
+    parms$uc_attout <- 15e3 # ATT following release
+  }
 
   ## === HRQoL
   parms$hrqol <- 0.3 # HRQoL decrement while CD
@@ -198,6 +204,56 @@ diffdata <- function(parms,SOCcov=0,INTcov=1){
   rbind(ydm,ydmi)
 }
 
+## get HE results for SOC/INT
+run.HE.socint <- function(parms,DR,j,
+                          zero.nonscreen.costs=FALSE, #for debugging/checking
+                          end_time=120,int_time=50,
+                          static=-1,totpop=87489){
+    tt <- seq(from=0, to=end_time, by=0.1)  #time frame to run over: 70 years after 50 burn
+    parms$staticfoi <- static            #dynamic
+    parms$int_time <- int_time #fix
+    ## SOC: ## sample from tree-derived parms
+    parms <- revise.HE.parms(parms,DR,j,arm='soc',zero.nonscreen.costs=zero.nonscreen.costs)
+    y <- runmodel(tt,parms)           #run model
+    ## INT: ## sample from tree-derived parms
+    parms <- revise.HE.parms(parms,DR,j,arm='int',zero.nonscreen.costs=zero.nonscreen.costs)
+    yi <- runmodel(tt,parms)           #run model
+    mid <- which(y[,'t']==int_time)    #NOTE could break if don't fit exactly in units of dt
+    end <- nrow(y)
+    blpop <- y[mid,"ppdpop"]
+    ratio <- totpop/blpop
+    RES <- data.table(
+      blpop=blpop,
+      ratio=ratio,
+      int.to.end=end_time-int_time,
+      mid.notes=y[mid,"notif100k"],
+      ## SOC
+      soc.CC0=y[end,"CC0"], ## * ratio,
+      soc.CC=y[end,"CC"], ## * ratio,
+      soc.deaths=y[end,"deaths"],
+      soc.qoldec=y[end,"qoldec"],
+      soc.dLYL=y[end,"dLYL"],
+      soc.ccases=y[end,"cases"],
+      soc.ccasesout=y[end,"casesout"],
+      soc.cTPT=y[end,'cTPT'],
+      soc.cATTtp=y[end,'cATTtp'],
+      ## INT
+      int.CC0=yi[end,"CC0"], ## * ratio,
+      int.CC=yi[end,"CC"], ## * ratio,
+      int.deaths=yi[end,"deaths"],
+      int.qoldec=yi[end,"qoldec"],
+      int.dLYL=yi[end,"dLYL"],
+      int.ccases=yi[end,"cases"],
+      int.ccasesout=yi[end,"casesout"],
+      int.cTPT=yi[end,'cTPT'],
+      int.cATTtp=yi[end,'cATTtp']
+    )
+    RES[,dQ:=(soc.qoldec+soc.dLYL-int.qoldec-int.dLYL)]
+    RES[,Q.soc:=soc.qoldec+soc.dLYL]
+    RES[,Q.int:=int.qoldec+int.dLYL]
+    RES
+}
+
 ## parameter meanings [0/1=BL/INT]:
 ## inflow_toTPT_L 
 ## inflow_toATT_TB
@@ -206,7 +262,7 @@ diffdata <- function(parms,SOCcov=0,INTcov=1){
 ## TODO check destinations
 
 ## ## ============= HE workflow =============
-PSAloop <- function(Niter=4e3,parms,smpsd,DR){
+PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE){
   if(Niter>nrow(smpsd)){
     cat('Niter>nrow(smpsd): resampling extra replicates!\n')
     xtra <- smpsd[sample(nrow(smpsd),Niter-nrow(smpsd),replace=TRUE)]
@@ -235,45 +291,9 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR){
     ## update initial state:
     ## TODO
     ## === run model:
-    tt <- seq(from=0, to=120, by=0.1)  #time frame to run over: 70 years after 50 burn
-    parms$staticfoi <- -1            #dynamic
-    parms$int_time <- 50             #fix
-    ## parms$inflow_toTPT_L0 <- parms$inflow_toATT_TB0 <- 0 #BL zero: se
-    ## parms$inflow_toTPT_L1 <- parms$inflow_toATT_TB1 <- 0 #OFF: se
-    ## SOC:
-    parms <- revise.HE.parms(parms,DR,j,arm='soc') ## sample from tree-derived parms
-    y <- runmodel(tt,parms)           #run model
-    ## INT:
-    ## parms$inflow_toTPT_L1 <- parms$inflow_toATT_TB1 <- 1 #ON later : se
-    parms <- revise.HE.parms(parms,DR,j,arm='int') ## sample from tree-derived parms
-    yi <- runmodel(tt,parms)           #run model
-    ## ydm <- output2dt(y)
-    mid <- which(y[,'t']==50)
-    end <- nrow(y)
-    blpop <- y[mid,"ppdpop"]
-    totpop <-  87489
-    ratio <- totpop/blpop
-    RES[[j]] <- data.table(
-      blpop=blpop,
-      mid.notes=y[mid,"notif100k"],
-      ## SOC
-      soc.CC0=y[end,"CC0"] * ratio,
-      soc.CC=y[end,"CC"] * ratio,
-      soc.deaths=y[end,"deaths"],
-      soc.qoldec=y[end,"qoldec"],
-      soc.dLYL=y[end,"dLYL"],
-      ## INT
-      int.CC0=yi[end,"CC0"] * ratio,
-      int.CC=yi[end,"CC"] * ratio,
-      int.deaths=yi[end,"deaths"],
-      int.qoldec=yi[end,"qoldec"],
-      int.dLYL=yi[end,"dLYL"]
-    )
+    RES[[j]] <- run.HE.socint(parms,DR,j,zero.nonscreen.costs=zero.nonscreen.costs)
   } #end loop
   RES <- rbindlist(RES)
-  RES[,dQ:=(soc.qoldec+soc.dLYL-int.qoldec-int.dLYL)]
-  RES[,Q.soc:=soc.qoldec+soc.dLYL]
-  RES[,Q.int:=int.qoldec+int.dLYL]
   ## inspect
   cat('--- deaths diff summary ---\n')
   print(RES[,summary(soc.deaths-int.deaths)])
