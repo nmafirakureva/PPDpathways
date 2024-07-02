@@ -174,15 +174,15 @@ sum(avcsoc1) #892
 ## ---
 
 
-## TODO impact checks
-res1[,soc.CC0/soc.CC] #2.6
+## impact/outcome checks
+res1[,soc.CC0/soc.CC] #2.6 for info
 
 res1[,soc.ccasesout/soc.ccases] #over half cases out?
-res1[,soc.dLYL/soc.deaths]   #TODO check against discounted LE
 
-## TODO double check
+## analytical dLYL/deaths if mortality constant:
 ((1-exp(-parms$LifeExp *parms$disc_rate))/parms$disc_rate)*
-  (1-exp(-parms$disc_rate*res1$int.to.end))/parms$disc_rate
+  (1-exp(-parms$disc_rate*res1$int.to.end))/(parms$disc_rate*res1$int.to.end)
+res1[,soc.dLYL/soc.deaths]   #dLYL/deaths -- pretty close
 
 res1[,soc.deaths/soc.ccases] #BUG CFR too high
 res1[,soc.cATTtp/soc.ccases] #86% OK as CDR
