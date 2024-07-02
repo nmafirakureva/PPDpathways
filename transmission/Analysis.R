@@ -92,12 +92,23 @@ DRS[quantity=='cost' & outcome=='tpt'] #pretty similar int/soc
 
 ## incoming state?
 ## inflow split: parms from doing library(ecrins); data(parms)
-IFS <- with(data=parms,{
-  c(TBD=parm_frac_SD+parm_frac_CD,
-    TBI=parm_frac_E+parm_frac_L+parm_frac_epTB+parm_frac_lpTB,
-    noTB=parm_frac_U
+IV <- with(data = parms, {
+  c(
+    parm_frac_SD, parm_frac_CD,
+    parm_frac_E, parm_frac_L, parm_frac_epTB, parm_frac_lpTB,
+    parm_frac_U,parm_frac_ATT
   )
 })
+sum(IV)
+
+IFS <- with(data = parms, {
+  c(
+    TBD = parm_frac_SD + parm_frac_CD,
+    TBI = parm_frac_E + parm_frac_L + parm_frac_epTB + parm_frac_lpTB,
+    noTB = parm_frac_U
+  )
+})
+IFS
 
 ## transition matrices inflow (cols) to outcome (rows)
 psoc <- as.matrix(DRS[arm=='soc' & quantity=='check',.(TBD,TBI,noTB)]) #rows att,notx,tpt
@@ -175,20 +186,46 @@ sum(avcsoc1) #892
 
 
 ## impact/outcome checks
-res1[,soc.CC0/soc.CC] #2.6 for info
+## inputs
+parms3 <- parms
+parms3$mHR <- 1 # for meaningful CFR checks
+res3 <- run.HE.socint(parms3, tmp, 1, zero.nonscreen.costs = TRUE)
 
-res1[,soc.ccasesout/soc.ccases] #over half cases out?
+## checks
+res3[,soc.CC0/soc.CC] #2.6 for info
+res3[,soc.ccasesout/soc.ccases] #over half cases out?
 
 ## analytical dLYL/deaths if mortality constant:
 ((1-exp(-parms$LifeExp *parms$disc_rate))/parms$disc_rate)*
-  (1-exp(-parms$disc_rate*res1$int.to.end))/(parms$disc_rate*res1$int.to.end)
-res1[,soc.dLYL/soc.deaths]   #dLYL/deaths -- pretty close
+  (1-exp(-parms$disc_rate*res3$int.to.end))/(parms$disc_rate*res3$int.to.end)
+res3[,soc.dLYL/soc.deaths]   #dLYL/deaths -- pretty close
 
-res1[,soc.deaths/soc.ccases] #BUG CFR too high
-res1[,soc.cATTtp/soc.ccases] #86% OK as CDR
+res3[,soc.deaths/soc.ccases] #CFR OK; too high NOTE this was because of the post-TB mHR
+res3[,soc.cATTtp/soc.ccases] #86% OK as CDR
 
-## TODO parameters with all on TPT and TPT effect absolute?
-## 
+## PERFECT vs PERFECTLY AWFUL
+parms3$tptHR <- 0; parms3$tpt_drn <- 50#potent, durable tpt
+parms3$inflow_toATT_TB0 <- parms3$inflow_toATT_L0 <- parms3$inflow_toATT_no0 <- 0 #no ATT
+parms3$inflow_toTPT_TB0 <- parms3$inflow_toTPT_L0 <- parms3$inflow_toTPT_no0 <- 0 # no TPT
+parms3$inflow_toATT_TB1 <- parms3$inflow_toATT_L1 <- parms3$inflow_toATT_no1 <- 0 # no ATT
+parms3$inflow_toTPT_TB1 <- parms3$inflow_toTPT_L1 <- parms3$inflow_toTPT_no1 <- 0 # no TPT
+res3a <- run.HE.socint(parms3, tmp, 1, zero.nonscreen.costs = TRUE, ignore.tree.parms = TRUE) #run
+parms3$inflow_toATT_TB1 <- 1 # PERFECT!
+parms3$inflow_toTPT_L1 <- 1  # PERFECT!
+res3b <- run.HE.socint(parms3, tmp, 1, zero.nonscreen.costs = TRUE, ignore.tree.parms = TRUE) #run
+## comparison
+CF <- data.table(
+  res3a[,.(soc.deaths,soc.qoldec,soc.dLYL,soc.ccases,soc.ccasesout,soc.cTPT,soc.cATTtp)],
+  res3b[, .(int.deaths, int.qoldec, int.dLYL, int.ccases, int.ccasesout, int.cTPT, int.cATTtp)]
+)
+CF <- CF[, .(soc.deaths, int.deaths, soc.qoldec, int.qoldec, soc.dLYL, int.dLYL,
+             soc.ccases, int.ccases, soc.ccasesout,int.ccasesout,
+             soc.cTPT, int.cTPT, soc.cATTtp, int.cATTtp)]
+CF
+
+## TODO not prev TB?
+## NOTE still all the latent in prison
+
 
 ## ====================
 

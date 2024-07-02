@@ -76,6 +76,20 @@ revise.flow.parms <- function(parms, # original parameter template
                               smpsd, # sample of flow parameters
                               j      # which row of sample to use
                               ){
+  ## safety normalize proportions
+  totpop <- with(data = parms, {
+    parm_frac_SD + parm_frac_CD+ parm_frac_E + parm_frac_L +
+      parm_frac_epTB + parm_frac_lpTB+parm_frac_U+parm_frac_ATT
+  })
+  parms$parm_frac_SD <- parms$parm_frac_SD / totpop
+  parms$parm_frac_CD <- parms$parm_frac_CD / totpop
+  parms$parm_frac_E <- parms$parm_frac_E / totpop
+  parms$parm_frac_L <- parms$parm_frac_L / totpop
+  parms$parm_frac_epTB <- parms$parm_frac_epTB / totpop
+  parms$parm_frac_lpTB <- parms$parm_frac_lpTB / totpop
+  parms$parm_frac_U <- parms$parm_frac_U / totpop
+  parms$parm_frac_ATT <- parms$parm_frac_ATT / totpop
+  ## flow parms
   parms$parm_init_PPD <- c(
     smpsd[j]$R,       ## 1 = remand
     smpsd[j]$S,       ## 2 = short stay
@@ -207,16 +221,19 @@ diffdata <- function(parms,SOCcov=0,INTcov=1){
 ## get HE results for SOC/INT
 run.HE.socint <- function(parms,DR,j,
                           zero.nonscreen.costs=FALSE, #for debugging/checking
+                          ignore.tree.parms=FALSE,    #for debugging/checking
                           end_time=120,int_time=50,
                           static=-1,totpop=87489){
     tt <- seq(from=0, to=end_time, by=0.1)  #time frame to run over: 70 years after 50 burn
     parms$staticfoi <- static            #dynamic
     parms$int_time <- int_time #fix
     ## SOC: ## sample from tree-derived parms
-    parms <- revise.HE.parms(parms,DR,j,arm='soc',zero.nonscreen.costs=zero.nonscreen.costs)
+    if(!ignore.tree.parms)
+      parms <- revise.HE.parms(parms,DR,j,arm='soc',zero.nonscreen.costs=zero.nonscreen.costs)
     y <- runmodel(tt,parms)           #run model
     ## INT: ## sample from tree-derived parms
-    parms <- revise.HE.parms(parms,DR,j,arm='int',zero.nonscreen.costs=zero.nonscreen.costs)
+    if(!ignore.tree.parms)
+      parms <- revise.HE.parms(parms,DR,j,arm='int',zero.nonscreen.costs=zero.nonscreen.costs)
     yi <- runmodel(tt,parms)           #run model
     mid <- which(y[,'t']==int_time)    #NOTE could break if don't fit exactly in units of dt
     end <- nrow(y)
