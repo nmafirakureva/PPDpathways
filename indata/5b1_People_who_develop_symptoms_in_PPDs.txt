@@ -1,0 +1,44 @@
+People in prison and other PPDs 
+	Develop symptoms 
+		Cough ≥ 3 weeks
+			Other TB suggestive symptoms
+				Urgent prison GP assessment
+					Clinical suspicion of TB
+						Refer to TB services
+							Attended
+								TB
+								Not TB
+							did not Attend
+					No clinical suspicion of TB
+				No urgent prison GP assessment
+					Clinical suspicion of TB
+						Refer to TB services
+							Attended
+								TB
+								Not TB
+							did not Attend
+					No clinical suspicion of TB
+			No other TB suggestive symptoms
+				Prison GP assessment
+					Clinical suspicion of TB
+						Refer to TB services
+							Attended
+								TB
+								Not TB
+							did not Attend
+					No clinical suspicion of TB
+				No prison GP assessment
+		No cough ≥ 3 weeks 
+			Other TB suggestive symptoms
+				Assessed at next GP appointment
+					Clinical suspicion of TB
+						Refer to TB services
+							Attended
+								TB
+								Not TB
+							did not Attend
+					No clinical suspicion of TB
+				Not assessed at next GP appointment
+			No other TB suggestive symptoms
+				Advice
+	No symptoms 

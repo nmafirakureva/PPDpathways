@@ -171,7 +171,7 @@ AddDataDrivenLabels <- function(D){
   # For setting SOC parameters
   # assuming a baseline some fraction lower than INT for TB screening & prop.xray
   # could also use any TB symptom sensitivity/specificity for TB screening assuming no xray in SOC
-  D[,soc.fac:=1]
+  D[,soc.fac:=0.1]
   
   # TB symptom screening
   # D[,int.prop.tb.sympt.screen:=1]
