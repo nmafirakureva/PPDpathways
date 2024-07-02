@@ -78,10 +78,83 @@ ggsave(here('transmission/plots/p_illustrate_dyn.png'),w=7,h=5)
 parms$parm_frac_L <- 0.2
 summary(qfun(runif(1e3),hyperparms$foi))
 
+parms <- revise.flow.parms(parms,smpsd,1) #use some real flow parms
+
+## total flow for per person calx
+totpop <-  parms$inflow
+horizon <- 50 #years
+perper <- totpop * horizon #per person
+
 ## RUN PSA:
-RES <- PSAloop(Niter=2e3,parms,smpsd,DR) #TODO update this as we go
+RES <- PSAloop(Niter=2e2,parms,smpsd,DR,zero.nonscreen.costs=TRUE) #TODO update this as we go
 
 
+## rough checks
+RES[,.(mean(int.CC0)/perper,mean(soc.CC0)/perper)]
+RES[,mean(Q.int - Q.soc)]
+
+
+
+## ============= CHECKING ===================
+DRS[quantity=='cost' & outcome=='notx'] #pretty similar int/soc
+DRS[quantity=='cost' & outcome=='att'] #pretty similar int/soc
+DRS[quantity=='cost' & outcome=='tpt'] #pretty similar int/soc
+
+
+## incoming state?
+## inflow split: parms from doing library(ecrins); data(parms)
+IFS <- with(data=parms,{
+  c(TBD=parm_frac_SD+parm_frac_CD,
+    TBI=parm_frac_E+parm_frac_L+parm_frac_epTB+parm_frac_lpTB,
+    noTB=parm_frac_U
+  )
+})
+
+## transition matrices inflow (cols) to outcome (rows)
+psoc <- as.matrix(DRS[arm=='soc' & quantity=='check',.(TBD,TBI,noTB)]) #rows att,notx,tpt
+pint <- as.matrix(DRS[arm=='int' & quantity=='check',.(TBD,TBI,noTB)]) #rows att,notx,tpt
+csoc <- as.matrix(DRS[arm=='soc' & quantity=='cost',.(TBD,TBI,noTB)]) #rows att,notx,tpt
+cint <- as.matrix(DRS[arm=='int' & quantity=='cost',.(TBD,TBI,noTB)]) #rows att,notx,tpt
+cint[!is.finite(cint)] <- 0 ; csoc[!is.finite(csoc)] <- 0
+
+## average outcomes: almost the same! (transition matrix)
+(avosoc <- psoc %*% IFS)
+(avoint <- pint %*% IFS)
+
+## average costs by outcome:
+(avcsoc <- (psoc*csoc) %*% IFS)
+(avcint <- (pint*cint) %*% IFS)
+
+## average cost per person:
+sum(avcsoc)
+sum(avcint)
+
+## unit cost by outcome
+avcsoc/avosoc
+avcint/avoint
+
+## TODO check ATT$ for TBI > ATT$ TBD
+
+DRS[quantity=='check' & outcome=='notx',] #pretty similar int/soc
+
+## compare ODE HE results
+
+DRtmp <- DR[1:3]
+tmp <- melt(DRS,id=c('arm','quantity','outcome'))
+tmp <- dcast(tmp,variable ~ arm + outcome + quantity,value.var = 'value')
+names(tmp)[1] <- 'tb'
+tmp[,id:=1]
+
+## get results for single run using DRS summary parms
+res1 <- run.HE.socint(parms,tmp,1,zero.nonscreen.costs=TRUE)
+res1[,.(mean(int.CC0)/perper,mean(soc.CC0)/perper)] #costs seem high TODO 
+res1[,mean(Q.int - Q.soc)]
+
+
+
+## TODO impact checks
+
+## =========== OUTPUTS & PLOTS ==================
 
 ggplot(RES,aes(Q.soc - Q.int,int.CC-soc.CC,col=mid.notes<100 & mid.notes>30))+
   geom_point(shape=1) +
