@@ -14,15 +14,17 @@ library(scales)
 
 ## === outcomes subtree ===
 tb <- txt2tree(here('indata/4_TB_outcomes.txt')) # tb dx
+notbdxo <- txt2tree(here('indata/tbnotx.txt')) # no tx
 
 # notb <- txt2tree(here('indata/noTB.outcomes.txt')) # no tb
 tpt <- txt2tree(here('indata/3_TPT_outcomes.txt')) # tpt
 
 ## default prob/cost:
 tb$Set(p=1)
-# notb$Set(p=1)
+notbdxo$Set(p=1)
 tpt$Set(p=1)
 tb$Set(cost=0)
+notbdxo$Set(cost=0)
 # notb$Set(cost=0)
 tpt$Set(cost=0)
 
@@ -31,12 +33,16 @@ tpt$Set(cost=0)
 tbtxo <- Node$new('TB')
 tbtxo$AddChildNode(tb)
 
-# tbtx <- Node$new('TB')
-# tbtxo <- tbtx$AddChild('TB outcomes')
+## -- no tx:
+notbdxo$`No TB treatment`$Dies$p <- 'p.cfr.notx'
+notbdxo$`No TB treatment`$Survives$p <- '1-p.cfr.notx'
 
 # no tb outcomes
 notb <- Node$new('Not TB')
 ltbi <- notb$AddChild('LTBI pathway')
+
+## restrict to no TB tx (rather than dx)
+notbtxo <- top(notbdxo) #remove top
 
 ## ====== function to add outcomes & counters
 AddOutcomes <- function(D){
@@ -48,6 +54,11 @@ AddOutcomes <- function(D){
   # MergeByName(D,notb,'Not TB', leavesonly = TRUE) # first add a branch to 'No TB' for easy merging in the next step
   MergeByName(D,No_urgent_GP_referral,'No urgent prison GP referral',leavesonly = TRUE)
   MergeByName(D,Refer_to_TB_services,'Refer to TB services',leavesonly = TRUE)
+  MergeByName(D,Refer_to_TB_services,'did not Attend',leavesonly = TRUE)
+  MergeByName(D,Refer_to_TB_services,'No clinical suspicion of TB',leavesonly = TRUE)
+  MergeByName(D,Refer_to_TB_services,'No prison GP assessment',leavesonly = TRUE)
+  MergeByName(D,Refer_to_TB_services,'Not assessed at next GP appointment',leavesonly = TRUE)
+  MergeByName(D,Refer_to_TB_services,'Advice',leavesonly = TRUE)
   MergeByName(D,ltbi_pathway,'LTBI pathway',leavesonly = TRUE)
 
   ## final outcomes
@@ -89,7 +100,7 @@ AddOutcomes <- function(D){
 Refer_to_TB_services <- txt2tree(here('indata/1.2.1_Refer_to_TB_services.txt'))
 No_urgent_GP_referral <- txt2tree(here('indata/1.2.2_No_urgent_GP_referral.txt'))
 ltbi_pathway <- txt2tree(here('indata/2_LTBI_pathway.txt'))
-active_tb_pathway <- txt2tree(here('indata/5_People_who_develop_symptoms_in_PPDs.txt'))
+active_tb_pathway <- txt2tree(here('indata/5b_People_who_develop_symptoms_in_PPDs.txt'))
 
 ## merge in extras, make model of care branches, write out
 tempTree <- AddOutcomes(active_tb_pathway)

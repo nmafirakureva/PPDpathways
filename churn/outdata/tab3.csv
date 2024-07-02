@@ -1,0 +1,9 @@
+name,variable,mean,sd
+remand timescale,dR,1.1,0.04
+short timescale,dS,2.2,0.39
+long timescale,dL,180,30
+open timescale,dom,5.1,1.7
+short transfer rate,ts,0.094,0.069
+long transfer rate,tl,0.056,0.03
+fraction sentenced,ps,0.52,0.054
+sentenced long,pl,0.092,0.059
