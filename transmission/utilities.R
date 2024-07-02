@@ -224,19 +224,29 @@ run.HE.socint <- function(parms,DR,j,
     ratio <- totpop/blpop
     RES <- data.table(
       blpop=blpop,
+      ratio=ratio,
+      int.to.end=end_time-int_time,
       mid.notes=y[mid,"notif100k"],
       ## SOC
-      soc.CC0=y[end,"CC0"] * ratio,
-      soc.CC=y[end,"CC"] * ratio,
+      soc.CC0=y[end,"CC0"], ## * ratio,
+      soc.CC=y[end,"CC"], ## * ratio,
       soc.deaths=y[end,"deaths"],
       soc.qoldec=y[end,"qoldec"],
       soc.dLYL=y[end,"dLYL"],
+      soc.ccases=y[end,"cases"],
+      soc.ccasesout=y[end,"casesout"],
+      soc.cTPT=y[end,'cTPT'],
+      soc.cATTtp=y[end,'cATTtp'],
       ## INT
-      int.CC0=yi[end,"CC0"] * ratio,
-      int.CC=yi[end,"CC"] * ratio,
+      int.CC0=yi[end,"CC0"], ## * ratio,
+      int.CC=yi[end,"CC"], ## * ratio,
       int.deaths=yi[end,"deaths"],
       int.qoldec=yi[end,"qoldec"],
-      int.dLYL=yi[end,"dLYL"]
+      int.dLYL=yi[end,"dLYL"],
+      int.ccases=yi[end,"cases"],
+      int.ccasesout=yi[end,"casesout"],
+      int.cTPT=yi[end,'cTPT'],
+      int.cATTtp=yi[end,'cATTtp']
     )
     RES[,dQ:=(soc.qoldec+soc.dLYL-int.qoldec-int.dLYL)]
     RES[,Q.soc:=soc.qoldec+soc.dLYL]
