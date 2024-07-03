@@ -1,18 +1,20 @@
 ParameterName,Mean,Range,Description,Units,Source
-pIsolation,,,Proportion of prisoners isolated in single cells,,
+pIsolation,0.01,,Proportion of prisoners isolated in single cells,,Assumption
 pDSTB,0.89,,Proportion of DSTB,,8/74 TB patients who were prisoners at some time during treatment had MDRTB in Story et al 2007
-dstb.visits,6.10,,Outpatient visits: DSTB,,
-mdrtb.visits,20.33,,Outpatient visits: MDRTB,,
-DurDSTB,183.0,,Treatment duration: DSTB (completers),,Drobniewski et al. (2015)
-DurMDRTB,610.0,,Treatment duration: MDRTB (completers),,Drobniewski et al. (2015)
-IncompDurDSTB,92.0,,Treatment duration: DSTB (non-completers),,Drobniewski et al. (2015)
-IncompDurMDRTB,305.0,,Treatment duration: MDRTB (non-completers),,Drobniewski et al. (2015)
-DurMDRTB,610.0,,Treatment duration: MDRTB (completers),,Drobniewski et al. (2015)
+dstb.visits,6.1,,Outpatient visits: DSTB,,Drobniewski et al. (2015)
+mdrtb.visits,20.33,,Outpatient visits: MDRTB,,Drobniewski et al. (2015)
+DurDSTB,183,,Treatment duration: DSTB (completers),,Drobniewski et al. (2015)
+DurMDRTB,610,,Treatment duration: MDRTB (completers),,Drobniewski et al. (2015)
+IncompDurDSTB,92,,Treatment duration: DSTB (non-completers),,Drobniewski et al. (2015)
+IncompDurMDRTB,305,,Treatment duration: MDRTB (non-completers),,Drobniewski et al. (2015)
+DurMDRTB,610,,Treatment duration: MDRTB (completers),,Drobniewski et al. (2015)
 pXray,0.77,0.56-0.88,Proportion of prisoners receiving a chest xray,,"Data for Maidstone, Huntercombe, Lowdham Grange & Swaleside presented in CRG LTBI CENL slides"
-DurTPT,90.00,,Treatment duration: LTBI (completers),,Drobniewski et al. (2015)
-TPT.visits,3.00,,Outpatient visits: LTBI,,
-IncompDurTPT,45.00,,Treatment duration: LTBI (non-completers),,Drobniewski et al. (2015)
-verbal_screen_time,10.00,5-15,Time taken to verbal screen on reception into prison,,https://bmcpublichealth.biomedcentral.com/articles/10.1186/1471-2458-6-170/tables/2
-DurDSTBIsolation,14.00,,Duration of standard isolation,,
-DurMDRTBIsolation,23.00,,Duration of non-isolation inpatient (smear-negative MDR TB),,
-DurMDRT2BIsolation,89.00,,Duration of negative-pressure isolation (smear-positive MDR TB),,
+DurTPT,90,,Treatment duration: LTBI (completers),,Drobniewski et al. (2015)
+TPT.visits,3,,Outpatient visits: LTBI,,Drobniewski et al. (2015)
+IncompDurTPT,45,,Treatment duration: LTBI (non-completers),,Drobniewski et al. (2015)
+verbal_screen_time,10,5.00-15.00,Time taken to verbal screen on reception into prison,,https://bmcpublichealth.biomedcentral.com/articles/10.1186/1471-2458-6-170/tables/2
+DurDSTBIsolation,14,,Duration of standard isolation,,Drobniewski et al. (2015
+DurMDRTBIsolation,23,,Duration of non-isolation inpatient (smear-negative MDR TB),,Drobniewski et al. (2016
+DurMDRT2BIsolation,89,,Duration of negative-pressure isolation (smear-positive MDR TB),,Drobniewski et al. (2017
+nContacts,6.5,3.25-10.00,Number of contacts examined per primary case,,Pareek et al. (2013)
+smear.positive,0.69,,Proportion of sputum smear positive,,Anderson et al. (2010)

@@ -66,7 +66,7 @@ if(SA %in% c('hi','lo')){
 }
 
 ## prior parameters
-PD <- read.csv(here('indata/CSV/ProbParms2.csv')) #read in probability parameters
+PD <- read.csv(here('indata/ProbParms2.csv')) #read in probability parameters
 AD <- read.csv(here('indata/DiagnosticAccuracy.csv')) #read in accuracy parameters
 RD <- fread(gh('indata/RUParms.csv'))    #read resource use data
 CD <- fread(gh('indata/CostParms.csv'))    #read cost data
@@ -311,6 +311,7 @@ save(DR,file=here('outdata/DR.Rdata'))
 DRS <- DR[,lapply(.SD,mean),.SDcols=names(DR)[-c(1,2)],by=tb]
 DRS <- melt(DRS,id='tb')
 DRS[,c('arm','outcome','quantity'):=tstrsplit(variable,split='_')]
+options(scipen=999)
 (DRS <- dcast(data=DRS,formula=arm+quantity+outcome~tb,value.var='value'))
 fwrite(DRS,file=here('outdata/DRS.csv'))
 

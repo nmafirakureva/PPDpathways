@@ -171,7 +171,7 @@ AddDataDrivenLabels <- function(D){
   # For setting SOC parameters
   # assuming a baseline some fraction lower than INT for TB screening & prop.xray
   # could also use any TB symptom sensitivity/specificity for TB screening assuming no xray in SOC
-  D[,soc.fac:=1]
+  D[,soc.fac:=0.1]
   
   # TB symptom screening
   # D[,int.prop.tb.sympt.screen:=1]
@@ -243,9 +243,9 @@ AddDataDrivenLabels <- function(D){
   
   # Comment out 3 lines below to apply Xpert MTB/RIF sensitivity and specificity 
   # Higher specicity results in fewer false positives - hence higher costs for TBI & noTB
-  D[,spec.any.abn.xray:=0.8] #TODO: NOTE placeholder <1. Keeps things a bit sane! 
-  D[,sens.xpert:=sens.any.abn.xray]
-  D[,spec.xpert:=spec.any.abn.xray]
+  # D[,spec.any.abn.xray:=0.8] #TODO: NOTE placeholder <1. Keeps things a bit sane! 
+  # D[,sens.xpert:=sens.any.abn.xray]
+  # D[,spec.xpert:=spec.any.abn.xray]
   
   # checks <- names(D)[grepl('.att$', names(D))]
   # (checks <- checks[grepl('starting.att$', checks)])
@@ -275,8 +275,9 @@ AddDataDrivenLabels <- function(D){
   # IGRA tested          
   # D[,int.prop.igra.tested:=1] # Temporary assignment to 1
   D[,soc.prop.igra.tested:=int.prop.igra.tested*soc.fac]
-  # D[,soc.prop.igra.test.positive:=1]
-  # D[,int.prop.igra.test.positive:=1]
+  
+  # D[,int.prop.igra.test.positive:=0.15]
+  # D[,soc.prop.igra.test.positive:=int.prop.igra.test.positive*soc.fac]
   
   D[,soc.prop.igra.tested:=ifelse(tb=='TBI',soc.prop.igra.tested,0)]
   D[,int.prop.igra.tested:=ifelse(tb=='TBI',int.prop.igra.tested,0)]
@@ -284,8 +285,11 @@ AddDataDrivenLabels <- function(D){
   # IGRA positive
   # D[,sens.igra:=0.89] # Not being used
   # D[,spec.igra:=0.98]
-  D[,soc.prop.igra.test.positive:=ifelse(tb=='TBI',soc.prop.igra.test.positive,0)]
-  D[,int.prop.igra.test.positive:=ifelse(tb=='TBI',int.prop.igra.test.positive,0)]
+  # D[,soc.prop.igra.test.positive:=ifelse(tb=='TBI',soc.prop.igra.test.positive,0)]
+  # D[,int.prop.igra.test.positive:=ifelse(tb=='TBI',int.prop.igra.test.positive,0)]
+  
+  D[,soc.prop.igra.test.positive:=ifelse(tb=='TBI',1,0)]
+  D[,int.prop.igra.test.positive:=ifelse(tb=='TBI',1,0)]
   
   # (check <- names(D)[grepl('staying.o3.months.tpt|staying.u3.months.uk.tpt', names(D))])
   # summary(D[,..check])
@@ -308,6 +312,8 @@ AddDataDrivenLabels <- function(D){
   # D[,tpt.nhs.referral:=1]
   
   # 
+  # (check <- names(D)[grepl('int.prop.staying.o3.months.tpt', names(D))])
+  # summary(D[,..check])
   # # starting TPT
   # D[,int.prop.staying.o3.months.tpt:=1] # Temporary assignment to 1
   # D[,soc.prop.staying.o3.months.tpt:=int.prop.staying.o3.months.tpt*soc.fac]
@@ -335,6 +341,10 @@ AddDataDrivenLabels <- function(D){
   D[,cost.mdrtb.opd.visits:=cost.mdrtb.opd.visit]
   D[,cost.dstb.opd.visits:=cost.dstb.opd.visit]
   D[,durTPT:=DurTPT]
+  # D[,cost.inpatient:=(pDSTB*smear.positive*DurDSTBIsolation*(cost.dstb.ipd + cost.prison.bedwatch) + 
+  #                       (1-pDSTB)*smear.positive*DurMDRTBIsolation*(cost.mdrtb.ipd.smear.positive + cost.prison.bedwatch))]
+  D[,cost.inpatient:=(pDSTB*smear.positive*DurDSTBIsolation*(cost.dstb.ipd + cost.prison.bedwatch) + 
+                        (1-pDSTB)*smear.positive*DurMDRTBIsolation*(cost.mdrtb.ipd.smear.positive + cost.prison.bedwatch))]
   # D[,pAttending:=1] # changed to attend.nhs.referral
   D[,pIsolation:=0]
   D[,nhs.referral:=1]
