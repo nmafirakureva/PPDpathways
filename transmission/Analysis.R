@@ -85,9 +85,9 @@ parms <- revise.flow.parms(parms,smpsd,1) #use some real flow parms
 RES <- PSAloop(Niter=2e2,parms,smpsd,DR,zero.nonscreen.costs=TRUE) #TODO update this as we go
 
 ## ============= CHECKING ===================
-DRS[quantity=='cost' & outcome=='notx'] #pretty similar int/soc
-DRS[quantity=='cost' & outcome=='att'] #pretty similar int/soc
-DRS[quantity=='cost' & outcome=='tpt'] #pretty similar int/soc
+DRS[quantity=='cost' & outcome=='notx'] #
+DRS[quantity=='cost' & outcome=='att'] #
+DRS[quantity=='cost' & outcome=='tpt'] #
 
 
 ## incoming state?
@@ -136,7 +136,7 @@ avcint/avoint
 
 ## TODO check ATT$ for TBI > ATT$ TBD
 
-DRS[quantity=='check' & outcome=='notx',] #pretty similar int/soc
+DRS[quantity=='check' & outcome=='notx',] #
 
 ## --- compare ODE HE results
 DRtmp <- DR[1:3]
@@ -230,8 +230,8 @@ CF
 ## ====================
 
 ## RUN REAL PSA:
-RES <- PSAloop(Niter=2e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE) #TODO update this as we go
-
+RES <- PSAloop(Niter=50,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=TRUE) #TODO update this as we go
+## BUG look for things close to zero
 
 ## =========== OUTPUTS & PLOTS ==================
 

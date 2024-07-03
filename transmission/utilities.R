@@ -230,10 +230,16 @@ run.HE.socint <- function(parms,DR,j,
     ## SOC: ## sample from tree-derived parms
     if(!ignore.tree.parms)
       parms <- revise.HE.parms(parms,DR,j,arm='soc',zero.nonscreen.costs=zero.nonscreen.costs)
+    test <- parms; test$staticfoi <- NULL
+    if(any(unlist(test)<0)) stop(paste0('Parameter<0 for SOC @ run=',j,'\n parm=',
+                                        names(test)[which(unlist(test)<0)],'\n'))
     y <- runmodel(tt,parms)           #run model
     ## INT: ## sample from tree-derived parms
     if(!ignore.tree.parms)
       parms <- revise.HE.parms(parms,DR,j,arm='int',zero.nonscreen.costs=zero.nonscreen.costs)
+    test <- parms; test$staticfoi <- NULL
+    if(any(unlist(test)<0)) stop(paste0('Parameter<0 for INT @ run=',j,'\n parm=',
+                                        names(test)[which(unlist(test)<0)],'\n'))
     yi <- runmodel(tt,parms)           #run model
     mid <- which(y[,'t']==int_time)    #NOTE could break if don't fit exactly in units of dt
     end <- nrow(y)
@@ -279,7 +285,7 @@ run.HE.socint <- function(parms,DR,j,
 ## TODO check destinations
 
 ## ## ============= HE workflow =============
-PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE){
+PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=FALSE){
   if(Niter>nrow(smpsd)){
     cat('Niter>nrow(smpsd): resampling extra replicates!\n')
     xtra <- smpsd[sample(nrow(smpsd),Niter-nrow(smpsd),replace=TRUE)]
@@ -298,6 +304,7 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE){
   ## loop
   RES <- list()
   for(j in 1:Niter){
+    if(verbose) cat('j==',j,'...\n')
     if(!j%%50) print(j)
     ## set parms related to PPD flows
     parms <- revise.flow.parms(parms,smpsd,j)
@@ -308,7 +315,7 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE){
     ## update initial state:
     ## TODO
     ## === run model:
-    RES[[j]] <- run.HE.socint(parms,DR,j,zero.nonscreen.costs=zero.nonscreen.costs)
+    RES[[j]] <- run.HE.socint(parms,DR,j,zero.nonscreen.costs=zero.nonscreen.costs) #de BUG
   } #end loop
   RES <- rbindlist(RES)
   ## inspect
