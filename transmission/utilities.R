@@ -186,9 +186,9 @@ revise.HE.parms <- function(parms, # original parameter template
   }
 
   ## === HRQoL
-  parms$hrqol <- 0.3 # HRQoL decrement while CD
-  parms$hrqolptb <- 0.05 # HRQoL decrement while post TB
-  parms$m <- 1.0         #multiplier for TB events outside prison
+  parms$hrqol <- 0.333 # HRQoL decrement while CD
+  ## parms$hrqolptb <- 0.05 # HRQoL decrement while post TB NOTE now in ecrins hyperparms
+  ## parms$m <- 1.0         #multiplier for TB events outside prison NOTE now in ecrins
 
   ## return
   parms
