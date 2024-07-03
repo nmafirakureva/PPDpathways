@@ -28,8 +28,8 @@ library(here)
 library(tidyverse)
 
 ## load other scripts
-source(here('R/ppd_pathways_tree.R'))           #tree structure and namings: also tree functions & libraries
-source(here('R/ppd_pathways_functions.R'))      #functions for tree parameters
+source(here('R/ppd_active_tb_pathway1.R'))           #tree structure and namings: also tree functions & libraries
+source(here('R/ppd_pathways_functions2.R'))      #functions for tree parameters
 
 ## number of reps
 nreps <- 1e3
@@ -66,7 +66,7 @@ if(SA %in% c('hi','lo')){
 }
 
 ## prior parameters
-PD <- read.csv(here('indata/ProbParms2.csv')) #read in probability parameters
+PD <- read.csv(here('indata/CSV/ProbParms2.csv')) #read in probability parameters
 AD <- read.csv(here('indata/DiagnosticAccuracy.csv')) #read in accuracy parameters
 RD <- fread(gh('indata/RUParms.csv'))    #read resource use data
 CD <- fread(gh('indata/CostParms.csv'))    #read cost data
@@ -234,27 +234,27 @@ D[,sum(value),by=.(isoz,id)] #CHECK
 D[,.(isoz,age,soc.prop.tb.sympt.screen, int.prop.tb.sympt.screen)]
 
 ## check for leaks
-head(SOC.F$checkfun(D)) #SOC arm
-head(INT.F$checkfun(D)) #INT arm
+head(SOC_ATB.F$checkfun(D)) #SOC arm
+head(INT_ATB.F$checkfun(D)) #INT arm
 
-names(SOC.F)
+names(SOC_ATB.F)
 
 ## === RUN MODEL
-arms <- c('SOC','INT')
+arms <- c('SOC_ATB','INT_ATB')
 D <- runallfuns(D,arm=arms)                      #appends anwers
 
 ## restricted trees:
 D[['soc_att_check']] <- SOC.att.F$checkfun(D)
 D[['soc_att_cost']] <- SOC.att.F$costfun(D)
-D[['soc_tpt_check']] <- SOC.tpt.F$checkfun(D)
-D[['soc_tpt_cost']] <- SOC.tpt.F$costfun(D)
+# D[['soc_tpt_check']] <- SOC.tpt.F$checkfun(D)
+# D[['soc_tpt_cost']] <- SOC.tpt.F$costfun(D)
 D[['soc_notx_check']] <- SOC.notx.F$checkfun(D)
 D[['soc_notx_cost']] <- SOC.notx.F$costfun(D)
 
 D[['int_att_check']] <- INT.att.F$checkfun(D)
 D[['int_att_cost']] <- INT.att.F$costfun(D)
-D[['int_tpt_check']] <- INT.tpt.F$checkfun(D)
-D[['int_tpt_cost']] <- INT.tpt.F$costfun(D)
+# D[['int_tpt_check']] <- INT.tpt.F$checkfun(D)
+# D[['int_tpt_cost']] <- INT.tpt.F$costfun(D)
 D[['int_notx_check']] <- INT.notx.F$checkfun(D)
 D[['int_notx_cost']] <- INT.notx.F$costfun(D)
 
@@ -265,8 +265,8 @@ head(D[, attend.int])
 ## NOTE OK
 all(D[, attend.int] == D[, int_att_check])
 all(D[, attend.soc] == D[, soc_att_check])
-all(D[, tptend.int] == D[, int_tpt_check])
-all(D[, tptend.soc] == D[, soc_tpt_check])
+# all(D[, tptend.int] == D[, int_tpt_check])
+# all(D[, tptend.soc] == D[, soc_tpt_check])
 ## NOTE confusingly there is also a notxend variable, which is different
 all(D[, notx.int] == D[, int_notx_check])
 all(D[, notx.soc] == D[, soc_notx_check])
@@ -275,45 +275,44 @@ all(D[, notx.soc] == D[, soc_notx_check])
 D[,table(tb)]
 
 ## create restricted PSA
-DR <- D[,.(id,tb,
+DRPCF <- D[,.(id,tb,
            soc_att_check,
            soc_att_cost,
-           soc_tpt_check,
-           soc_tpt_cost,
+           # soc_tpt_check,
+           # soc_tpt_cost,
            soc_notx_check,
            soc_notx_cost,
            int_att_check,
            int_att_cost,
-           int_tpt_check,
-           int_tpt_cost,
+           # int_tpt_check,
+           # int_tpt_cost,
            int_notx_check,
            int_notx_cost
            )]
 
 ## condition costs on outcome
-DR[,c('soc_att_cost',
-      'soc_tpt_cost',
+DRPCF[,c('soc_att_cost',
+      # 'soc_tpt_cost',
       'soc_notx_cost',
       'int_att_cost',
-      'int_tpt_cost',
+      # 'int_tpt_cost',
       'int_notx_cost'):=.(
         soc_att_cost/soc_att_check,
-        soc_tpt_cost/soc_tpt_check,
+        # soc_tpt_cost/soc_tpt_check,
         soc_notx_cost/soc_notx_check,
         int_att_cost/int_att_check,
-        int_tpt_cost/int_tpt_check,
+        # int_tpt_cost/int_tpt_check,
         int_notx_cost/int_notx_check
       )]
 
-save(DR,file=here('outdata/DR.Rdata'))
+save(DRPCF,file=here('outdata/DRPCF.Rdata'))
 
 ## summary
-DRS <- DR[,lapply(.SD,mean),.SDcols=names(DR)[-c(1,2)],by=tb]
-DRS <- melt(DRS,id='tb')
-DRS[,c('arm','outcome','quantity'):=tstrsplit(variable,split='_')]
-options(scipen=999)
-(DRS <- dcast(data=DRS,formula=arm+quantity+outcome~tb,value.var='value'))
-fwrite(DRS,file=here('outdata/DRS.csv'))
+DRSPCF <- DRPCF[,lapply(.SD,mean),.SDcols=names(DRPCF)[-c(1,2)],by=tb]
+DRSPCF <- melt(DRSPCF,id='tb')
+DRSPCF[,c('arm','outcome','quantity'):=tstrsplit(variable,split='_')]
+(DRSPCF <- dcast(data=DRSPCF,formula=arm+quantity+outcome~tb,value.var='value'))
+fwrite(DRSPCF,file=here('outdata/DRSPCF.csv'))
 
 # D[tb=='noTB',.(soc.prop.prev.tb.dx,
 #     soc.prop.no.prev.tb.dx.symp,
