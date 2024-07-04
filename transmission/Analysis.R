@@ -94,7 +94,8 @@ parms <- revise.flow.parms(parms,smpsd,1) #use some real flow parms
 ## see checks.R
 
 ## ====================
-RES <- PSAloop(Niter = 2e3, parms, smpsd, DR, zero.nonscreen.costs = FALSE, verbose = FALSE)
+parms$staticfoi <- +1            #dynamic=-1
+RES <- PSAloop(Niter = 1e3, parms, smpsd, DR, zero.nonscreen.costs = TRUE, verbose = FALSE)
 
 ## ===== inspect
 RES[,mean(int.CC-soc.CC)]
@@ -102,7 +103,7 @@ RES[,mean(int.deaths-soc.deaths)] #fewer deaths
 RES[, mean(int.ccases - soc.ccases)] # fewer cases
 RES[, mean(int.dLYL - soc.dLYL)] # fewer LYL
 RES[, mean(Q.int - Q.soc)] # less qol decrement + LYL
-RES[,mean(int.CC-soc.CC)/mean(dQ)]/1e3 #ICER ~ 777K
+RES[,mean(int.CC-soc.CC)/mean(dQ)]/1e3 #ICER ~ 777K; static + w/o multiplier + w/o PTB = 1M
 
 RES[mid.notes<100 & mid.notes>30,mean(int.CC-soc.CC)]
 RES[mid.notes<100 & mid.notes>30,mean(Q.int - Q.soc)]

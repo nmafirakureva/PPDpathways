@@ -403,6 +403,10 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=
     newp[["CDR"]] <- min(0.9, newp[["CDR"]])
     newp[["mHR"]] <- max(1, newp[["mHR"]])
     newp[["wsn"]] <- max(0.2, newp[["wsn"]])
+    ## BUG checking
+    newp[["m"]] <- 1                                 #TODO + newp[["m"]]  to be active
+    newp[["mHR"]] <- 1
+    newp[["hrqolptb"]] <- 0
     for(nm in names(newp)) parms[[nm]] <- newp[[nm]] #safety
     ## update initial state:
     ## TODO
