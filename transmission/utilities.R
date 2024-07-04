@@ -148,80 +148,138 @@ revise.HE.parms <- function(parms, # original parameter template
                             DR,    # sample of outputs from tree
                             j,     # which row of sample to use
                             arm='soc', #soc/int
-                            zero.nonscreen.costs=FALSE #for debugging
+                            zero.nonscreen.costs=FALSE, #for debugging
+                            summarize.HEparms=FALSE     #for recording
                             ){
   ## NOTE notx flow calculated from others in model
   ## NOTE costs only accrue post intervention in model so don't need 2 lots
-  ## j <- 1                                                        #NOTE BUG TODO
-  ## SOC
-  ## ... ATT
-  parms$inflow_toATT_TB0 <- DR[id==j & tb=='TBD']$soc_att_check # NOTE fp ATT doesn't affect state
-  parms$inflow_toATT_L0 <- DR[id==j & tb=='TBI']$soc_att_check #
-  parms$inflow_toATT_no0 <- DR[id==j & tb=='noTB']$soc_att_check
-  ## ...TPT
-  parms$inflow_toTPT_TB0 <- DR[id==j & tb=='TBD']$soc_tpt_check
-  parms$inflow_toTPT_L0 <- DR[id==j & tb=='TBI']$soc_tpt_check
-  parms$inflow_toTPT_no0 <- DR[id==j & tb=='noTB']$soc_tpt_check
-  ## INT
-  if(arm=='soc'){
-    ## ... ATT
-    parms$inflow_toATT_TB1 <- DR[id==j & tb=='TBD']$soc_att_check
-    parms$inflow_toATT_L1 <- DR[id==j & tb=='TBI']$soc_att_check
-    parms$inflow_toATT_no1 <- DR[id==j & tb=='noTB']$soc_att_check
+  ## COLLATE DATA:
+  A <- list(
+    uc_attppd = 20e3 * !zero.nonscreen.costs, # ATT for those found passively within the system
+    uc_attout = 15e3 * !zero.nonscreen.costs, # ATT following release
+    hrqol = 0.333,
+
+    ## ------- BOTH
+    inflow_toATT_TB0 = DR[id==j & tb=='TBD']$soc_att_check, # NOTE fp ATT doesn't affect state
+    inflow_toATT_L0 = DR[id==j & tb=='TBI']$soc_att_check, #
+    inflow_toATT_no0 = DR[id==j & tb=='noTB']$soc_att_check,
     ## ...TPT
-    parms$inflow_toTPT_TB1 <- DR[id==j & tb=='TBD']$soc_tpt_check
-    parms$inflow_toTPT_L1 <- DR[id==j & tb=='TBI']$soc_tpt_check
-    parms$inflow_toTPT_no1 <- DR[id==j & tb=='noTB']$soc_tpt_check
+    inflow_toTPT_TB0 = DR[id==j & tb=='TBD']$soc_tpt_check,
+    inflow_toTPT_L0 = DR[id==j & tb=='TBI']$soc_tpt_check,
+    inflow_toTPT_no0 = DR[id==j & tb=='noTB']$soc_tpt_check,
+
+    ## ------- SOC
+    ## ... ATT
+    inflow_toATT_TB1.soc = DR[id==j & tb=='TBD']$soc_att_check,
+    inflow_toATT_L1.soc = DR[id==j & tb=='TBI']$soc_att_check,
+    inflow_toATT_no1 = DR[id==j & tb=='noTB']$soc_att_check,
+    ## ...TPT
+    inflow_toTPT_TB1.soc = DR[id==j & tb=='TBD']$soc_tpt_check,
+    inflow_toTPT_L1.soc = DR[id==j & tb=='TBI']$soc_tpt_check,
+    inflow_toTPT_no1.soc = DR[id==j & tb=='noTB']$soc_tpt_check,
     ## ...unit costs
     ## ......TPT
-    parms$uc_entry_tpt_TB <- 0## DR[id==j & tb=='TBD']$soc_tpt_cost
-    parms$uc_entry_tpt_L <- DR[id==j & tb=='TBI']$soc_tpt_cost
-    parms$uc_entry_tpt_no <- 0## DR[id==j & tb=='noTB']$soc_tpt_cost
+    uc_entry_tpt_TB.soc = 0,## DR[id==j & tb=='TBD']$soc_tpt_cost
+    uc_entry_tpt_L.soc = DR[id==j & tb=='TBI']$soc_tpt_cost,
+    uc_entry_tpt_no.soc = 0,## DR[id==j & tb=='noTB']$soc_tpt_cost
     ## ......ATT
-    parms$uc_entry_att_TB <- DR[id==j & tb=='TBD']$soc_att_cost
-    parms$uc_entry_att_L <- DR[id==j & tb=='TBI']$soc_att_cost
-    parms$uc_entry_att_no <- DR[id==j & tb=='noTB']$soc_att_cost
+    uc_entry_att_TB.soc = DR[id==j & tb=='TBD']$soc_att_cost,
+    uc_entry_att_L.soc = DR[id==j & tb=='TBI']$soc_att_cost,
+    uc_entry_att_no.soc = DR[id==j & tb=='noTB']$soc_att_cost,
     ## ......NOTX
-    parms$uc_entry_notx_TB <- DR[id==j & tb=='TBD']$soc_notx_cost
-    parms$uc_entry_notx_L <- DR[id==j & tb=='TBI']$soc_notx_cost
-    parms$uc_entry_notx_no <- DR[id==j & tb=='noTB']$soc_notx_cost
+    uc_entry_notx_TB.soc = DR[id==j & tb=='TBD']$soc_notx_cost,
+    uc_entry_notx_L.soc = DR[id==j & tb=='TBI']$soc_notx_cost,
+    uc_entry_notx_no.soc = DR[id==j & tb=='noTB']$soc_notx_cost,
+
+    ## ------- INT
+    inflow_toATT_TB1.int = DR[id==j & tb=='TBD']$int_att_check,
+    inflow_toATT_L1.int = DR[id==j & tb=='TBI']$int_att_check,
+    inflow_toATT_no1.int = DR[id==j & tb=='noTB']$int_att_check,
+    ## ...TPT
+    inflow_toTPT_TB1.int = 0,## DR[id==j & tb=='TBD']$int_tpt_check,
+    inflow_toTPT_L1.int = DR[id==j & tb=='TBI']$int_tpt_check,
+    inflow_toTPT_no1.int = 0,## DR[id==j & tb=='noTB']$int_tpt_check,
+    ## ...unit costs
+    ## ......TPT
+    uc_entry_tpt_TB.int = 0,## DR[id==j & tb=='TBD']$int_tpt_cost
+    uc_entry_tpt_L.int = DR[id==j & tb=='TBI']$int_tpt_cost,
+    uc_entry_tpt_no.int = 0,## DR[id==j & tb=='noTB']$int_tpt_cost
+    ## ......ATT
+    uc_entry_att_TB.int = DR[id==j & tb=='TBD']$int_att_cost,
+    uc_entry_att_L.int = DR[id==j & tb=='TBI']$int_att_cost,
+    uc_entry_att_no.int = DR[id==j & tb=='noTB']$int_att_cost,
+    ## ......NOTX
+    uc_entry_notx_TB.int = DR[id==j & tb=='TBD']$int_notx_cost,
+    uc_entry_notx_L.int = DR[id==j & tb=='TBI']$int_notx_cost,
+    uc_entry_notx_no.int = DR[id==j & tb=='noTB']$int_notx_cost
+  )
+
+  if(!summarize.HEparms){ #implement changes
+    ## BOTH
+    ## ... other unit costs
+    parms$uc_attppd <- A$uc_attppd
+    parms$uc_attout <- A$uc_attout
+    ## ... HRQoL
+    parms$hrqol <- A$hrqol
+    ## ... ATT
+    parms$inflow_toATT_TB0 <- A$inflow_toATT_TB0
+    parms$inflow_toATT_L0 <- A$inflow_toATT_L0
+    parms$inflow_toATT_no0 <- A$inflow_toATT_no0
+    ## ...TPT
+    parms$inflow_toTPT_TB0 <- A$inflow_toTPT_TB0
+    parms$inflow_toTPT_L0 <- A$inflow_toTPT_L0
+    parms$inflow_toTPT_no0 <- A$inflow_toTPT_no0
+    ## INT
+    if(arm=='soc'){
+      ## ... ATT
+      parms$inflow_toATT_TB1 <- A$inflow_toATT_TB1.soc
+      parms$inflow_toATT_L1 <- A$inflow_toATT_L1.soc
+      parms$inflow_toATT_no1 <- A$inflow_toATT_no1.soc
+      ## ...TPT
+      parms$inflow_toTPT_TB1 <- A$inflow_toTPT_TB1.soc
+      parms$inflow_toTPT_L1 <- A$inflow_toTPT_L1.soc
+      parms$inflow_toTPT_no1 <- A$inflow_toTPT_no1.soc
+      ## ...unit costs
+      ## ......TPT
+      parms$uc_entry_tpt_TB <- A$uc_entry_tpt_TB.soc
+      parms$uc_entry_tpt_L <- A$uc_entry_tpt_L.soc
+      parms$uc_entry_tpt_no <- A$uc_entry_tpt_no.soc
+      ## ......ATT
+      parms$uc_entry_att_TB <- A$uc_entry_att_TB.soc
+      parms$uc_entry_att_L <- A$uc_entry_att_L.soc
+      parms$uc_entry_att_no <- A$uc_entry_att_no.soc
+      ## ......NOTX
+      parms$uc_entry_notx_TB <- A$uc_entry_notx_TB.soc
+      parms$uc_entry_notx_L <- A$uc_entry_notx_L.soc
+      parms$uc_entry_notx_no <- A$uc_entry_notx_no.soc
+    } else {
+      ## ... ATT
+      parms$inflow_toATT_TB1 <- A$inflow_toATT_TB1.int
+      parms$inflow_toATT_L1 <- A$inflow_toATT_L1.int
+      parms$inflow_toATT_no1 <- A$inflow_toATT_no1.int
+      ## ...TPT
+      parms$inflow_toTPT_TB1 <- A$inflow_toTPT_TB1.int
+      parms$inflow_toTPT_L1 <- A$inflow_toTPT_L1.int
+      parms$inflow_toTPT_no1 <- A$inflow_toTPT_no1.int
+      ## ...unit costs
+      ## ......TPT
+      parms$uc_entry_tpt_TB <- A$uc_entry_tpt_TB.int
+      parms$uc_entry_tpt_L <- A$uc_entry_tpt_L.int
+      parms$uc_entry_tpt_no <- A$uc_entry_tpt_no.int
+      ## ......ATT
+      parms$uc_entry_att_TB <- A$uc_entry_att_TB.int
+      parms$uc_entry_att_L <- A$uc_entry_att_L.int
+      parms$uc_entry_att_no <- A$uc_entry_att_no.int
+      ## ......NOTX
+      parms$uc_entry_notx_TB <- A$uc_entry_notx_TB.int
+      parms$uc_entry_notx_L <- A$uc_entry_notx_L.int
+      parms$uc_entry_notx_no <- A$uc_entry_notx_no.int
+    }
+
+    return(parms)
   } else {
-    ## ... ATT
-    parms$inflow_toATT_TB1 <- DR[id==j & tb=='TBD']$int_att_check
-    parms$inflow_toATT_L1 <- DR[id==j & tb=='TBI']$int_att_check
-    parms$inflow_toATT_no1 <- DR[id==j & tb=='noTB']$int_att_check
-    ## ...TPT
-    parms$inflow_toTPT_TB1 <- 0## DR[id==j & tb=='TBD']$int_tpt_check
-    parms$inflow_toTPT_L1 <- DR[id==j & tb=='TBI']$int_tpt_check
-    parms$inflow_toTPT_no1 <- 0## DR[id==j & tb=='noTB']$int_tpt_check
-    ## ...unit costs
-    ## ......TPT
-    parms$uc_entry_tpt_TB <- 0## DR[id==j & tb=='TBD']$int_tpt_cost
-    parms$uc_entry_tpt_L <- DR[id==j & tb=='TBI']$int_tpt_cost
-    parms$uc_entry_tpt_no <- 0## DR[id==j & tb=='noTB']$int_tpt_cost
-    ## ......ATT
-    parms$uc_entry_att_TB <- DR[id==j & tb=='TBD']$int_att_cost
-    parms$uc_entry_att_L <- DR[id==j & tb=='TBI']$int_att_cost
-    parms$uc_entry_att_no <- DR[id==j & tb=='noTB']$int_att_cost
-    ## ......NOTX
-    parms$uc_entry_notx_TB <- DR[id==j & tb=='TBD']$int_notx_cost
-    parms$uc_entry_notx_L <- DR[id==j & tb=='TBI']$int_notx_cost
-    parms$uc_entry_notx_no <- DR[id==j & tb=='noTB']$int_notx_cost
+    return(A)
   }
-  ## other unit costs
-  if(zero.nonscreen.costs){
-    parms$uc_attppd <- 0
-    parms$uc_attout <- 0
-  } else {                  #TODO update
-    parms$uc_attppd <- 20e3 # ATT for those found passively within the system
-    parms$uc_attout <- 15e3 # ATT following release
-  }
-  ## === HRQoL
-  parms$hrqol <- 0.333 # HRQoL decrement while CD
-  ## parms$hrqolptb <- 0.05 # HRQoL decrement while post TB NOTE now in ecrins hyperparms
-  ## parms$m <- 1.0         #multiplier for TB events outside prison NOTE now in ecrins
-  ## return
-  parms
 }
 
 
@@ -337,12 +395,14 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=
     if(!j%%50) print(j)
     ## set parms related to PPD flows
     parms <- revise.flow.parms(parms,smpsd,j) #TODO BUG
+    hep <- revise.HE.parms(parms,DR,j,zero.nonscreen.costs=zero.nonscreen.costs,summarize.HEparms = TRUE)
     ## set intervention and HE parms
     ## sample from TB natural hist
     newp <- uv2ps(runif(length(hyperparms)),hyperparms) # natural history
     ## safeties:
     newp[["CDR"]] <- min(0.9, newp[["CDR"]])
     newp[["mHR"]] <- max(1, newp[["mHR"]])
+    newp[["wsn"]] <- max(0.2, newp[["wsn"]])
     for(nm in names(newp)) parms[[nm]] <- newp[[nm]] #safety
     ## update initial state:
     ## TODO
@@ -351,7 +411,13 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=
     ## capture parms also
     V <- unlist(parms)
     nm <- names(V)
-    ANS[, c(nm) := as.list(V)]
+    V <- as.list(V)
+    ## take out HE and put back in
+    hepn <- unique(gsub('\\.int|\\.soc','',names(hep)))
+    for(n in names(V)) if(n %in% hepn) V[[n]] <- NULL #remove HE vars
+    V <- c(V,hep)                                     #put back in
+    nm <- names(V)
+    ANS[, c(nm) := V]                                 #record in answers
     ## record
     RES[[j]] <- ANS
   } #end loop
