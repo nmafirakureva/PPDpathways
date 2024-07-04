@@ -82,7 +82,7 @@ summary(qfun(runif(1e3),hyperparms$foi))
 parms <- revise.flow.parms(parms,smpsd,1) #use some real flow parms
 
 ## RUN TEST PSA:
-RES <- PSAloop(Niter=2e2,parms,smpsd,DR,zero.nonscreen.costs=TRUE) #TODO update this as we go
+RES <- PSAloop(Niter=1e2,parms,smpsd,DR,zero.nonscreen.costs=TRUE) #TODO update this as we go
 
 ## ============= CHECKING ===================
 DRS[quantity=='cost' & outcome=='notx'] #
@@ -230,8 +230,53 @@ CF
 ## ====================
 
 ## RUN REAL PSA:
-RES <- PSAloop(Niter=50,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=TRUE) #TODO update this as we go
+RES <- PSAloop(Niter=2e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=TRUE) #TODO update this as we go
 ## BUG look for things close to zero
+
+## TODO seeing negative deaths
+## capture inputs to analyse
+
+RES[soc.deaths<0]
+
+save(RES,file='~/Downloads/RES.Rdata')
+
+load(file = "~/Downloads/RES.Rdata")
+
+RES[, bad.soc := ifelse(soc.deaths < 0, 2, 1)]
+nm <- names(parms)
+nm <- nm[!grepl('uc',nm)] #non-flow parms excluding unit costs
+nfs <- nm[grepl("inflow_", nm)] # inflow parms
+nm <- setdiff(nm, nfs)
+its <- nm[grepl("parm_", nm)]
+its <- setdiff(its, c("parm_ifrac_prevTPT", "parm_init_PPD"))
+nm <- setdiff(nm, its)
+nm <- setdiff(nm, c(
+  "int_time", "disc_rate", "hrqol", "LifeExp", "mort",
+  "att_time", "tpt_drn", "late_post_time","staticfoi"
+))
+prns <- nm[1:10]
+nm <- setdiff(nm, prns)
+colz <- RES$bad
+shps <- colz; shps[shps!=1] <- 16
+az <- ifelse(colz == 1, 0.3, 1)
+
+## parms
+pairs(as.matrix(RES[,..nm]),col=alpha(colz,az),cex=colz,pch=shps)
+## NOTE hrqol & mHR seem worst
+
+## prns
+pairs(as.matrix(RES[, ..prns]), col = alpha(colz, az), cex = colz, pch = shps)
+## NOTE no variation
+
+## its
+pairs(as.matrix(RES[, ..its]), col = alpha(colz, az), cex = colz, pch = shps)
+## NOTE no variation
+
+## nfs
+pairs(as.matrix(RES[, ..nfs]), col = alpha(colz, az), cex = colz, pch = shps)
+## NOTE no variation
+
+
 
 ## =========== OUTPUTS & PLOTS ==================
 
@@ -246,7 +291,7 @@ ggplot(RES,aes(Q.soc - Q.int,int.CC-soc.CC,col=mid.notes<100 & mid.notes>30))+
 ggsave(file=here('transmission/plots/p_CE1.png'),w=7,h=7)
 
 RES[,mean(int.CC-soc.CC)]
-RES[,mean(Q.int - Q.soc)]
+RES[,mean(Q.int - Q.soc)] #BUG
 RES[,mean(int.CC-soc.CC)/mean(Q.int - Q.soc)]
 
 RES[mid.notes<100 & mid.notes>30,mean(int.CC-soc.CC)]

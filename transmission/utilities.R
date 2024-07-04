@@ -77,6 +77,9 @@ revise.flow.parms <- function(parms, # original parameter template
                               j      # which row of sample to use
                               ){
   ## safety normalize proportions
+  parmfracnmz <- c('parm_frac_SD', 'parm_frac_CD', 'parm_frac_E', 'parm_frac_L',
+                   'parm_frac_epTB', 'parm_frac_lpTB', 'parm_frac_U', 'parm_frac_ATT')
+  for (nm in parmfracnmz) if (parms[[nm]] < 1e-6) parms[[nm]] <- 1e-6 #safety
   totpop <- with(data = parms, {
     parm_frac_SD + parm_frac_CD+ parm_frac_E + parm_frac_L +
       parm_frac_epTB + parm_frac_lpTB+parm_frac_U+parm_frac_ATT
@@ -117,9 +120,9 @@ revise.HE.parms <- function(parms, # original parameter template
                             arm='soc', #soc/int
                             zero.nonscreen.costs=FALSE #for debugging
                             ){
-
   ## NOTE notx flow calculated from others in model
   ## NOTE costs only accrue post intervention in model so don't need 2 lots
+  j <- 1                                                        #NOTE BUG TODO
   ## SOC
   ## ... ATT
   parms$inflow_toATT_TB0 <- DR[id==j & tb=='TBD']$soc_att_check # NOTE fp ATT doesn't affect state
@@ -175,7 +178,6 @@ revise.HE.parms <- function(parms, # original parameter template
     parms$uc_entry_notx_L <- DR[id==j & tb=='TBI']$int_notx_cost
     parms$uc_entry_notx_no <- DR[id==j & tb=='noTB']$int_notx_cost
   }
-
   ## other unit costs
   if(zero.nonscreen.costs){
     parms$uc_attppd <- 0
@@ -184,12 +186,10 @@ revise.HE.parms <- function(parms, # original parameter template
     parms$uc_attppd <- 20e3 # ATT for those found passively within the system
     parms$uc_attout <- 15e3 # ATT following release
   }
-
   ## === HRQoL
   parms$hrqol <- 0.333 # HRQoL decrement while CD
   ## parms$hrqolptb <- 0.05 # HRQoL decrement while post TB NOTE now in ecrins hyperparms
   ## parms$m <- 1.0         #multiplier for TB events outside prison NOTE now in ecrins
-
   ## return
   parms
 }
@@ -277,13 +277,6 @@ run.HE.socint <- function(parms,DR,j,
     RES
 }
 
-## parameter meanings [0/1=BL/INT]:
-## inflow_toTPT_L 
-## inflow_toATT_TB
-## are both coverages of the intervention
-## TODO se/sp to come
-## TODO check destinations
-
 ## ## ============= HE workflow =============
 PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=FALSE){
   if(Niter>nrow(smpsd)){
@@ -307,15 +300,24 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=
     if(verbose) cat('j==',j,'...\n')
     if(!j%%50) print(j)
     ## set parms related to PPD flows
-    parms <- revise.flow.parms(parms,smpsd,j)
+    parms <- revise.flow.parms(parms,smpsd,1) #TODO BUG
     ## set intervention and HE parms
     ## sample from TB natural hist
     newp <- uv2ps(runif(length(hyperparms)),hyperparms) # natural history
-    for(nm in names(newp)) parms[[nm]] <- newp[[nm]]
+    newp[["CDR"]] <- min(0.9, newp[["CDR"]])
+    newp[["wsn"]] <- max(0.2, newp[["wsn"]])
+    newp[["drn"]] <- max(1, newp[["drn"]])
+    for(nm in names(newp)) parms[[nm]] <- newp[[nm]] #safety
     ## update initial state:
     ## TODO
     ## === run model:
-    RES[[j]] <- run.HE.socint(parms,DR,j,zero.nonscreen.costs=zero.nonscreen.costs) #de BUG
+    ANS <- run.HE.socint(parms,DR,j,zero.nonscreen.costs=zero.nonscreen.costs)
+    ## capture parms also
+    V <- unlist(parms)
+    nm <- names(V)
+    ANS[, c(nm) := as.list(V)]
+    ## record
+    RES[[j]] <- ANS
   } #end loop
   RES <- rbindlist(RES)
   ## inspect
