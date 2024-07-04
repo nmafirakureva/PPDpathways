@@ -18,6 +18,36 @@ load(here('outdata/DR.Rdata'))
 DRS <- fread(here('outdata/DRS.csv'))
 
 
+testfun <- function(times, p) {
+  if(p<0) warning('p<0!')
+  times
+}
+
+
+## run model but catch warnings
+runmodelsafely <- function(times,p) {
+   r <-
+     tryCatch(
+       withCallingHandlers(
+         {
+           error_val <- 0
+           list(y = runmodel(times,p), error_val = error_val)
+         },
+         warning = function(e) {
+           error_val <<- 1
+           ## invokeRestart("muffleWarning")
+         }
+       ),
+       error = function(e) {
+         return(list(y = NA, error_val = 2))
+       },
+       finally = {
+       }
+     )
+   return(r)
+}
+
+
 ## functions for reformatting outputs
 getpno <- function(x){
   a <- str_extract(x,"\\[(.*?),")
@@ -122,7 +152,7 @@ revise.HE.parms <- function(parms, # original parameter template
                             ){
   ## NOTE notx flow calculated from others in model
   ## NOTE costs only accrue post intervention in model so don't need 2 lots
-  j <- 1                                                        #NOTE BUG TODO
+  ## j <- 1                                                        #NOTE BUG TODO
   ## SOC
   ## ... ATT
   parms$inflow_toATT_TB0 <- DR[id==j & tb=='TBD']$soc_att_check # NOTE fp ATT doesn't affect state
@@ -233,14 +263,18 @@ run.HE.socint <- function(parms,DR,j,
     test <- parms; test$staticfoi <- NULL
     if(any(unlist(test)<0)) stop(paste0('Parameter<0 for SOC @ run=',j,'\n parm=',
                                         names(test)[which(unlist(test)<0)],'\n'))
-    y <- runmodel(tt,parms)           #run model
+    ## y <- runmodel(tt,parms)           #run model
+    YO <- runmodelsafely(tt, parms) # run model
+    y <- YO$y
     ## INT: ## sample from tree-derived parms
     if(!ignore.tree.parms)
       parms <- revise.HE.parms(parms,DR,j,arm='int',zero.nonscreen.costs=zero.nonscreen.costs)
     test <- parms; test$staticfoi <- NULL
     if(any(unlist(test)<0)) stop(paste0('Parameter<0 for INT @ run=',j,'\n parm=',
                                         names(test)[which(unlist(test)<0)],'\n'))
-    yi <- runmodel(tt,parms)           #run model
+    YOI <- runmodelsafely(tt, parms) # run model
+    yi <- YOI$y
+    ## yi <- runmodel(tt,parms)           #run model
     mid <- which(y[,'t']==int_time)    #NOTE could break if don't fit exactly in units of dt
     end <- nrow(y)
     blpop <- y[mid,"ppdpop"]
@@ -274,6 +308,8 @@ run.HE.socint <- function(parms,DR,j,
     RES[,dQ:=(soc.qoldec+soc.dLYL-int.qoldec-int.dLYL)]
     RES[,Q.soc:=soc.qoldec+soc.dLYL]
     RES[,Q.int:=int.qoldec+int.dLYL]
+    pbm <- ifelse(YO$error_val + YOI$error_val > 0, 1, 0) #record if problem
+    RES[, problem := pbm]
     RES
 }
 
@@ -300,13 +336,13 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=
     if(verbose) cat('j==',j,'...\n')
     if(!j%%50) print(j)
     ## set parms related to PPD flows
-    parms <- revise.flow.parms(parms,smpsd,1) #TODO BUG
+    parms <- revise.flow.parms(parms,smpsd,j) #TODO BUG
     ## set intervention and HE parms
     ## sample from TB natural hist
     newp <- uv2ps(runif(length(hyperparms)),hyperparms) # natural history
+    ## safeties:
     newp[["CDR"]] <- min(0.9, newp[["CDR"]])
-    newp[["wsn"]] <- max(0.2, newp[["wsn"]])
-    newp[["drn"]] <- max(1, newp[["drn"]])
+    newp[["mHR"]] <- max(1, newp[["mHR"]])
     for(nm in names(newp)) parms[[nm]] <- newp[[nm]] #safety
     ## update initial state:
     ## TODO
@@ -325,13 +361,11 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=
   print(RES[,summary(soc.deaths-int.deaths)])
   cat('--- cost diff summary ---\n')
   print(RES[,summary(int.CC0-soc.CC0)])
+  if(any(RES$problem>0)) warnings('Some ODE runs had numerical issues! Please check results')
   ## return
   RES
 }
 
 
 ## TODO
-## check natural history
 ## introduce the initial state heuristic as per methods doc
-## check FPs!!
-## what are our targets
