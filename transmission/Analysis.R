@@ -94,7 +94,7 @@ parms <- revise.flow.parms(parms,smpsd,1) #use some real flow parms
 ## see checks.R
 
 ## ====================
-parms$staticfoi <- +1            #dynamic=-1
+parms$staticfoi <- -1            #dynamic=-1
 RES <- PSAloop(Niter = 1e3, parms, smpsd, DR, zero.nonscreen.costs = TRUE, verbose = FALSE)
 
 ## ===== inspect

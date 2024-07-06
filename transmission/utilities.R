@@ -144,6 +144,42 @@ revise.flow.parms <- function(parms, # original parameter template
   parms
 }
 
+
+## revise initial states
+revise.instates <- function(parms,tscale=10){
+  lam <- parms$foi
+  ## utilities
+  Delt <- 2.3 * lam + 0.1
+  ome <- 1 - exp(-lam * tscale)
+  ## fractions
+  parm_frac_U <- exp(-lam * tscale)
+  parm_frac_E <- ome * (2*lam) / Delt
+  parm_frac_L <- ome * (0.1) / Delt
+  parm_frac_ATT <- ome * (lam/30) / Delt
+  parm_frac_SD <- ome * (lam / 30) / Delt
+  parm_frac_CD <- ome * (lam / 30) / Delt
+  parm_frac_epTB <- ome * (lam / 15) / Delt
+  parm_frac_lpTB <- ome * (2 * lam / 15) / Delt
+  ## check
+  ## print(parm_frac_U+parm_frac_E+parm_frac_L+parm_frac_ATT+
+  ##       parm_frac_SD+parm_frac_CD+parm_frac_epTB+parm_frac_lpTB)
+  ## implement in parameter object
+  ## inflow & initial state
+  parms$parm_frac_U <- parms$parm_ifrac_U <- parm_frac_U
+  parms$parm_frac_E <- parms$parm_ifrac_E <- parm_frac_E
+  parms$parm_frac_L <- parms$parm_ifrac_L <- parm_frac_L
+  parms$parm_frac_ATT <- parms$parm_ifrac_ATT <- parm_frac_L
+  parms$parm_frac_SD <- parms$parm_ifrac_SD <- parm_frac_SD
+  parms$parm_frac_CD <- parms$parm_ifrac_CD <- parm_frac_CD
+  parms$parm_frac_epTB <- parms$parm_ifrac_epTB <- parm_frac_epTB
+  parms$parm_frac_lpTB <- parms$parm_ifrac_lpTB <- parm_frac_lpTB
+  parms
+}
+
+## ## check
+## revise.instates(parms)
+
+## revise HE stuff
 revise.HE.parms <- function(parms, # original parameter template
                             DR,    # sample of outputs from tree
                             j,     # which row of sample to use
@@ -379,7 +415,6 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=
     smpsd <- rbind(smpsd,xtra)
   }
   if(Niter>max(DR$id)){
-    ## TODO check this works OK
     cat('Niter>max(DR$id): resampling extra replicates!\n')
     reuse <- sample(max(DR$id),Niter-max(DR$id),replace=TRUE)
     nxt <- max(DR$id)+1
@@ -395,7 +430,8 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=
     if(!j%%50) print(j)
     ## set parms related to PPD flows
     parms <- revise.flow.parms(parms,smpsd,j) #TODO BUG
-    hep <- revise.HE.parms(parms,DR,j,zero.nonscreen.costs=zero.nonscreen.costs,summarize.HEparms = TRUE)
+    hep <- revise.HE.parms(parms,DR,j,
+                           zero.nonscreen.costs=zero.nonscreen.costs,summarize.HEparms = TRUE)
     ## set intervention and HE parms
     ## sample from TB natural hist
     newp <- uv2ps(runif(length(hyperparms)),hyperparms) # natural history
@@ -409,7 +445,7 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=
     newp[["hrqolptb"]] <- 0
     for(nm in names(newp)) parms[[nm]] <- newp[[nm]] #safety
     ## update initial state:
-    ## TODO
+    parms <- revise.instates(parms)
     ## === run model:
     ANS <- run.HE.socint(parms,DR,j,zero.nonscreen.costs=zero.nonscreen.costs)
     ## capture parms also
