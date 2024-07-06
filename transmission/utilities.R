@@ -5,7 +5,6 @@ library(stringr)
 library(ggplot2)
 library(scales)
 
-
 source(system.file("extdata", "parameters.R", package="ecrins")) #this loads some fns for PSA
 data(parms)                       #some default parameters
 
@@ -35,7 +34,7 @@ runmodelsafely <- function(times,p) {
          },
          warning = function(e) {
            error_val <<- 1
-           ## invokeRestart("muffleWarning")
+           invokeRestart("muffleWarning")
          }
        ),
        error = function(e) {
@@ -193,7 +192,7 @@ revise.HE.parms <- function(parms, # original parameter template
   A <- list(
     uc_attppd = 20e3 * !zero.nonscreen.costs, # ATT for those found passively within the system
     uc_attout = 15e3 * !zero.nonscreen.costs, # ATT following release
-    hrqol = 0.333,
+    ## hrqol = 0.333, #NOTE now part of hyperparms
 
     ## ------- BOTH
     inflow_toATT_TB0 = DR[id==j & tb=='TBD']$soc_att_check, # NOTE fp ATT doesn't affect state
@@ -429,20 +428,20 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=
     if(verbose) cat('j==',j,'...\n')
     if(!j%%50) print(j)
     ## set parms related to PPD flows
-    parms <- revise.flow.parms(parms,smpsd,j) #TODO BUG
+    parms <- revise.flow.parms(parms,smpsd,j)
     hep <- revise.HE.parms(parms,DR,j,
                            zero.nonscreen.costs=zero.nonscreen.costs,summarize.HEparms = TRUE)
     ## set intervention and HE parms
     ## sample from TB natural hist
     newp <- uv2ps(runif(length(hyperparms)),hyperparms) # natural history
+    newp[["m"]] <- 1 + newp[["m"]] # NOTE prior is defined for R-1
     ## safeties:
     newp[["CDR"]] <- min(0.9, newp[["CDR"]])
-    newp[["mHR"]] <- max(1, newp[["mHR"]])
+    newp[["mHR"]] <- max(1, newp[["mHR"]]) #needs truncating to avoid -ve deaths
     newp[["wsn"]] <- max(0.2, newp[["wsn"]])
-    ## BUG checking
-    newp[["m"]] <- 1                                 #TODO + newp[["m"]]  to be active
-    newp[["mHR"]] <- 1
-    newp[["hrqolptb"]] <- 0
+    ## ## BUG checking
+    ## newp[["mHR"]] <- 1
+    ## newp[["hrqolptb"]] <- 0
     for(nm in names(newp)) parms[[nm]] <- newp[[nm]] #safety
     ## update initial state:
     parms <- revise.instates(parms)
@@ -471,7 +470,3 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=
   ## return
   RES
 }
-
-
-## TODO
-## introduce the initial state heuristic as per methods doc

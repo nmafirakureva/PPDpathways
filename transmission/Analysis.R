@@ -79,6 +79,9 @@ ggsave(here('transmission/plots/p_illustrate_dyn.png'),w=7,h=5)
 parms$parm_frac_L <- 0.2
 parms <- revise.flow.parms(parms,smpsd,1) #use some real flow parms
 
+
+
+
 ## testing
 ## summary(qfun(runif(1e3),hyperparms$foi))
 ## revise.HE.parms(parms,DR,1)
@@ -94,8 +97,11 @@ parms <- revise.flow.parms(parms,smpsd,1) #use some real flow parms
 ## see checks.R
 
 ## ====================
+## TODO adjust hyperparms for foi and disease to match data
 parms$staticfoi <- -1            #dynamic=-1
 RES <- PSAloop(Niter = 1e3, parms, smpsd, DR, zero.nonscreen.costs = TRUE, verbose = FALSE)
+
+summary(RES$problem)
 
 ## ===== inspect
 RES[,mean(int.CC-soc.CC)]
@@ -122,7 +128,7 @@ ggplot(RES,aes(Q.soc - Q.int,int.CC-soc.CC,col=mid.notes<100 & mid.notes>30))+
 ggsave(file=here('transmission/plots/p_CE1.png'),w=7,h=7)
 
 ## make CEAC
-ll <- seq(from=0,to=50e3,by=100)
+ll <- seq(from=0,to=1e5,by=100)
 cc <- make.ceac(RES[,.(Q=dQ,P=int.CC-soc.CC)],ll)
 ccr <- make.ceac(RES[,## mid.notes<100 & mid.notes>30,
                      .(Q=dQ,P=int.CC-soc.CC)],
@@ -152,6 +158,37 @@ GP
 
 ggsave(file=here('transmission/plots/p_CEAC1.png'),w=7,h=7)
 
+
+## ------------ patterns wrt ICER & TBI
+## ICER by prev & TBI
+RES[, c("TBD", "TBI") := .(
+  parm_frac_SD + parm_frac_CD,
+  parm_frac_E + parm_frac_L + parm_frac_epTB + parm_frac_lpTB
+  )]
+## categories with equal numbers
+RES[, TBDC := cut(TBD, quantile(TBD,probs=seq(0,1,l=10)),include.lowest = TRUE)]
+RES[, TBIC := cut(TBI, quantile(TBI, probs = seq(0, 1, l = 10)), include.lowest = TRUE)]
+
+## RES[,range(TBD)]
+## RES[,unique(TBDC)]
+## RES[, table(TBDC)]
+
+smyd <- RES[, .(ICER = mean(int.CC - soc.CC) / mean(dQ)), by = TBDC]
+smyi <- RES[, .(ICER = mean(int.CC - soc.CC) / mean(dQ)), by = TBIC]
+
+str(smyd)
+
+ggplot(smyd, aes(TBDC, ICER)) +
+  geom_point() +
+  expand_limits(y = 0)
+
+ggplot(smyi, aes(TBIC, ICER)) +
+  geom_point() +
+  expand_limits(y = 0)
+
+
+
+
 ## looking at SAVI
 save(RES,file='~/Dropbox/Holocron/tmp/RES.Rdata')
 load('~/Dropbox/Holocron/tmp/RES.Rdata')
@@ -159,11 +196,11 @@ load('~/Dropbox/Holocron/tmp/RES.Rdata')
 
 RES
 
+## ============ VOI stuff =========
 ## effects
 mx <- max(RES$Q.int,RES$Q.soc)
 EFF <- RES[,.(effect1=mx-Q.soc,effect2=mx-Q.int)]
 fwrite(EFF,file='~/Downloads/EFF.csv')
-
 
 ## costs
 CST <- RES[,.(costs1=soc.CC,costs2=int.CC)]

@@ -223,12 +223,13 @@ save(RES,file='~/Downloads/RES.Rdata')
 load(file = "~/Downloads/RES.Rdata")
 
 RES[, bad.soc := ifelse(soc.deaths < 0, 2, 1)]
+
 nm <- names(parms)
 nm <- nm[!grepl('uc',nm)] #non-flow parms excluding unit costs
 nfs <- nm[grepl("inflow_", nm)] # inflow parms
 nm <- setdiff(nm, nfs)
 its <- nm[grepl("parm_", nm)]
-its <- setdiff(its, c("parm_ifrac_prevTPT", "parm_init_PPD"))
+its <- setdiff(its, c("parm_ifrac_prevTPT"))
 nm <- setdiff(nm, its)
 nm <- setdiff(nm, c(
   "int_time", "disc_rate", "hrqol", "LifeExp", "mort",
