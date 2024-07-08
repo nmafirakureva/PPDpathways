@@ -59,12 +59,12 @@ drn <- 3                                #untreated TB durn
 tef <- 0.17                             #efficacy TPT in IGRA+
 pgn <- 0.1                              #progression risk
 txf <- 0.05                             #CFR on tx
-cfr <- 0.4 * (1-cdr)+cdr*txf            #CFR
+cfr <- 0.4 * (1-cdr)+0*cdr*txf            #CFR
 yil <- drn * (1-cdr)                    #duration ill
 dec <- 1/3                              #qol decrement
-tptcov <- 0.44                          #TPT cov in TBI+ INT (assumed 0 SOC)
-attcov <- 0.7                           #ATT cov in TBD+ INT (assumed 0 SOC)
-UCatt <- (avcsoc/avosoc)[1]             #unit cost ATT
+tptcov <- 0.3                          #TPT cov in TBI+ INT (assumed 0 SOC)
+attcov <- 0.4                           #ATT cov in TBD+ INT (assumed 0 SOC)
+(UCatt <- (avcint/avoint)[1])             #unit cost ATT
 
 
 dq <- IFS[1] * attcov * (cfr) * dLE + # mortality = TBD x fraction immediately found x cfr=(CFRx(1-CDR)) x dLE
@@ -74,7 +74,14 @@ dq <- IFS[1] * attcov * (cfr) * dLE + # mortality = TBD x fraction immediately f
 (dc <- sum(avcint-avcsoc))         #difference per av. person: 'on the door costs'
 dc <- dc - IFS[2] * tptcov * (pgn*tef) * cdr * UCatt #UC saved of treating detected now prevented
 dc <- dc - IFS[1] * attcov * cdr * UCatt #UC saved of treating earlier (rather than later)
-(dc/dq/1e3)                              #1.0 M
+(dc/dq)                              #90 M
+
+
+
+1e4*IFS[1] * attcov * (cfr) * dLE # mortality = TBD x fraction immediately found x cfr=(CFRx(1-CDR)) x dLE
+1e4*IFS[2] * (tptcov) * (pgn * tef) * (cfr) * dLE  # mortality = TBI x fraction TPT x TPT eff x progn x cfr x dLE
+1e4*IFS[1] * dec * yil  # qol=TBD x dec x (durn as T x 1-CDR)
+1e4*IFS[2] * dec * (pgn * tef) * (yil)
 
 ## TODO check ATT$ for TBI > ATT$ TBD
 
