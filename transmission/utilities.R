@@ -159,7 +159,7 @@ revise.flow.parms <- function(parms, # original parameter template
 
 
 ## revise initial states
-revise.instates <- function(parms,tscale=10){
+revise.instates <- function(parms,tscale=20){
   lam <- parms$foi
   ## utilities
   Delt <- 2.3 * lam + 0.1

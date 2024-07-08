@@ -75,7 +75,7 @@ names(PD)
 names(RD)
 names(CD)
 
-names <- c("ParameterName", "Mean", "Range","Year","Description","Source")
+names <- c("ParameterName", "Mean", "Range","Description","Source","SourceFull")
 names(PD) <- names(RD) <- names(CD) <- names
 
 PD1 <- PD |> 
@@ -149,12 +149,18 @@ AD1 <- tmp |>
 
 
 # convert into parameter object
+# P <- rbind(
+#   PD1 |> 
+#   select(NAME, DISTRIBUTION),
+#   AD1) |> 
+#   parse.parmtable(outfile='out.csv',
+#                   testdir = here('plots/test'))             
+
 P <- rbind(
   PD1 |> 
-  select(NAME, DISTRIBUTION),
+    select(NAME, DISTRIBUTION),
   AD1) |> 
-  parse.parmtable(outfile='out.csv',
-                  testdir = here('plots/test'))             
+  parse.parmtable()
 
 names(P)
 
@@ -165,7 +171,7 @@ D0 <- makePSA(nreps,P)
 
 # some checks
 prob_vrz <- names(P)
-prob_vrz <- prob_vrz[!grepl('verbal_screen_time', prob_vrz)]
+prob_vrz <- prob_vrz[grepl('verbal_screen_time', prob_vrz)]
 summary(D0[,..prob_vrz])
 
 ## some probabilities are > 1, `quick fix` set to 1
@@ -246,15 +252,23 @@ D <- runallfuns(D,arm=arms)                      #appends anwers
 ## restricted trees:
 D[['soc_att_check']] <- SOC.att.F$checkfun(D)
 D[['soc_att_cost']] <- SOC.att.F$costfun(D)
+D[['soc_att_ppd']] <- SOC.att.F$cost.ppdfun(D)
+D[['soc_att_nhs']] <- SOC.att.F$cost.nhsfun(D)
 D[['soc_tpt_check']] <- SOC.tpt.F$checkfun(D)
 D[['soc_tpt_cost']] <- SOC.tpt.F$costfun(D)
+D[['soc_tpt_ppd']] <- SOC.tpt.F$cost.ppdfun(D)
+D[['soc_tpt_nhs']] <- SOC.tpt.F$cost.nhsfun(D)
 D[['soc_notx_check']] <- SOC.notx.F$checkfun(D)
 D[['soc_notx_cost']] <- SOC.notx.F$costfun(D)
 
 D[['int_att_check']] <- INT.att.F$checkfun(D)
 D[['int_att_cost']] <- INT.att.F$costfun(D)
+D[['int_att_ppd']] <- INT.att.F$cost.ppdfun(D)
+D[['int_att_nhs']] <- INT.att.F$cost.nhsfun(D)
 D[['int_tpt_check']] <- INT.tpt.F$checkfun(D)
 D[['int_tpt_cost']] <- INT.tpt.F$costfun(D)
+D[['int_tpt_ppd']] <- INT.tpt.F$cost.ppdfun(D)
+D[['int_tpt_nhs']] <- INT.att.F$cost.nhsfun(D)
 D[['int_notx_check']] <- INT.notx.F$checkfun(D)
 D[['int_notx_cost']] <- INT.notx.F$costfun(D)
 
@@ -278,14 +292,18 @@ D[,table(tb)]
 DR <- D[,.(id,tb,
            soc_att_check,
            soc_att_cost,
+           soc_att_ppdcost=soc_att_ppd/soc_att_cost,
            soc_tpt_check,
            soc_tpt_cost,
+           soc_tpt_ppdcost=soc_tpt_ppd/soc_tpt_cost,
            soc_notx_check,
            soc_notx_cost,
            int_att_check,
            int_att_cost,
+           int_att_ppdcost=int_att_ppd/int_att_cost,
            int_tpt_check,
            int_tpt_cost,
+           int_tpt_ppdcost=int_tpt_ppd/int_tpt_cost,
            int_notx_check,
            int_notx_cost
            )]
@@ -328,4 +346,9 @@ fwrite(DRS,file=here('outdata/DRS.csv'))
 ## soc.prop.no.prev.tb.dx.symp.tb.dx??
 
 ## cost of getting ATT (from CSV output)
-D[,mean((pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB)),by=tb]
+D[,mean((pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + 
+           (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + 
+          (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB)),by=tb]
+D[,mean(((durTPT*(cost.ltbi.drugs + cost.dots) + TPT.visits*(cost.tpt.opd.visit + cost.prison.escort)))),by=tb]
+D[,mean((IncompDurTPT*(durTPT*(cost.ltbi.drugs + cost.dots) + TPT.visits*(cost.tpt.opd.visit + cost.prison.escort)))),by=tb] # BUG fixed
+D[,mean((IncompDurTPT/durTPT*(durTPT*(cost.ltbi.drugs + cost.dots) + TPT.visits*(cost.tpt.opd.visit + cost.prison.escort)))),by=tb]

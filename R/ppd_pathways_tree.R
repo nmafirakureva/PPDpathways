@@ -113,9 +113,9 @@ AddOutcomes <- function(D){
   D$Set(tptend=1,filterFun=function(x) x$name=='did not complete TPT' & x$isLeaf)
   
   ## no TPT & no ATT
-  D$Set(notxend=0)
-  D$Set(notxend=1,filterFun=function(x) x$name=='no ATT' & x$isLeaf)
-  D$Set(notxend=1,filterFun=function(x) x$name=='does not get TPT' & x$isLeaf)
+  # D$Set(notxend=0)
+  # D$Set(notxend=1,filterFun=function(x) x$name=='no ATT' & x$isLeaf)
+  # D$Set(notxend=1,filterFun=function(x) x$name=='does not get TPT' & x$isLeaf)
   
   return(D)
 }
@@ -164,14 +164,15 @@ SOC$name <- 'Standard of care pathway'
 ## # check = check
 
 
-labdat <- c('p','cost','cost.screen',	'cost.tpt','cost.tb.assessment','cost.att','cost.ppd', 'cost.nhs',	
-            'screen', 'igra',	'ltbi', 'noltbi', 'tpt', 'ltbinotpt', 'noltbinotpt', 'prevtbdx', 'coprevtb','att',
-            'noatt', 'attend', 'tptend', 'notxend', 'check')
+labdat <- c('p','cost',	'cost.ppd',	'cost.nhs',
+            'screen', 'igra',	'ltbi', 
+            'tpt', 'prevtbdx', 'coprevtb','att',  'attend', 'tptend', 'check')
 
 
 tree2file(SOC,filename = here('indata/CSV/SOC.csv'),
-          'p','cost','cost.screen',	'cost.tpt','cost.tb.assessment','cost.att','cost.ppd', 'cost.nhs',	
-          'screen', 'igra',	'ltbi', 'noltbi', 'tpt', 'ltbinotpt', 'noltbinotpt', 'prevtbdx', 'coprevtb', 'att', 'noatt',  'attend', 'tptend', 'notxend','check')
+          'p','cost',	'cost.ppd',	'cost.nhs',
+          'screen', 'igra',	'ltbi', 
+          'tpt', 'prevtbdx', 'coprevtb','att',  'attend', 'tptend', 'check')
 
 
 ## create version with probs/costs
@@ -189,10 +190,9 @@ if(file.exists(fn)){
   SOC$Set(check=0,filterFun=function(x) length(x$children)>0)
   ## save out
   tree2file(SOC,filename = here('indata/CSV/SOC2.csv'),
-            'p','cost.screen',	'cost.tpt','cost.tb.assessment',
-            'cost.att','cost.ppd', 'cost.nhs','cost',	
-            'screen', 'igra',	'ltbi', 'noltbi', 'tpt',
-            'ltbinotpt', 'noltbinotpt', 'prevtbdx', 'coprevtb','att', 'noatt',  'attend', 'tptend', 'notxend', 'check')
+            'p','cost',	'cost.ppd',	'cost.nhs',
+            'screen', 'igra',	'ltbi', 
+            'tpt', 'prevtbdx', 'coprevtb','att',  'attend', 'tptend', 'check')
 }
 
 
@@ -207,7 +207,7 @@ SOC$Set(notx = notx)
 
 ## this gives us 3 outcome functions: tpt,att, notx, which are exhaustive
 labz[,sum(tptend==1)] + labz[,sum(attend==1)] + sum(notx) == sum(leaves) #only 1 on leaves
-labz[,sum(tptend==1)] + labz[,sum(attend==1)] + labz[,sum(notxend==1)] == sum(leaves) #BUG?
+# labz[,sum(tptend==1)] + labz[,sum(attend==1)] + labz[,sum(notxend==1)] == sum(leaves) #BUG?
 # labz[,sum(tptend==1)] + labz[,sum(attend==1)] + labz[,sum(notxend==1)] == nrow(labz) #check
 ##  & exclusive:
 labz[tptend>1 & attend > 1]
@@ -220,8 +220,9 @@ INT <- Clone(SOC)
 INT$name <- 'Intervention model'
 
 tree2file(INT,filename = here('indata/CSV/INT.csv'),
-          'p','cost','cost.screen',	'cost.tpt','cost.tb.assessment','cost.att','cost.ppd', 'cost.nhs',	
-          'screen', 'igra',	'ltbi', 'noltbi', 'tpt', 'ltbinotpt', 'noltbinotpt', 'prevtbdx', 'coprevtb','att', 'noatt',  'attend', 'tptend', 'notxend', 'check')
+          'p','cost',	'cost.ppd',	'cost.nhs',
+          'screen', 'igra',	'ltbi', 
+          'tpt', 'prevtbdx', 'coprevtb','att',  'attend', 'tptend', 'check')
 
 
 ## create version with probs/costs
@@ -240,8 +241,9 @@ if(file.exists(fn)){
   INT$Set(check=0,filterFun=function(x) length(x$children)>0)
   ## save out
   tree2file(INT,filename = here('indata/CSV/INT2.csv'),
-            'p','cost.screen',	'cost.tpt','cost.tb.assessment','cost.att','cost.ppd', 'cost.nhs','cost',	
-            'screen', 'igra',	'ltbi', 'noltbi', 'tpt', 'ltbinotpt', 'noltbinotpt', 'prevtbdx', 'coprevtb','att',  'attend', 'tptend', 'notxend', 'noatt', 'check')
+            'p','cost',	'cost.ppd',	'cost.nhs',
+            'screen', 'igra',	'ltbi', 
+            'tpt', 'prevtbdx', 'coprevtb','att',  'attend', 'tptend', 'check')
 }
 
 

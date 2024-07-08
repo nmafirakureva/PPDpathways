@@ -107,6 +107,8 @@ RES <- PSAloop(Niter = Nruns, parms, smpsd, DR, zero.nonscreen.costs = TRUE, ver
 summary(RES$problem)
 RES[,problem:=NULL]
 
+
+
 ## ===== inspect
 RES[,mean(int.CC-soc.CC)]
 RES[,mean(int.deaths-soc.deaths)] #fewer deaths
@@ -119,6 +121,8 @@ RES[mid.notes<100 & mid.notes>30,mean(int.CC-soc.CC)]
 RES[mid.notes<100 & mid.notes>30,mean(Q.int - Q.soc)]
 RES[mid.notes<100 & mid.notes>30,mean(int.CC-soc.CC)/mean(dQ)]/1e3 # 1M
 
+## Martinez estimate for UK
+## 144 32 342
 
 
 
