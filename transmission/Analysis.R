@@ -9,77 +9,77 @@ tt <- seq(from=0, to=10, by=0.1)  #time frame to run over
 y <- runmodel(tt,parms)           #run model
 head(y)
 
-## example use of using 1st row of churn samples
-parms <- revise.flow.parms(parms,smpsd,1) #change flow parameter to 1st row of samples
-y <- runmodel(tt,parms)           #run model
-tail(y)
+## ## example use of using 1st row of churn samples
+## parms <- revise.flow.parms(parms,smpsd,1) #change flow parameter to 1st row of samples
+## y <- runmodel(tt,parms)           #run model
+## tail(y)
 
-## trying with tree parameters also
-parms <- revise.HE.parms(parms,DR,1,arm='soc')
-y <- runmodel(tt,parms)           #run model
-tail(y)
+## ## trying with tree parameters also
+## parms <- revise.HE.parms(parms,DR,1,arm='soc')
+## y <- runmodel(tt,parms)           #run model
+## tail(y)
 
-parms <- revise.HE.parms(parms,DR,1,arm='int')
-y <- runmodel(tt,parms)           #run model
-tail(y)
-
-
-## run test NOTE breaks
-parms$staticfoi <- -1
-tt <- seq(from=0, to=50, by=0.1)  #time frame to run over
-y <- runmodel(tt,parms)           #run model
-ydm <- output2dt(y)
-## ydm[!is.na(population),unique(variable)] #all TB states
-
-## PPD look:
-pop <- ydm[!is.na(population),.(value=sum(value)),by=.(t,population)]
-popt <- pop[population!='previously detained',.(value=sum(value)),by=t] #total
-ggplot(popt,aes(t,value))+geom_line()+ylim(c(0,NA))
-
-ggplot(pop[population!='previously detained'],aes(t,value,col=population))+
-  geom_line()+ylim(c(0,NA))
-
-## TB look:
-tbpop <- ydm[!is.na(population) & population!='previously detained',
-             .(value=sum(value)),
-             by=.(t,variable)]
-ggplot(tbpop,aes(t,value,col=variable))+
-  geom_line()+facet_wrap(~variable,scales='free')
-
-tbpopf <- ydm[!is.na(population) & population!='previously detained',
-             .(value=sum(value)),
-             by=.(t,variable,population)]
-ggplot(tbpopf,aes(t,value,col=population))+
-  geom_line()+facet_wrap(~variable,scales='free')
-
-## TPT look:
-tptpop <- ydm[!is.na(population) & population!='previously detained',
-             .(value=sum(value)),
-             by=.(t,tpt,population)]
-ggplot(tptpop,aes(t,value,col=tpt))+
-  geom_line()+facet_wrap(~population,scales='free')
+## parms <- revise.HE.parms(parms,DR,1,arm='int')
+## y <- runmodel(tt,parms)           #run model
+## tail(y)
 
 
-## Other outputs:
-ggplot(ydm[variable %in% others],aes(t,value,col=variable))+
-  geom_line()+facet_wrap(~variable,scales='free')
+## ## run test NOTE breaks
+## parms$staticfoi <- -1
+## tt <- seq(from=0, to=50, by=0.1)  #time frame to run over
+## y <- runmodel(tt,parms)           #run model
+## ydm <- output2dt(y)
+## ## ydm[!is.na(population),unique(variable)] #all TB states
 
-## ============= diff plot  =============
+## ## PPD look:
+## pop <- ydm[!is.na(population),.(value=sum(value)),by=.(t,population)]
+## popt <- pop[population!='previously detained',.(value=sum(value)),by=t] #total
+## ggplot(popt,aes(t,value))+geom_line()+ylim(c(0,NA))
 
-parms$staticfoi <- -1            #dynamic
-parms$int_time <- 50             #fix
-ydb <- diffdata(parms)
+## ggplot(pop[population!='previously detained'],aes(t,value,col=population))+
+##   geom_line()+ylim(c(0,NA))
 
-ggplot(ydb[variable %in% others],aes(t,value,col=variable,lty=arm))+
-  geom_line()+facet_wrap(~variable,scales='free')
+## ## TB look:
+## tbpop <- ydm[!is.na(population) & population!='previously detained',
+##              .(value=sum(value)),
+##              by=.(t,variable)]
+## ggplot(tbpop,aes(t,value,col=variable))+
+##   geom_line()+facet_wrap(~variable,scales='free')
 
-ggsave(here('transmission/plots/p_illustrate_dyn.png'),w=7,h=5)
+## tbpopf <- ydm[!is.na(population) & population!='previously detained',
+##              .(value=sum(value)),
+##              by=.(t,variable,population)]
+## ggplot(tbpopf,aes(t,value,col=population))+
+##   geom_line()+facet_wrap(~variable,scales='free')
+
+## ## TPT look:
+## tptpop <- ydm[!is.na(population) & population!='previously detained',
+##              .(value=sum(value)),
+##              by=.(t,tpt,population)]
+## ggplot(tptpop,aes(t,value,col=tpt))+
+##   geom_line()+facet_wrap(~population,scales='free')
+
+
+## ## Other outputs:
+## ggplot(ydm[variable %in% others],aes(t,value,col=variable))+
+##   geom_line()+facet_wrap(~variable,scales='free')
+
+## ## ============= diff plot  =============
+
+## parms$staticfoi <- -1            #dynamic
+## parms$int_time <- 50             #fix
+## ydb <- diffdata(parms)
+
+## ggplot(ydb[variable %in% others],aes(t,value,col=variable,lty=arm))+
+##   geom_line()+facet_wrap(~variable,scales='free')
+
+## ggsave(here('transmission/plots/p_illustrate_dyn.png'),w=7,h=5)
 
 ## ============= HE workflow =============
 
 ## NOTE LTBI & foi parameters
-parms$parm_frac_L <- 0.2
-parms <- revise.flow.parms(parms,smpsd,1) #use some real flow parms
+## parms$parm_frac_L <- 0.2
+## parms <- revise.flow.parms(parms,smpsd,1) #use some real flow parms
 
 
 
@@ -101,7 +101,7 @@ parms <- revise.flow.parms(parms,smpsd,1) #use some real flow parms
 ## ====================
 ## TODO adjust hyperparms for foi and disease to match data
 Nruns <- 1e3
-parms$staticfoi <- -1 # dynamic=-1
+## parms$staticfoi <- -1 # dynamic=-1
 set.seed(sd)
 RES <- PSAloop(Niter = Nruns, parms, smpsd, DR, zero.nonscreen.costs = TRUE, verbose = FALSE)
 summary(RES$problem)
@@ -159,13 +159,14 @@ tabout <- RES[, .( # entries!
   soc.Q = Q.soc, int.Q = Q.int, inc.Q = Q.int - Q.soc
 )]
 tabout <- tabout[,lapply(.SD,function(x)1e4*x/entries)] #per 10K entries
+tabout[, c("soc.CC0", "int.CC0", "inc.CC0") := .(soc.CC0 / 1e2, int.CC0 / 1e2, inc.CC0 / 1e2)] # NOTE
 tabout[, entries := NULL]
 tabout[,id:=1:nrow(tabout)]
 tabout <- melt(tabout, id = "id")
 tabout[, c("arm", "quantity") := tstrsplit(variable, split = "\\.")]
 tabout <- tabout[,.(mid=mean(value),lo=lo(value),hi=hi(value)),by=.(arm,quantity)] #
 tabout[,txt:=brkt(mid,lo,hi)]
-## TODO may need tweaking for costs and for format
+## TODO formatting?
 tabout <- dcast(tabout, quantity ~ arm, value.var = "txt")
 tabout <- merge(tabout, tabkey, by = "quantity")
 tabout <- tabout[
@@ -192,7 +193,7 @@ ggsave(file=here('transmission/plots/p_CE1.png'),w=7,h=7)
 ## make CEAC
 ll <- seq(from=0,to=1e5,by=100)
 cc <- make.ceac(RES[,.(Q=dQ,P=int.CC-soc.CC)],ll)
-ccr <- make.ceac(RES[,## mid.notes<100 & mid.notes>30,
+ccr <- make.ceac(RES[mid.notes<100 & mid.notes>30,
                      .(Q=dQ,P=int.CC-soc.CC)],
                  ll)
 D <- data.table(x=ll,all=cc,restricted=ccr)
@@ -249,14 +250,10 @@ ggplot(smyi, aes(TBIC, ICER)) +
   expand_limits(y = 0)
 
 
-
-
 ## looking at SAVI
 save(RES,file='~/Dropbox/Holocron/tmp/RES.Rdata')
 load('~/Dropbox/Holocron/tmp/RES.Rdata')
 
-
-RES
 
 ## ============ VOI stuff =========
 ## effects
