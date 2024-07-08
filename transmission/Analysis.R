@@ -100,8 +100,9 @@ parms <- revise.flow.parms(parms,smpsd,1) #use some real flow parms
 ## TODO adjust hyperparms for foi and disease to match data
 parms$staticfoi <- -1            #dynamic=-1
 RES <- PSAloop(Niter = 1e3, parms, smpsd, DR, zero.nonscreen.costs = TRUE, verbose = FALSE)
-
 summary(RES$problem)
+
+RES[,problem:=NULL]
 
 ## ===== inspect
 RES[,mean(int.CC-soc.CC)]
@@ -114,6 +115,58 @@ RES[,mean(int.CC-soc.CC)/mean(dQ)]/1e3 #ICER ~ 777K; static + w/o multiplier + w
 RES[mid.notes<100 & mid.notes>30,mean(int.CC-soc.CC)]
 RES[mid.notes<100 & mid.notes>30,mean(Q.int - Q.soc)]
 RES[mid.notes<100 & mid.notes>30,mean(int.CC-soc.CC)/mean(dQ)]/1e3 # 1M
+
+
+
+
+## ======== table
+tabkey <- c(
+  "Undiscounted Costs" = "CC0",
+  "QALYs" = "Q",
+  "ATT courses" = "cATT",
+  "TPT courses" = "cTPT",
+  "Incident TB" = "ccases",
+  "Life-years lost to TB (discounted)" = "dLYL",
+  "TB deaths" = "deaths",
+  "QoL lost to TB (discounted)" = "qoldec"
+)
+tabkey <- data.table(name=names(tabkey),quantity=tabkey)
+tabout <- RES[, .( # entries!
+  entries = inflow * 70,
+  ## TPT courses
+  soc.cTPT, int.cTPT, inc.cTPT = int.cTPT - soc.cTPT,
+  ## ATT courses
+  soc.cATT = soc.cATTtp + 0, int.cATT = int.cATTtp + 0, inc.cATT = int.cATTtp - soc.cATTtp,
+  ## Costs
+  soc.CC0, int.CC0, inc.CC0 = int.CC0 - soc.CC0,
+  ## Incident TB
+  soc.ccases, int.ccases, inc.ccases = int.ccases - soc.ccases,
+  ## TB deaths
+  soc.deaths, int.deaths, inc.deaths = int.deaths - soc.deaths,
+  ## TB LYL
+  soc.dLYL, int.dLYL, inc.dLYL = int.dLYL - soc.dLYL,
+  ## TB QoL loss
+  soc.qoldec, int.qoldec, inc.qoldec = int.qoldec - soc.qoldec,
+  ## TB QALYs
+  soc.Q = Q.soc, int.Q = Q.int, inc.Q = Q.int - Q.soc
+)]
+tabout <- tabout[,lapply(.SD,function(x)1e4*x/entries)] #per 10K entries
+tabout[, entries := NULL]
+tabout[,id:=1:nrow(tabout)]
+tabout <- melt(tabout, id = "id")
+tabout[, c("arm", "quantity") := tstrsplit(variable, split = "\\.")]
+tabout <- tabout[,.(mid=mean(value),lo=lo(value),hi=hi(value)),by=.(arm,quantity)] #
+tabout[,txt:=brkt(mid,lo,hi)]
+## TODO may need tweaking for costs and for format
+tabout <- dcast(tabout, quantity ~ arm, value.var = "txt")
+tabout <- merge(tabout, tabkey, by = "quantity")
+tabout <- tabout <- tabout[
+  c("cTPT", "cATT", "CC0", "ccases", "deaths", "dLYL", "qoldec", "Q"),
+  .(name, soc, int, inc)
+] # reorder
+
+fwrite(tabout,file=here('transmission/plots/tabout.csv'))
+
 
 ## =========== OUTPUTS & PLOTS ==================
 
@@ -235,3 +288,14 @@ PMS <- RES[,.(
   uc_entry_notx_L.int, uc_entry_notx_no.int
 )]
 fwrite(PMS,file='~/Downloads/PMS.csv')
+
+ 
+
+
+
+## =========== loop for SAs
+## TODO
+parms$staticfoi <- -1            #dynamic=-1
+RES <- PSAloop(Niter = 1e3, parms, smpsd, DR, zero.nonscreen.costs = TRUE, verbose = FALSE)
+
+

@@ -17,6 +17,20 @@ load(here('outdata/DR.Rdata'))
 DRS <- fread(here('outdata/DRS.csv'))
 
 
+
+## helpers
+lo <- function(x) quantile(x, probs = 0.025)
+hi <- function(x) quantile(x, probs = 1 - 0.025)
+## rot45 <- theme(axis.text.x = element_text(angle = 45, hjust = 1))
+brkt <- function(M, L, H, ndp = 0) {
+  paste0(
+    round(M, ndp), " (",
+    round(L, ndp), " to ",
+    round(H, ndp), ")"
+  )
+}
+
+
 testfun <- function(times, p) {
   if(p<0) warning('p<0!')
   times
