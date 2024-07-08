@@ -1,6 +1,8 @@
 library(here) #NOTE this uses petedodd/ecrins: keep versions in sync!
 source(here('transmission/utilities.R'))
-set.seed(1234)
+
+sd <- as.integer(1234)
+set.seed(sd)
 
 ## example output
 tt <- seq(from=0, to=10, by=0.1)  #time frame to run over
@@ -98,8 +100,9 @@ parms <- revise.flow.parms(parms,smpsd,1) #use some real flow parms
 
 ## ====================
 ## TODO adjust hyperparms for foi and disease to match data
+Nruns <- 1e3
 parms$staticfoi <- -1            #dynamic=-1
-RES <- PSAloop(Niter = 1e3, parms, smpsd, DR, zero.nonscreen.costs = TRUE, verbose = FALSE)
+RES <- PSAloop(Niter = Nruns, parms, smpsd, DR, zero.nonscreen.costs = TRUE, verbose = FALSE)
 summary(RES$problem)
 
 RES[,problem:=NULL]
@@ -295,7 +298,65 @@ fwrite(PMS,file='~/Downloads/PMS.csv')
 
 ## =========== loop for SAs
 ## TODO
-parms$staticfoi <- -1            #dynamic=-1
-RES <- PSAloop(Niter = 1e3, parms, smpsd, DR, zero.nonscreen.costs = TRUE, verbose = FALSE)
 
+set.seed(sd)
 
+SA <- list()
+## bascase results from above
+SA[[1]] <- data.table(
+  analysis = "base case",
+  ICER = RES[, mean(int.CC - soc.CC) / mean(dQ)],
+  ICERr = RES[
+    mid.notes < 100 & mid.notes > 30,
+    mean(int.CC - soc.CC) / mean(dQ)
+  ]
+)
+## Static model
+set.seed(sd)
+RES1 <- PSAloop(
+  Niter = Nruns, parms, smpsd, DR,
+  static = TRUE, community = TRUE, posttb = TRUE
+)
+SA[[2]] <- data.table(
+  analysis = "Static model",
+  ICER = RES1[, mean(int.CC - soc.CC) / mean(dQ)],
+  ICERr = RES1[
+    mid.notes < 100 & mid.notes > 30,
+    mean(int.CC - soc.CC) / mean(dQ)
+  ]
+)
+## Static model, no community transmission
+set.seed(sd)
+RES1 <- PSAloop(
+  Niter = Nruns, parms, smpsd, DR,
+  static = TRUE, community = FALSE, posttb = TRUE
+)
+SA[[3]] <- data.table(
+  analysis = "Static model, no community transmission",
+  ICER = RES1[, mean(int.CC - soc.CC) / mean(dQ)],
+  ICERr = RES1[
+    mid.notes < 100 & mid.notes > 30,
+    mean(int.CC - soc.CC) / mean(dQ)
+  ]
+)
+## Static model, no community transmission or post-TB effects
+set.seed(sd)
+RES1 <- PSAloop(
+  Niter = Nruns, parms, smpsd, DR,
+  static = TRUE, community = FALSE, posttb = FALSE
+)
+SA[[4]] <- data.table(
+  analysis = "Static model, no community transmission or post-TB effects",
+  ICER = RES1[, mean(int.CC - soc.CC) / mean(dQ)],
+  ICERr = RES1[
+    mid.notes < 100 & mid.notes > 30,
+    mean(int.CC - soc.CC) / mean(dQ)
+  ]
+)
+## join
+SA <- rbindlist(SA)
+SA[, `ICER, unrestricted TB rates` := paste0(round(ICER))]
+SA[, `ICER, restricted TB rates` := paste0(round(ICERr))]
+SA[, c("ICER", "ICERr") := NULL]
+
+fwrite(SA,file=here('transmission/plots/SA.csv'))

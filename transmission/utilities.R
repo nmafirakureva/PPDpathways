@@ -421,7 +421,13 @@ run.HE.socint <- function(parms,DR,j,
 }
 
 ## ## ============= HE workflow =============
-PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=FALSE){
+PSAloop <- function(Niter=4e3,parms,smpsd,DR,
+                    zero.nonscreen.costs=FALSE,verbose=FALSE,
+                    static=FALSE,community=TRUE,posttb=TRUE){
+  if(!static & community & posttb) cat('Running basecase analysis!\n')
+  if (static) cat("Running static model!\n")
+  if (!community) cat("Running with community transmission turned off!\n")
+  if (!posttb) cat("Running with post-TB effects turned off!\n")
   if(Niter>nrow(smpsd)){
     cat('Niter>nrow(smpsd): resampling extra replicates!\n')
     xtra <- smpsd[sample(nrow(smpsd),Niter-nrow(smpsd),replace=TRUE)]
@@ -459,6 +465,13 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,zero.nonscreen.costs=FALSE,verbose=
     for(nm in names(newp)) parms[[nm]] <- newp[[nm]] #safety
     ## update initial state:
     parms <- revise.instates(parms)
+    ## sensitivity analyses
+    if(static) parms$staticfoi <- +1
+    if (!community) parms$m <- 1 #this has 1 added to it
+    if (!posttb){
+      parms$mHR <- 1
+      parms$hrqolptb <- 0
+    }
     ## === run model:
     ANS <- run.HE.socint(parms,DR,j,zero.nonscreen.costs=zero.nonscreen.costs)
     ## capture parms also
