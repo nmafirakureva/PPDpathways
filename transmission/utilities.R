@@ -401,6 +401,7 @@ run.HE.socint <- function(parms,DR,j,
       soc.ccasesout=y[end,"casesout"],
       soc.cTPT=y[end,'cTPT'],
       soc.cATTtp=y[end,'cATTtp'],
+      soc.cATTfp=y[end,'cATTfp'],
       ## INT
       int.CC0=yi[end,"CC0"], ## * ratio,
       int.CC=yi[end,"CC"], ## * ratio,
@@ -410,7 +411,8 @@ run.HE.socint <- function(parms,DR,j,
       int.ccases=yi[end,"cases"],
       int.ccasesout=yi[end,"casesout"],
       int.cTPT=yi[end,'cTPT'],
-      int.cATTtp=yi[end,'cATTtp']
+      int.cATTtp=yi[end,'cATTtp'],
+      int.cATTfp = yi[end, "cATTfp"]
     )
     RES[,dQ:=(soc.qoldec+soc.dLYL-int.qoldec-int.dLYL)]
     RES[,Q.soc:=soc.qoldec+soc.dLYL]
@@ -466,7 +468,7 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,
     ## update initial state:
     parms <- revise.instates(parms)
     ## sensitivity analyses
-    if(static) parms$staticfoi <- +1
+    parms$staticfoi <- ifelse(static,+1,-1)
     if (!community) parms$m <- 1 #this has 1 added to it
     if (!posttb){
       parms$mHR <- 1

@@ -101,10 +101,10 @@ parms <- revise.flow.parms(parms,smpsd,1) #use some real flow parms
 ## ====================
 ## TODO adjust hyperparms for foi and disease to match data
 Nruns <- 1e3
-parms$staticfoi <- -1            #dynamic=-1
+parms$staticfoi <- -1 # dynamic=-1
+set.seed(sd)
 RES <- PSAloop(Niter = Nruns, parms, smpsd, DR, zero.nonscreen.costs = TRUE, verbose = FALSE)
 summary(RES$problem)
-
 RES[,problem:=NULL]
 
 ## ===== inspect
@@ -139,7 +139,8 @@ tabout <- RES[, .( # entries!
   ## TPT courses
   soc.cTPT, int.cTPT, inc.cTPT = int.cTPT - soc.cTPT,
   ## ATT courses
-  soc.cATT = soc.cATTtp + 0, int.cATT = int.cATTtp + 0, inc.cATT = int.cATTtp - soc.cATTtp,
+  soc.cATT = soc.cATTtp + soc.cATTfp, int.cATT = int.cATTtp + int.cATTfp,
+  inc.cATT = int.cATTtp + int.cATTfp - soc.cATTtp - soc.cATTfp,
   ## Costs
   soc.CC0, int.CC0, inc.CC0 = int.CC0 - soc.CC0,
   ## Incident TB
@@ -163,10 +164,11 @@ tabout[,txt:=brkt(mid,lo,hi)]
 ## TODO may need tweaking for costs and for format
 tabout <- dcast(tabout, quantity ~ arm, value.var = "txt")
 tabout <- merge(tabout, tabkey, by = "quantity")
-tabout <- tabout <- tabout[
+tabout <- tabout[
   c("cTPT", "cATT", "CC0", "ccases", "deaths", "dLYL", "qoldec", "Q"),
   .(name, soc, int, inc)
 ] # reorder
+print(tabout)
 
 fwrite(tabout,file=here('transmission/plots/tabout.csv'))
 
@@ -297,10 +299,6 @@ fwrite(PMS,file='~/Downloads/PMS.csv')
 
 
 ## =========== loop for SAs
-## TODO
-
-set.seed(sd)
-
 SA <- list()
 ## bascase results from above
 SA[[1]] <- data.table(
