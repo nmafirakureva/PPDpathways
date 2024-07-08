@@ -121,6 +121,8 @@ RES[mid.notes<100 & mid.notes>30,mean(int.CC-soc.CC)]
 RES[mid.notes<100 & mid.notes>30,mean(Q.int - Q.soc)]
 RES[mid.notes<100 & mid.notes>30,mean(int.CC-soc.CC)/mean(dQ)]/1e3 # 1M
 
+RES[,.(mean(mid.notes),quantile(mid.notes,0.025),quantile(mid.notes,0.975))]
+
 ## Martinez estimate for UK
 ## 144 32 342
 

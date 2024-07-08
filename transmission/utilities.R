@@ -204,9 +204,9 @@ revise.HE.parms <- function(parms, # original parameter template
   ## NOTE costs only accrue post intervention in model so don't need 2 lots
   ## COLLATE DATA:
   A <- list(
-    uc_attppd = 20e3 * !zero.nonscreen.costs, # ATT for those found passively within the system
-    uc_attout = 15e3 * !zero.nonscreen.costs, # ATT following release
-    ## hrqol = 0.333, #NOTE now part of hyperparms
+    ## ATT for those found passively within the system
+    uc_attppd = DR[id==j & tb=='TBD']$int_att_cost * !zero.nonscreen.costs, 
+    uc_attout = 10e3 * !zero.nonscreen.costs, # ATT following release
 
     ## ------- BOTH
     inflow_toATT_TB0 = DR[id==j & tb=='TBD']$soc_att_check, # NOTE fp ATT doesn't affect state
