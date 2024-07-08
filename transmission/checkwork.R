@@ -6,6 +6,8 @@ DRS[quantity=='cost' & outcome=='tpt'] #
 
 ## incoming state?
 ## inflow split: parms from doing library(ecrins); data(parms)
+parms$foi <- qfun(runif(1), hyperparms[["foi"]]) # median
+parms <- revise.instates(parms)                  #uses FOI
 IV <- with(data = parms, {
   c(
     parm_frac_SD, parm_frac_CD,

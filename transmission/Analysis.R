@@ -360,4 +360,11 @@ SA[, `ICER, unrestricted TB rates` := paste0(round(ICER))]
 SA[, `ICER, restricted TB rates` := paste0(round(ICERr))]
 SA[, c("ICER", "ICERr") := NULL]
 
-fwrite(SA,file=here('transmission/plots/SA.csv'))
+fwrite(SA, file = here("transmission/plots/SA.csv"))
+
+
+## ========== Authors only:
+
+## flz <- c("SA.csv", "tabout.csv")
+## for(fn in flz)
+##   upload.to.sheets(here('transmission/plots/'),fn,shid)

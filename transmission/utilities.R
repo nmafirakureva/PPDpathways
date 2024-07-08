@@ -4,6 +4,8 @@ library(data.table)
 library(stringr)
 library(ggplot2)
 library(scales)
+library(glue)
+## library(googlesheets4) #only for authors to upload
 
 source(system.file("extdata", "parameters.R", package="ecrins")) #this loads some fns for PSA
 data(parms)                       #some default parameters
@@ -173,19 +175,21 @@ revise.instates <- function(parms,tscale=20){
   parm_frac_CD <- ome * (lam / 30) / Delt
   parm_frac_epTB <- ome * (lam / 15) / Delt
   parm_frac_lpTB <- ome * (2 * lam / 15) / Delt
+  totparm <- parm_frac_U+parm_frac_E+parm_frac_L+
+    parm_frac_ATT+parm_frac_SD+parm_frac_CD+parm_frac_epTB+parm_frac_lpTB
   ## check
   ## print(parm_frac_U+parm_frac_E+parm_frac_L+parm_frac_ATT+
   ##       parm_frac_SD+parm_frac_CD+parm_frac_epTB+parm_frac_lpTB)
   ## implement in parameter object
   ## inflow & initial state
-  parms$parm_frac_U <- parms$parm_ifrac_U <- parm_frac_U
-  parms$parm_frac_E <- parms$parm_ifrac_E <- parm_frac_E
-  parms$parm_frac_L <- parms$parm_ifrac_L <- parm_frac_L
-  parms$parm_frac_ATT <- parms$parm_ifrac_ATT <- parm_frac_L
-  parms$parm_frac_SD <- parms$parm_ifrac_SD <- parm_frac_SD
-  parms$parm_frac_CD <- parms$parm_ifrac_CD <- parm_frac_CD
-  parms$parm_frac_epTB <- parms$parm_ifrac_epTB <- parm_frac_epTB
-  parms$parm_frac_lpTB <- parms$parm_ifrac_lpTB <- parm_frac_lpTB
+  parms$parm_frac_U <- parms$parm_ifrac_U <- parm_frac_U / totparm
+  parms$parm_frac_E <- parms$parm_ifrac_E <- parm_frac_E / totparm
+  parms$parm_frac_L <- parms$parm_ifrac_L <- parm_frac_L / totparm
+  parms$parm_frac_ATT <- parms$parm_ifrac_ATT <- parm_frac_ATT / totparm
+  parms$parm_frac_SD <- parms$parm_ifrac_SD <- parm_frac_SD / totparm
+  parms$parm_frac_CD <- parms$parm_ifrac_CD <- parm_frac_CD / totparm
+  parms$parm_frac_epTB <- parms$parm_ifrac_epTB <- parm_frac_epTB / totparm
+  parms$parm_frac_lpTB <- parms$parm_ifrac_lpTB <- parm_frac_lpTB / totparm
   parms
 }
 
@@ -499,3 +503,17 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,
   ## return
   RES
 }
+
+
+## ## =============== Authors only:
+## yourl <- "https://docs.google.com/spreadsheets/d/1XYIWB4NAYUzLNESdLBDGqviXcDP_s0RIIDqmQKa5T7I/edit?gid=1037492332#gid=1037492332"
+
+## shid <- as.character(as_sheets_id(yourl))
+
+## ## utility function
+## upload.to.sheets <- function(basename, filename, sheetid) {
+##   filename <- gsub("\\.csv$", "", filename) # safety in case csv included at and
+##   fn <- glue(basename) + filename + ".csv"
+##   tmp <- fread(file = fn)
+##   write_sheet(tmp, sheetid, sheet = filename)
+## }
