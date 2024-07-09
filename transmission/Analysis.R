@@ -216,7 +216,7 @@ GP <- ggplot(D,aes(x,value,col=variable)) +
   ## scale_color_colorblind()+
   scale_colour_manual(values=cbPalette)+
   ylab('Probability cost-effective')+
-  xlab('Cost-effectiveness threshold (USD/DALY)')+
+  xlab('Cost-effectiveness threshold (GBP/QALY gained)')+
   ggpubr::grids()
 GP
 
