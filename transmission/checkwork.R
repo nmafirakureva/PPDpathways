@@ -56,25 +56,35 @@ avcint/avoint
 (dLE <- (1-exp(-40*3.5/1e2))/(3.5/100)) #discounted life-exp
 cdr <- 0.9                              #CDR
 drn <- 3                                #untreated TB durn
-tef <- 0.17                             #efficacy TPT in IGRA+
-pgn <- 0.1                              #progression risk
+tef <- 1-0.17                             #efficacy TPT in IGRA+
+pgn <- 0.05                              #progression risk
 txf <- 0.05                             #CFR on tx
-cfr <- 0.4 * (1-cdr)+0*cdr*txf            #CFR
+cfr <- 0.4 * (1 - cdr) + 0 * cdr * txf # CFR (for ACF)
+cfr2 <- 0.4 * (1 - cdr) + 1 * cdr * txf # CFR (for ATT)
 yil <- drn * (1-cdr)                    #duration ill
 dec <- 1/3                              #qol decrement
 tptcov <- 0.3                          #TPT cov in TBI+ INT (assumed 0 SOC)
 attcov <- 0.4                           #ATT cov in TBD+ INT (assumed 0 SOC)
-(UCatt <- (avcint/avoint)[1])             #unit cost ATT
+## (UCatt <- (avcint/avoint)[1])             #unit cost ATT
+UCatt <- 50e3
 
+dq1 <- IFS[1] * attcov * (cfr) * dLE  # mortality = TBD x fraction immediately found x cfr=(CFRx(1-CDR)) x dLE
+dq2 <- IFS[2] * (tptcov) * (pgn * tef) * (cfr2) * dLE  # mortality = TBI x fraction TPT x TPT eff x progn x cfr x dLE
+dq3 <- IFS[1] * dec * yil  # qol=TBD x dec x (durn as T x 1-CDR)
+dq4 <- IFS[2] * dec * (pgn * tef) * (yil) # prevented cases qol
 
-dq <- IFS[1] * attcov * (cfr) * dLE + # mortality = TBD x fraction immediately found x cfr=(CFRx(1-CDR)) x dLE
-  IFS[2] * (tptcov) * (pgn*tef) * (cfr) * dLE + #mortality = TBI x fraction TPT x TPT eff x progn x cfr x dLE
-  IFS[1] * dec * yil +  #qol=TBD x dec x (durn as T x 1-CDR)
-  IFS[2] * dec * (pgn*tef) * (yil) #prevented cases qol
-(dc <- sum(avcint-avcsoc))         #difference per av. person: 'on the door costs'
-dc <- dc - IFS[2] * tptcov * (pgn*tef) * cdr * UCatt #UC saved of treating detected now prevented
-dc <- dc - IFS[1] * attcov * cdr * UCatt #UC saved of treating earlier (rather than later)
-(dc/dq)                              #90 M
+c(dq1,dq2,dq3,dq4)*1e4
+(dq <- sum(dq))
+
+## (dc <- sum(avcint - avcsoc)) # difference per av. person: 'on the door costs'
+dcd <- 462
+dc1 <- IFS[2] * tptcov * (pgn * tef) * cdr * UCatt # UC saved of treating detected now prevented
+dc2 <- IFS[1] * attcov * cdr * UCatt # UC saved of treating earlier (rather than later)
+c(dcd,dc1,dc2)
+
+dc <- dcd - dc1 - dc2
+
+(dc/dq)                              #50 M
 
 
 
