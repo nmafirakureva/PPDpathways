@@ -16,10 +16,8 @@ if(shell){
   shell <- FALSE #whether running from shell script or not
   ##sensitivity analyses (mostly for PT):
   ## '' = basecase
-  ## 'discr'='base'/'lo'/'hi'
-  ## 'cdr' = making cdr higher for incidence
-  ## 'txd' = making the completion influence tx/pt outcome
-  sacases <- c('','lo','tptru','hicoprev', 'ctryeff','ugaattcsts', 'cdr', 'hivprev')
+  ## 'noltfu'= improved TB presumption, GP assessment, clinical suspicion, NHS attendance, starting ATT, starting TPT
+  sacases <- c('','noltfu')
   SA <- sacases[1]
 }
 
@@ -31,14 +29,13 @@ library(tidyverse)
 source(here('R/ppd_pathways_tree.R'))           #tree structure and namings: also tree functions & libraries
 source(here('R/ppd_pathways_functions.R'))      #functions for tree parameters
 
+# SA<-'noltfu' # TOPDO: remober after testing quick way of switching on sensitivity analysis
 ## number of reps
 nreps <- 1e3
 set.seed(1234)
 
 ## attributes to use
 tblevels <- c('TBD','TBI', 'noTB') # TB disease, TB infection, no TB
-# ltbilevels <- c('LTBI','noLTBI') #LTBI, not LTBI
-# agelevels <- c('15-64','65-100')
 agelevels <- c('15-100')
 isoz <- c('GBR') #relevant countries
 
@@ -66,103 +63,65 @@ if(SA %in% c('hi','lo')){
 }
 
 ## prior parameters
-PD <- read.csv(here('indata/ProbParms2.csv')) #read in probability parameters
-AD <- read.csv(here('indata/DiagnosticAccuracy.csv')) #read in accuracy parameters
+PD <- read.csv(here('indata/ProbParms.csv')) #read in probability parameters
+PS <- read.csv(here('indata/ProbParmsFixed.csv')) #read in fixed parameters
 RD <- fread(gh('indata/RUParms.csv'))    #read resource use data
 CD <- fread(gh('indata/CostParms.csv'))    #read cost data
 
 names(PD)
+names(PS)
 names(RD)
 names(CD)
 
+unique(PD$ParameterName)
 names <- c("ParameterName", "Mean", "Range","Description","Source","SourceFull")
-names(PD) <- names(RD) <- names(CD) <- names
+names(PS) <- names(RD) <- names(CD) <- names
 
-PD1 <- PD |> 
-  filter(ParameterName != 'tb.prev') |>
-  mutate(ParameterName = paste0('soc.', ParameterName))
+PD.SOC <- PD |> 
+  mutate(NAME = case_when(
+    !grepl('tb.presum|.tpt|started.att|ltbi|verbal|prog.tb|nContacts|sens.|spec.', NAME) ~ paste0('soc.', NAME),
+    .default = NAME
+  ))
 
-PD2 <- PD |> 
-  filter(ParameterName != 'tb.prev') |>
-  mutate(ParameterName = paste0('int.', ParameterName))
+PD.INT <- PD |> 
+  mutate(NAME = case_when(
+    !grepl('tb.presum|.tpt|started.att|ltbi|verbal|prog.tb|nContacts|sens.|spec.', NAME) ~ paste0('int.', NAME),
+    .default = NAME
+  ))
 
-PD3 <- PD |> 
-  filter(ParameterName %in% c('tb.prev', 'ltbi.prev', 'prog.tb', 'progInf', 'progNInf')) 
-
-PD0 <- rbind(PD1, PD2, PD3, RD)
-
-PD0$NAME <- PD0$ParameterName
-
-PD0 <- PD0 |> 
-  mutate(Mean = as.numeric(Mean), Range = as.character(Range),
-         Median = ifelse(Range!='', paste0(Mean, ' (', Range, ')'), Range),
-         Median = ifelse(!is.na(as.numeric(Range)), '', Median)) 
-
-PD1 <- PD0 |> 
-  filter(Median != '') # parameters to be sampled
-
-PD2 <- PD0 |> 
-  filter(Median == '') # parameters to be fixed (no uncertainty estimates)
-
-tmp <- PD1 %>%
-  extract(Median, into = c("mid", "lo"), "([^(]+)\\s*[^0-9]+([0-9].*).") %>%
-  separate(lo,c("lo","hi"),"-") %>%
-  mutate_at(c("mid", "lo","hi"), as.numeric)
-
-tmp <- setDT(tmp)
-tmp1 <- getLNparms(tmp[,mid],(tmp[,hi]-tmp[,lo])^2/3.92^2,med=FALSE)
-tmp[,DISTRIBUTION:=paste0("LN(",tmp1$mu,",",tmp1$sig,")")] #LN distributions
-
-# tmp1 <- getAB(tmp[,mid],(tmp[,hi]-tmp[,lo])^2/3.92^2)
-# tmp[,DISTRIBUTION:=paste0("B(",tmp1$a,",",tmp1$b,")")] # Beta distributions
-# tmp[,DISTRIBUTION:=paste0("G(",tmp[,mid]^2/((tmp[,hi]-tmp[,lo])^2/3.92^2),",",((tmp[,hi]-tmp[,lo])^2/3.92^2)/tmp[,mid],")")] # Gamma distributions
-PD1 <- PD1 |> 
-  mutate(NAME=ParameterName,
-         DISTRIBUTION=tmp$DISTRIBUTION,
-         # DISTRIBUTION=ifelse(DISTRIBUTION=='LN(NA,NA)', NA, DISTRIBUTION))
-         DISTRIBUTION=ifelse(DISTRIBUTION=='B(NA,NA)', NA, DISTRIBUTION))
-
-## 
-PD1 <- PD1 |> 
-  filter(DISTRIBUTION!="")
+unique(PD.INT$NAME)
+PD0 <- rbind(PD.SOC, PD.INT)
 
 # Fixed parameters to wide format
-PD3 <- PD2 |> 
+PS.SOC <- PS |> 
+  mutate(ParameterName = paste0('soc.', ParameterName))
+
+PS.INT <- PS |> 
+  mutate(ParameterName = paste0('int.', ParameterName))
+
+unique(PD.INT$NAME)
+PS <- rbind(PS.SOC, PS.INT)
+
+PD1 <- PS |> 
   select(ParameterName, Mean) |>
   distinct() |> 
   pivot_wider(names_from = ParameterName, values_from = Mean) 
 
-# Diagnostic accuracy 
-tmp <- AD %>%
-  extract(mqrng, into = c("mid", "lo"), "([^(]+)\\s*[^0-9]+([0-9].*).") %>%
-  separate(lo,c("lo","hi"),"to") %>%
-  mutate_at(c("mid", "lo","hi"), as.numeric)
+PD1 <- rbind(
+  PS |> 
+    select(ParameterName, Mean),
+  RD |> 
+    select(ParameterName, Mean)
+  ) |>
+  distinct() |> 
+  pivot_wider(names_from = ParameterName, values_from = Mean) 
 
-tmp <- setDT(tmp)
-tmp1 <- getAB(tmp[,mid],(tmp[,hi]-tmp[,lo])^2/3.92^2)
-tmp[,DISTRIBUTION:=paste0("B(",tmp1$a,",",tmp1$b,")")] # Beta distributions
 
-AD1 <- tmp |> 
-  filter(grepl('symptom|any.abn.xray|xpert', NAME)) |>
+P <- PD0 |> 
   select(NAME, DISTRIBUTION) |> 
-  as.data.frame() 
-
-
-# convert into parameter object
-# P <- rbind(
-#   PD1 |> 
-#   select(NAME, DISTRIBUTION),
-#   AD1) |> 
-#   parse.parmtable(outfile='out.csv',
-#                   testdir = here('plots/test'))             
-
-P <- rbind(
-  PD1 |> 
-    select(NAME, DISTRIBUTION),
-  AD1) |> 
   parse.parmtable()
 
-names(P)
+# names(soc)
 
 ## make base PSA dataset
 set.seed(1234) #random number seed
@@ -170,22 +129,21 @@ set.seed(1234) #random number seed
 D0 <- makePSA(nreps,P)
 
 # some checks
-prob_vrz <- names(P)
-prob_vrz <- prob_vrz[grepl('verbal_screen_time', prob_vrz)]
-summary(D0[,..prob_vrz])
+summary(D0)
 
-## some probabilities are > 1, `quick fix` set to 1
-# TODO: check for better distribution assumptioms
-D0[, (prob_vrz) := lapply(.SD, function(x) ifelse(x > 1, 1, x)), .SDcols = prob_vrz]
-
+## check if any probabilities are > 1, 
 # Filter variables in prob_vrz that have values > 1
+prob_vrz <- names(P)
 impossible_values <- sapply(D0[, ..prob_vrz], function(x) any(x > 1))
 filtered_cols <- prob_vrz[impossible_values]
 
 # Summary of filtered columns
+# These are okay
 summary(D0[, ..filtered_cols])
 
-summary(D0[,.(ltbi.prev, prog.tb, progInf, progNInf)])
+## some probabilities are > 1, `quick fix` set to 1
+# TODO: check for better distribution assumptioms
+# D0[, (prob_vrz) := lapply(.SD, function(x) ifelse(x > 1, 1, x)), .SDcols = prob_vrz] # TODO: looks like a bug
 
 ## use these parameters to construct input data by attribute
 D0 <- makeAttributes(D0)
@@ -193,7 +151,7 @@ D0[,sum(value),by=.(isoz,id)] #CHECK
 D0[,sum(value),by=.(id, tb)] #CHECK
 
 # merge in fixed parameters
-D0 <- cbind(D0, PD3)
+D0 <- cbind(D0, PD1)
   
 ## read and make cost data
 rcsts <- CD
@@ -227,9 +185,29 @@ C <- MakeCostData(allcosts[iso3=='GBR'],nreps)               # make cost PSA NOT
 ## add cost data
 D <- merge(D0,C,by=c('id'),all.x=TRUE)       # merge into PSA (differentiated D and D0 to facilitate rerunning)
 
+if(SA == 'noltfu'){
+  # TB symptom screening
+  # D[,int.prop.tb.sympt.screen:=1] 
+  # TB symptoms at screening
+  D[,int.prop.presumtive.tb:=ifelse(tb=='TBD',1,1-spec.symptom)]
+  # Prison GP assessment
+  D[,int.prop.prison.gp.assessment:=1]
+  # D[,soc.prop.prison.gp.assessment:=1]
+  # Clinical suspicion of TB disease
+  # D[,soc.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.symptom)]
+  D[,int.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.any.abn.xray)]
+  # Attending NHS referral
+  D[,int.prop.attend.nhs.referral:=1]
+  # starting & completing ATT
+  D[,int.prop.starting.att:=1]
+  # D[,int.prop.completing.att:=1]
+  # # starting & completing TPT
+  D[,int.prop.starting.tpt:=1]
+  # D[,int.prop.completing.tpt:=1]
+} 
+
 ## compute other parameters (adds by side-effect)
 MakeTreeParms(D,P)
-
 
 names(D)[grepl('cost', names(D))]
 
@@ -285,7 +263,6 @@ all(D[, tptend.soc] == D[, soc_tpt_check])
 all(D[, notx.int] == D[, int_notx_check])
 all(D[, notx.soc] == D[, soc_notx_check])
 
-
 D[,table(tb)]
 
 ## create restricted PSA
@@ -323,7 +300,8 @@ DR[,c('soc_att_cost',
         int_notx_cost/int_notx_check
       )]
 
-save(DR,file=here('outdata/DR.Rdata'))
+fn1 <- glue(here('outdata/DR')) + SA + '.Rdata'
+save(DR,file=fn1)
 
 ## summary
 DRS <- DR[,lapply(.SD,mean),.SDcols=names(DR)[-c(1,2)],by=tb]
@@ -331,7 +309,8 @@ DRS <- melt(DRS,id='tb')
 DRS[,c('arm','outcome','quantity'):=tstrsplit(variable,split='_')]
 options(scipen=999)
 (DRS <- dcast(data=DRS,formula=arm+quantity+outcome~tb,value.var='value'))
-fwrite(DRS,file=here('outdata/DRS.csv'))
+fn1 <- glue(here('outdata/DRS')) + SA + '.csv'
+fwrite(DRS,file=fn1)
 
 # D[tb=='noTB',.(soc.prop.prev.tb.dx,
 #     soc.prop.no.prev.tb.dx.symp,
@@ -345,10 +324,19 @@ fwrite(DRS,file=here('outdata/DRS.csv'))
 
 ## soc.prop.no.prev.tb.dx.symp.tb.dx??
 
+summary(D[,.(cost.soc, cost.int)])
+
 ## cost of getting ATT (from CSV output)
 D[,mean((pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + 
            (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + 
-          (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB)),by=tb]
-D[,mean(((durTPT*(cost.ltbi.drugs + cost.dots) + TPT.visits*(cost.tpt.opd.visit + cost.prison.escort)))),by=tb]
-D[,mean((IncompDurTPT*(durTPT*(cost.ltbi.drugs + cost.dots) + TPT.visits*(cost.tpt.opd.visit + cost.prison.escort)))),by=tb] # BUG fixed
-D[,mean((IncompDurTPT/durTPT*(durTPT*(cost.ltbi.drugs + cost.dots) + TPT.visits*(cost.tpt.opd.visit + cost.prison.escort)))),by=tb]
+          (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB) +
+          cost.inpatient),
+  by=tb]
+D[,mean(IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + pDSTB*DurDSTB*(cost.dsatt.drugs + cost.dots)) + 
+          IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visits + cost.prison.escort)  + (1-pDSTB)*DurMDRTB*(cost.mdratt.drugs + cost.dots)) + 
+          cost.inpatient
+),by=tb]
+D[,mean(durTPT*(cost.ltbi.drugs + cost.dots)),by=tb]
+D[,mean(durTPT*(cost.ltbi.drugs + cost.dots) + TPT.visits*(cost.tpt.opd.visit + cost.prison.escort)),by=tb]
+D[,mean(IncompDurTPT*(durTPT*(cost.ltbi.drugs + cost.dots) + TPT.visits*(cost.tpt.opd.visit + cost.prison.escort))),by=tb] # BUG fixed
+D[,mean(IncompDurTPT/durTPT*(durTPT*(cost.ltbi.drugs + cost.dots) + TPT.visits*(cost.tpt.opd.visit + cost.prison.escort))),by=tb]

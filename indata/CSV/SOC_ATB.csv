@@ -16,9 +16,10 @@ Standard of care pathway                                            ,,,,,
      ¦   ¦   ¦   ¦   ¦       ¦   ¦       °--no ATT                  ,1,0,0,0,1
      ¦   ¦   ¦   ¦   ¦       ¦   °--Not TB                          ,1,0,0,0,1
      ¦   ¦   ¦   ¦   ¦       °--did not Attend                      ,1,0,0,0,0
-     ¦   ¦   ¦   ¦   ¦           °--no ATT                          ,1,0,0,0,1
-     ¦   ¦   ¦   ¦   °--No clinical suspicion of TB                 ,1,0,0,0,0
-     ¦   ¦   ¦   ¦       °--no ATT                                  ,1,0,0,0,1
+     ¦   ¦   ¦   ¦   ¦           °--No TB treatment                 ,1,0,0,0,0
+     ¦   ¦   ¦   ¦   ¦               ¦--Survives                    ,1,0,0,0,1
+     ¦   ¦   ¦   ¦   ¦               °--Dies                        ,1,0,0,0,1
+     ¦   ¦   ¦   ¦   °--No clinical suspicion of TB                 ,1,0,0,0,1
      ¦   ¦   ¦   °--No urgent prison GP assessment                  ,1,0,0,0,0
      ¦   ¦   ¦       ¦--Clinical suspicion of TB                    ,1,0,0,0,0
      ¦   ¦   ¦       ¦   °--Refer to TB services                    ,1,0,0,0,0
@@ -31,9 +32,10 @@ Standard of care pathway                                            ,,,,,
      ¦   ¦   ¦       ¦       ¦   ¦       °--no ATT                  ,1,0,0,0,1
      ¦   ¦   ¦       ¦       ¦   °--Not TB                          ,1,0,0,0,1
      ¦   ¦   ¦       ¦       °--did not Attend                      ,1,0,0,0,0
-     ¦   ¦   ¦       ¦           °--no ATT                          ,1,0,0,0,1
-     ¦   ¦   ¦       °--No clinical suspicion of TB                 ,1,0,0,0,0
-     ¦   ¦   ¦           °--no ATT                                  ,1,0,0,0,1
+     ¦   ¦   ¦       ¦           °--No TB treatment                 ,1,0,0,0,0
+     ¦   ¦   ¦       ¦               ¦--Survives                    ,1,0,0,0,1
+     ¦   ¦   ¦       ¦               °--Dies                        ,1,0,0,0,1
+     ¦   ¦   ¦       °--No clinical suspicion of TB                 ,1,0,0,0,1
      ¦   ¦   °--No other TB suggestive symptoms                     ,1,0,0,0,0
      ¦   ¦       ¦--Prison GP assessment                            ,1,0,0,0,0
      ¦   ¦       ¦   ¦--Clinical suspicion of TB                    ,1,0,0,0,0
@@ -47,11 +49,14 @@ Standard of care pathway                                            ,,,,,
      ¦   ¦       ¦   ¦       ¦   ¦       °--no ATT                  ,1,0,0,0,1
      ¦   ¦       ¦   ¦       ¦   °--Not TB                          ,1,0,0,0,1
      ¦   ¦       ¦   ¦       °--did not Attend                      ,1,0,0,0,0
-     ¦   ¦       ¦   ¦           °--no ATT                          ,1,0,0,0,1
-     ¦   ¦       ¦   °--No clinical suspicion of TB                 ,1,0,0,0,0
-     ¦   ¦       ¦       °--no ATT                                  ,1,0,0,0,1
+     ¦   ¦       ¦   ¦           °--No TB treatment                 ,1,0,0,0,0
+     ¦   ¦       ¦   ¦               ¦--Survives                    ,1,0,0,0,1
+     ¦   ¦       ¦   ¦               °--Dies                        ,1,0,0,0,1
+     ¦   ¦       ¦   °--No clinical suspicion of TB                 ,1,0,0,0,1
      ¦   ¦       °--No prison GP assessment                         ,1,0,0,0,0
-     ¦   ¦           °--no ATT                                      ,1,0,0,0,1
+     ¦   ¦           °--No TB treatment                             ,1,0,0,0,0
+     ¦   ¦               ¦--Survives                                ,1,0,0,0,1
+     ¦   ¦               °--Dies                                    ,1,0,0,0,1
      ¦   °--No cough ≥ 3 weeks                                      ,1,0,0,0,0
      ¦       ¦--Other TB suggestive symptoms                        ,1,0,0,0,0
      ¦       ¦   ¦--Assessed at next GP appointment                 ,1,0,0,0,0
@@ -66,13 +71,14 @@ Standard of care pathway                                            ,,,,,
      ¦       ¦   ¦   ¦       ¦   ¦       °--no ATT                  ,1,0,0,0,1
      ¦       ¦   ¦   ¦       ¦   °--Not TB                          ,1,0,0,0,1
      ¦       ¦   ¦   ¦       °--did not Attend                      ,1,0,0,0,0
-     ¦       ¦   ¦   ¦           °--no ATT                          ,1,0,0,0,1
-     ¦       ¦   ¦   °--No clinical suspicion of TB                 ,1,0,0,0,0
-     ¦       ¦   ¦       °--no ATT                                  ,1,0,0,0,1
+     ¦       ¦   ¦   ¦           °--No TB treatment                 ,1,0,0,0,0
+     ¦       ¦   ¦   ¦               ¦--Survives                    ,1,0,0,0,1
+     ¦       ¦   ¦   ¦               °--Dies                        ,1,0,0,0,1
+     ¦       ¦   ¦   °--No clinical suspicion of TB                 ,1,0,0,0,1
      ¦       ¦   °--Not assessed at next GP appointment             ,1,0,0,0,0
-     ¦       ¦       °--no ATT                                      ,1,0,0,0,1
+     ¦       ¦       °--No TB treatment                             ,1,0,0,0,0
+     ¦       ¦           ¦--Survives                                ,1,0,0,0,1
+     ¦       ¦           °--Dies                                    ,1,0,0,0,1
      ¦       °--No other TB suggestive symptoms                     ,1,0,0,0,0
-     ¦           °--Advice                                          ,1,0,0,0,0
-     ¦               °--no ATT                                      ,1,0,0,0,1
-     °--No symptoms                                                 ,1,0,0,0,0
-         °--no ATT                                                  ,1,0,0,0,1
+     ¦           °--Advice                                          ,1,0,0,0,1
+     °--No symptoms                                                 ,1,0,0,0,1

@@ -14,7 +14,7 @@ library(scales)
 
 ## === outcomes subtree ===
 tb <- txt2tree(here('indata/4_TB_outcomes.txt')) # tb dx
-notbdxo <- txt2tree(here('indata/notbnotx.txt')) # no tx
+notbdxo <- txt2tree(here('indata/tbnotx.txt')) # no tx
 
 # notb <- txt2tree(here('indata/noTB.outcomes.txt')) # no tb
 tpt <- txt2tree(here('indata/3_TPT_outcomes.txt')) # tpt
@@ -38,7 +38,7 @@ notb <- Node$new('Not TB')
 ltbi <- notb$AddChild('LTBI pathway')
 
 ## restrict to no TB tx (rather than dx)
-# notbtxo <- top(notbdxo) #remove top
+notbtxo <- top(notbdxo) #remove top
 
 ## ====== function to add outcomes & counters
 AddOutcomes <- function(D){
@@ -51,11 +51,11 @@ AddOutcomes <- function(D){
   MergeByName(D,No_urgent_GP_referral,'No urgent prison GP referral',leavesonly = TRUE)
   MergeByName(D,Refer_to_TB_services,'Refer to TB services',leavesonly = TRUE)
   MergeByName(D,notbdxo,'did not Attend',leavesonly = TRUE)
-  MergeByName(D,notbdxo,'No clinical suspicion of TB',leavesonly = TRUE)
+  # MergeByName(D,notbdxo,'No clinical suspicion of TB',leavesonly = TRUE)
   MergeByName(D,notbdxo,'No prison GP assessment',leavesonly = TRUE)
   MergeByName(D,notbdxo,'Not assessed at next GP appointment',leavesonly = TRUE)
-  MergeByName(D,notbdxo,'Advice',leavesonly = TRUE)
-  MergeByName(D,notbdxo,'People in prison and other PPDs with no symptoms',leavesonly = TRUE)
+  # MergeByName(D,notbdxo,'Advice',leavesonly = TRUE)
+  # MergeByName(D,notbdxo,'No symptoms',leavesonly = TRUE)
 
   ## final outcomes
   MergeByName(D,tpt,'TPT outcomes',leavesonly = TRUE)
@@ -120,8 +120,7 @@ SOC_ATB$name <- 'Standard of care pathway'
 tree2file(SOC_ATB,filename = here('indata/CSV/SOC_ATB.csv'),
           'p','cost', 'prevtb','att','check')
 
-labdat <- c('p','cost', 'prevtb','att','check')
-
+labdat <- c('p','cost', 'prevtb','att', 'attend', 'check')
 
 ## create version with probs/costs
 fn <- here('indata/CSV/SOC_ATB1.csv')
@@ -140,12 +139,26 @@ if(file.exists(fn)){
             'p','cost', 'prevtb','att','attend','check')
 }
 
+## NOTE this would ideally be moved up into the workflow above
+## add a notx variable = no ATT *and* no TPT
+leaves <- as.integer(SOC_ATB$Get('check')) #indicator for being a leaf
+sum(leaves) == SOC_ATB$leafCount
+notx <- as.integer((!SOC_ATB$Get('attend'))) * leaves #only 1 on leaves
+
+SOC_ATB$Set(notx = 0)
+SOC_ATB$Set(notx = notx)
+
+## this gives us 3 outcome functions: tpt,att, notx, which are exhaustive
+labz[,sum(attend==1)] + sum(notx) == sum(leaves) #only 1 on leaves
+##  & exclusive:
+labz[attend > 1]
+labz[,table(attend,notx)]
 
 ## === INT
 INT_ATB <- Clone(SOC_ATB)
 INT_ATB$name <- 'Intervention model'
 
-tree2file(INT,filename = here('indata/CSV/INT_ATB.csv'),
+tree2file(INT_ATB,filename = here('indata/CSV/INT_ATB.csv'),
           'p','cost', 'prevtb','att','attend','check')
 
 
@@ -166,12 +179,66 @@ if(file.exists(fn)){
             'p','cost', 'prevtb','att','attend','check')
 }
 
+## NOTE this would ideally be moved up into the workflow above
+## add a notx variable = no ATT *and* no TPT
+leaves <- as.integer(INT_ATB$Get('check')) #indicator for being a leaf
+sum(leaves) == INT_ATB$leafCount
+notx <- as.integer((!INT_ATB$Get('attend'))) * leaves #only 1 on leaves
+
+INT_ATB$Set(notx = 0)
+INT_ATB$Set(notx = notx)
+
+## this gives us 3 outcome functions: tpt,att, notx, which are exhaustive
+labz[,sum(attend==1)] + sum(notx) == sum(leaves) #only 1 on leaves
+##  & exclusive:
+labz[attend > 1]
+labz[,table(attend,notx)]
 
 ## make functions
 fnmz <- labdat[-1]
+fnmz <- c(fnmz,'notx')
 
+# full tree
 SOC_ATB.F <- makeTfuns(SOC_ATB,fnmz)
 INT_ATB.F <- makeTfuns(INT_ATB,fnmz)
+
+## NOTE making pruned trees conditioned on outcomes (subtrees ending variable > 0)
+SOC.att <- PruneByOutcome(SOC_ATB,'attend')
+SOC.notx <- PruneByOutcome(SOC_ATB, "notx")
+INT.att <- PruneByOutcome(INT_ATB, "attend")
+INT.notx <- PruneByOutcome(INT_ATB, "notx")
+
+## checking...
+leaves <- as.integer(SOC.notx$Get("check")) # indicator for being a leaf
+sum(leaves) == SOC.notx$leafCount
+
+notx <- as.integer(SOC.notx$Get("notx"))
+attend <- as.integer(SOC.notx$Get("attend"))
+
+sum(notx+attend)==sum(leaves)  #each leaf has outcome
+sum((notx + attend)*!leaves) #only on leaves
+which(leaves == 1 & (notx + attend) == 0) #but I see them in the CSV??
+## NOTE I don't know - CSVs look correct
+
+# tree2file(SOC.att,
+#           filename = here("indata/CSV/SOC.att.csv"),
+#           "p", "cost","notx", "attend", "tptend", "check"
+# )
+# tree2file(SOC.tpt,
+#           filename = here("indata/CSV/SOC.tpt.csv"),
+#           "p","cost","notx", "attend", "tptend",  "check"
+# )
+# tree2file(SOC.notx,
+#           filename = here("indata/CSV/SOC.notx.csv"),
+#           "p","cost","notx", "attend", "tptend", "check"
+# )
+
+## retricted trees:
+SOC.att.F <- makeTfuns(SOC.att,fnmz)
+SOC.notx.F <- makeTfuns(SOC.notx,fnmz)
+INT.att.F <- makeTfuns(INT.att,fnmz)
+INT.notx.F <- makeTfuns(INT.notx,fnmz)
+
 
 ## running all function
 runallfuns <- function(D,arm='all'){
@@ -240,8 +307,8 @@ all(INT_ATB.F$attfun(A)>0)
 ## plotter(SOC_ATB)
 ## plotter(INT_ATB)
 ## full graph out
-# DiagrammeR::export_graph(ToDiagrammeRGraph(SOC_ATB),
-#              file_name=here('plots/SOC_ATB.pdf'))
+DiagrammeR::export_graph(ToDiagrammeRGraph(SOC_ATB),
+             file_name=here('plots/SOC_ATB.pdf'))
 # 
 # DiagrammeR::export_graph(ToDiagrammeRGraph(ltbi_pathway),
 #                          file_name=here('plots/ltbi_pathway.pdf'))

@@ -1,43 +1,43 @@
-ParameterName,Mean,Range,Year of estimate,Description,Source
-prop.completing.att,0.8,,,Proportion completing anti-TB treatment,"From TB treatment outcomes in England, 2021"
-prop.prev.tb.dx.continue.att,0.9,0.5-1,,Attending NHS TB services referral & continue anti-TB treatment,
-prop.prev.tb.dx.on.attend.referral,0.6,,,"Past TB diagnosis, still on anti-TB treatment, attending NHS TB services referral",
-prop.prev.tb.dx.still.on.att,0.9,0.5-1,,"Past TB diagnosis, started & still on anti-TB treatment",
-prop.starting.att,0.9,0.5-1,,Starting ATT,
-prop.prev.tb.tx.symp.tb.dx,0.07,,,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms, attending NHS TB service, TB diagnosis",
-prop.abn.xray.tb.dx,0.07,,,Proportion starting anti-TB treatment,
-prop.staying.o3.months.complete.tpt,0.48,0.8,,"In prison/ICRC > 3 months, complete TPT",Rough estimate from Maidstone pilot report. 44/55 (80%) completed TPT in Swaleside
-prop.staying.o3.months.tpt,0.77,0.67,,"In prison/ICRC > 3 months, gets TPT",Rough estimate from Maidstone pilot report. 55/82 referred started TPT in Swaleside
-prop.staying.o3.months,0.79,,,In prison/ICRC > 3 months,Rough estimate from Maidstone pilot report
-prop.staying.u3.months.uk.complete.tpt,0.48,,,"In prison/ICRC <3 months, complete TPT",Assuming same figures as above
-prop.staying.u3.months.uk.tpt,0.77,,,"In prison/ICRC <3 months, gets TPT",Assuming same figures as above
-prop.staying.u3.months.uk,0.79,,,"In prison/ICRC <3 months, remaining in the UK",Assuming same figures as above
-prop.abn.xray.nhs.attend.referral,0.6,,,"Abnormal chest X-ray, attending NHS TB service",Rough assumption based on data from Prison TB Cases East Midlands May 2022
-prop.abn.xray.nhs.referral,1,,,"Abnormal chest X-ray, referred to NHS TB service",Assuming all with abnormal x-rays are referred
-prop.abnormal.xray,0.06,,,Abnormal chest X-ray,Rough estimate from the Swaleside pilot report
-prop.prev.xray,0.01,,,Previous chest X-ray < 6 months,
-prop.xray,0.77,0.56-0.88,,Chest x-ray               ,"Data for Maidstone, Huntercombe, Lowdham Grange & Swaleside presented in CRG LTBI CENL slides"
-prop.no.xray.tb.dx,0.07,,,"No chest X-ray, attending NHS TB service, TB diagnosis",
-prop.no.xray.nhs.attend.referral,0.6,,,"No chest X-ray, attending NHS TB service",
-prop.no.xray.nhs.referral,1,,,"No chest X-ray, referred to NHS TB service",
-prop.igra.test.positive,0.15,0.098-0.19,,Positive IGRA test,"Data for Maidstone, Huntercombe, Lowdham Grange & Swaleside presented in CRG LTBI CENL slides"
-prop.igra.tested,0.63,0.57-0.70,,Received IGRA test,"Data for Maidstone, Huntercombe, Lowdham Grange & Swaleside presented in CRG LTBI CENL slides"
-prop.prev.tb.tx.symp.nhs.referral,0.6,,,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms, Prison GP assessment, TB suspect attending NHS TB service",
-prop.prev.tb.tx.symp.tb.suspicion,0.01,0.00309-0.0254,,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms, Prison GP assessment, TB suspicion",Referred for a specialist assessment following a positive screen result in 6 London prisons over 2.4 years (from 2021-04-30 - 2023-09-30)
-prop.prev.tb.tx.symp.gp.assess,0.9,0.5-1,,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms, Prison GP assessment",
-prop.prev.tb.tx.symp,0.01,0.00856-0.0185,,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms",
-prop.prev.tb.dx.started.att,0.9,0.5-1,,"Past TB diagnosis, started anti-TB treatment",
-prop.prev.tb.dx.notx.referral,0.6,,,"Past TB diagnosis, did not start anti-TB treatment, attending NHS TB services referral",
-prop.prev.tb.dx,0.02,,,Past TB diagnosis,
-prop.no.prev.tb.dx.symp.tb.dx,0.07,,,"No past TB diagnosis,  with TB symptoms, attending NHS TB service, TB diagnosis",
-prop.no.prev.xray,0.99,,,Previous chest X-ray < 6 months,
-prop.no.prev.tb.dx.symp.nhs.referral,0.6,,,"No past TB diagnosis,  with TB symptoms, Prison GP assessment, TB suspect attending NHS TB service",
-prop.no.prev.tb.dx.symp.tb.suspicion,0.01,0.00309-0.0254,,"No past TB diagnosis,  with TB symptoms, Prison GP assessment, TB suspicion",Referred for a specialist assessment following a positive screen result in 6 London prisons over 2.4 years (from 2021-04-30 - 2023-09-30)
-prop.no.prev.tb.dx.symp.gp.assess,0.9,0.5-1,,"No past TB diagnosis,  with TB symptoms, Prison GP assessment",
-prop.no.prev.tb.dx.symp,0.01,0.00856-0.0186,,"No past TB diagnosis,  with TB symptoms",TB symptoms out of those screened within 48 hours of reception in 6 London prisons over 2.4 years (from 2021-04-30 - 2023-09-30)
-prop.tb.sympt.screen,0.96,0.944-0.968,,Verbal TB symptom screening within 48 hours of arrival,TB screening uptake within 48 hours of reception in 6 London prisons over 2.4 years (from 2021-04-30 - 2023-09-30)
-tb.prev,0.00144,0.00032-0.00342,,Prevalence of TB in prisoners,https://www.thelancet.com/journals/lanpub/article/PIIS2468-2667(23)00097-X/fulltext#sec1
-ltbi.prev,0.15,0.038-0.416,,https://www.thelancet.com/journals/lanpub/article/PIIS2468-2667(21)00025-6/fulltext,
-prog.tb,0.025,0.019-0.031,,https://link.springer.com/article/10.1007/s10198-021-01265-5#ref-CR20,
-progInf,0.016,0-0.062,,https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3284215/,
-progNInf,0.063,0.012-0.34,,https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3284215/,
+ParameterName,Mean,Range,Description,Source,SourceFull
+prop.completing.att,0.8,,Proportion completing anti-TB treatment,"TB treatment outcomes in England, 2021","TB treatment outcomes in England, 2021"
+prop.prev.tb.dx.continue.att,0.9,0.5-1,Attending NHS TB services referral & continue anti-TB treatment,Assumption,Assumption
+prop.prev.tb.dx.on.attend.referral,0.76,0.7358-0.7918,"Past TB diagnosis, still on anti-TB treatment, attending NHS TB services referral",Davies et al. (2020),"Davies, Miranda, et al. ""Locked out? Prisoners’ use of hospital care."" Research summary, Nuffield Trust (2020)."
+prop.prev.tb.dx.still.on.att,0.9,0.5-1,"Past TB diagnosis, started & still on anti-TB treatment",Assumption,
+prop.starting.att,0.9,0.5-1,Starting ATT,Assumption,Assumption
+prop.prev.tb.tx.symp.tb.dx,0.07,,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms, attending NHS TB service, TB diagnosis",Calculated using data from prison pilots,
+prop.abn.xray.tb.dx,0.07,,Proportion starting anti-TB treatment,Calculated using data from prison pilots,
+prop.staying.o3.months.complete.tpt,0.48,0.8,"In prison/ICRC > 3 months, complete TPT",Calculated using data from prison pilots,Rough estimate from Maidstone pilot report. 44/55 (80%) completed TPT in Swaleside
+prop.staying.o3.months.tpt,0.77,0.67,"In prison/ICRC > 3 months, gets TPT",Calculated using data from prison pilots,Rough estimate from Maidstone pilot report. 55/82 referred started TPT in Swaleside
+prop.staying.o3.months,0.79,,In prison/ICRC > 3 months,Calculated using data from prison pilots,Rough estimate from Maidstone pilot report
+prop.staying.u3.months.uk.complete.tpt,0.48,,"In prison/ICRC <3 months, complete TPT",Assuming same figures as above,Assuming same figures as above
+prop.staying.u3.months.uk.tpt,0.77,,"In prison/ICRC <3 months, gets TPT",Assuming same figures as above,Assuming same figures as above
+prop.staying.u3.months.uk,0.79,,"In prison/ICRC <3 months, remaining in the UK",Assuming same figures as above,Assuming same figures as above
+prop.abn.xray.nhs.attend.referral,0.76,0.7358-0.7918,"Abnormal chest X-ray, attending NHS TB service",Davies et al. (2020),Assuming all with abnormal x-rays are referred
+prop.abn.xray.nhs.referral,1,,"Abnormal chest X-ray, referred to NHS TB service",Calculated using data from prison pilots,Rough estimate from the Swaleside pilot report
+prop.abnormal.xray,0.06,,Abnormal chest X-ray,Calculated using data from prison pilots,"Data for Maidstone, Huntercombe, Lowdham Grange & Swaleside presented in CRG LTBI CENL slides"
+prop.prev.xray,0.01,,Previous chest X-ray < 6 months,Calculated using data from prison pilots,"Data for Maidstone, Huntercombe, Lowdham Grange & Swaleside presented in CRG LTBI CENL slides"
+prop.xray,0.77,0.56-0.88,Chest x-ray               ,Calculated using data from prison pilots,"Data for Maidstone, Huntercombe, Lowdham Grange & Swaleside presented in CRG LTBI CENL slides"
+prop.no.xray.tb.dx,0.07,,"No chest X-ray, attending NHS TB service, TB diagnosis",Calculated using data from prison pilots,Referred for a specialist assessment following a positive screen result in 6 London prisons over 2.4 years (from 2021-04-30 - 2023-09-30)
+prop.no.xray.nhs.attend.referral,0.6,,"No chest X-ray, attending NHS TB service",Calculated using data from prison pilots,Referred for a specialist assessment following a positive screen result in 6 London prisons over 2.4 years (from 2021-04-30 - 2023-09-30)
+prop.no.xray.nhs.referral,1,,"No chest X-ray, referred to NHS TB service",Calculated using data from prison pilots,TB symptoms out of those screened within 48 hours of reception in 6 London prisons over 2.4 years (from 2021-04-30 - 2023-09-30)
+prop.igra.test.positive,0.15,0.098-0.19,Positive IGRA test,Calculated using data from prison pilots,TB screening uptake within 48 hours of reception in 6 London prisons over 2.4 years (from 2021-04-30 - 2023-09-30)
+prop.igra.tested,0.63,0.57-0.70,Received IGRA test,Calculated using data from prison pilots,"Data for Maidstone, Huntercombe, Lowdham Grange & Swaleside presented in CRG LTBI CENL slides"
+prop.prev.tb.tx.symp.nhs.referral,0.76,0.7358-0.7918,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms, Prison GP assessment, TB suspect attending NHS TB service",Davies et al. (2020),"Davies, Miranda, et al. ""Locked out? Prisoners’ use of hospital care."" Research summary, Nuffield Trust (2020)."
+prop.prev.tb.tx.symp.tb.suspicion,0.01,0.00309-0.0254,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms, Prison GP assessment, TB suspicion",Calculated using data from London prisons,Referred for a specialist assessment following a positive screen result in 6 London prisons over 2.4 years (from 2021-04-30 - 2023-09-30)
+prop.prev.tb.tx.symp.gp.assess,0.9,0.5-1,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms, Prison GP assessment",Assumption,
+prop.prev.tb.tx.symp,0.01,0.00856-0.0185,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms",Calculated using data from London prisons,
+prop.prev.tb.dx.started.att,0.9,0.5-1,"Past TB diagnosis, started anti-TB treatment",Assumption,
+prop.prev.tb.dx.notx.referral,0.76,0.7358-0.7918,"Past TB diagnosis, did not start anti-TB treatment, attending NHS TB services referral",Davies et al. (2020),"Davies, Miranda, et al. ""Locked out? Prisoners’ use of hospital care."" Research summary, Nuffield Trust (2020)."
+prop.prev.tb.dx,0.02,,Past TB diagnosis,Calculated using data from prison pilots,Data from HMP Parc TB Outbreak 2019-2020
+prop.no.prev.tb.dx.symp.tb.dx,0.07,,"No past TB diagnosis,  with TB symptoms, attending NHS TB service, TB diagnosis",Calculated using data from prison pilots,
+prop.no.prev.xray,0.99,,Previous chest X-ray < 6 months,Assumption,
+prop.no.prev.tb.dx.symp.nhs.referral,0.76,0.7358-0.7918,"No past TB diagnosis,  with TB symptoms, Prison GP assessment, TB suspect attending NHS TB service",Davies et al. (2020),"Davies, Miranda, et al. ""Locked out? Prisoners’ use of hospital care."" Research summary, Nuffield Trust (2020)."
+prop.no.prev.tb.dx.symp.tb.suspicion,0.01,0.00309-0.0254,"No past TB diagnosis,  with TB symptoms, Prison GP assessment, TB suspicion",Calculated using data from London prisons,Referred for a specialist assessment following a positive screen result in 6 London prisons over 2.4 years (from 2021-04-30 - 2023-09-30)
+prop.no.prev.tb.dx.symp.gp.assess,0.9,0.5-1,"No past TB diagnosis,  with TB symptoms, Prison GP assessment",Assumption,
+prop.no.prev.tb.dx.symp,0.01,0.00856-0.0186,"No past TB diagnosis,  with TB symptoms",Calculated using data from prison pilots,TB symptoms out of those screened within 48 hours of reception in 6 London prisons over 2.4 years (from 2021-04-30 - 2023-09-30)
+prop.tb.sympt.screen,0.96,0.944-0.968,Verbal TB symptom screening within 48 hours of arrival,Calculated using data from prison pilots,TB screening uptake within 48 hours of reception in 6 London prisons over 2.4 years (from 2021-04-30 - 2023-09-30)
+tb.prev,0.00144,0.00032-0.00342,Prevalence of TB in prisoners,Martinez et al. (2023),"Martinez L, Warren JL, Harries AD, Croda J, Espinal MA, Olarte RAL, Avedillo P, Lienhardt C, Bhatia V, Liu Q, Chakaya J, Denholm JT, Lin Y, Kawatsu L, Zhu L, Horsburgh CR, Cohen T, Andrews JR. Global, regional, and national estimates of tuberculosis incidence and case detection among incarcerated individuals from 2000 to 2019: a systematic analysis. Lancet Public Health. 2023 Jul;8(7):e511-e519. doi: 10.1016/S2468-2667(23)00097-X. Erratum in: Lancet Public Health. 2023 Aug;8(8):e582. doi: 10.1016/S2468-2667(23)00148-2. PMID: 37393090; PMCID: PMC10323309."
+ltbi.prev,0.15,0.038-0.416,Prevalence of LTBI in prisoners,Cords et all. (2021),"Cords O, Martinez L, Warren JL, O'Marr JM, Walter KS, Cohen T, Zheng J, Ko AI, Croda J, Andrews JR. Incidence and prevalence of tuberculosis in incarcerated populations: a systematic review and meta-analysis. Lancet Public Health. 2021 May;6(5):e300-e308. doi: 10.1016/S2468-2667(21)00025-6. Epub 2021 Mar 22. PMID: 33765455; PMCID: PMC8168455."
+prog.tb,0.025,0.019-0.031,Progression risk from LTBI to TB disease,Shedrawy et al. (2021),"Shedrawy, J., Deogan, C., Öhd, J.N. et al. Cost-effectiveness of the latent tuberculosis screening program for migrants in Stockholm Region. Eur J Health Econ 22, 445–454 (2021). https://doi.org/10.1007/s10198-021-01265-5"
+progInf,0.016,0-0.062,TB incidence in LTBI,Andrews et al. (2012),"Andrews JR, Noubary F, Walensky RP, Cerda R, Losina E, Horsburgh CR. Risk of progression to active tuberculosis following reinfection with Mycobacterium tuberculosis. Clin Infect Dis. 2012 Mar;54(6):784-91. doi: 10.1093/cid/cir951. Epub 2012 Jan 19. PMID: 22267721; PMCID: PMC3284215."
+progNInf,0.063,0.012-0.34,TB incidence in nonLTBI,Andrews et al. (2012),"Andrews JR, Noubary F, Walensky RP, Cerda R, Losina E, Horsburgh CR. Risk of progression to active tuberculosis following reinfection with Mycobacterium tuberculosis. Clin Infect Dis. 2012 Mar;54(6):784-91. doi: 10.1093/cid/cir951. Epub 2012 Jan 19. PMID: 22267721; PMCID: PMC3284215."

@@ -1,75 +1,108 @@
 levelName,p,cost,prevtb,att,attend,check
-Standard of care pathway                                        ,1,0,0,0,0,0
- °--People in prison and other PPDs who develop symptoms        ,soc.prop.ppd.symptoms,cost.tb.sympt.assess,0,0,0,0
-     ¦--Cough ≥ 3 weeks                                         ,soc.prop.cough.3weeks,0,0,0,0,0
-     ¦   ¦--Other TB suggestive symptoms                        ,soc.prop.w.other.symptoms,0,0,0,0,0
-     ¦   ¦   ¦--Urgent prison GP assessment                     ,soc.prop.prison.gp.assessment,cost.urgent.prison.gp.assess + soc.soc.prop.xray*cost.chest.xray,0,0,0,0
-     ¦   ¦   ¦   ¦--Clinical suspicion of TB                    ,soc.prop.tb.suspicion,0,0,0,0,0
-     ¦   ¦   ¦   ¦   °--Refer to TB services                    ,1,pIsolation*cost.prison.cell.isolation,0,0,0,0
-     ¦   ¦   ¦   ¦       ¦--Attended                            ,attend.nhs.referral,cost.nhs.tb.service + cost.prison.escort + cost.tb.investigations,0,0,0,0
-     ¦   ¦   ¦   ¦       ¦   ¦--TB                              ,soc.prop.tb.dx,0,1,0,0,0
-     ¦   ¦   ¦   ¦       ¦   ¦   °--TB outcomes                 ,1,0,0,0,0,0
-     ¦   ¦   ¦   ¦       ¦   ¦       ¦--ATT                     ,soc.prop.starting.att,0,0,1,0,0
-     ¦   ¦   ¦   ¦       ¦   ¦       ¦   ¦--completed ATT       ,soc.soc.prop.completing.att,(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB),0,0,0,1
-     ¦   ¦   ¦   ¦       ¦   ¦       ¦   °--did not complete ATT,1-soc.prop.completing.att,IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + pDSTB*DurDSTB*(cost.dsatt.drugs + cost.dots))+ IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visits + cost.prison.escort)  + (1-pDSTB)*DurMDRTB*(cost.mdratt.drugs + cost.dots)),0,0,1,1
-     ¦   ¦   ¦   ¦       ¦   ¦       °--no ATT                  ,1-soc.prop.starting.att,0,0,0,0,1
-     ¦   ¦   ¦   ¦       ¦   °--Not TB                          ,1-soc.prop.tb.dx,0,0,0,0,1
-     ¦   ¦   ¦   ¦       °--did not Attend                      ,1-attend.nhs.referral,0,0,0,0,0
-     ¦   ¦   ¦   ¦           °--no ATT                          ,1-soc.prop.starting.att,0,0,0,0,1
-     ¦   ¦   ¦   °--No clinical suspicion of TB                 ,1-soc.prop.tb.suspicion,0,0,0,0,0
-     ¦   ¦   ¦       °--no ATT                                  ,1-soc.prop.starting.att,0,0,0,0,1
-     ¦   ¦   °--No urgent prison GP assessment                  ,1-soc.prop.prison.gp.assessment,0,0,0,0,0
-     ¦   ¦       ¦--Clinical suspicion of TB                    ,soc.prop.tb.suspicion,0,0,0,0,0
-     ¦   ¦       ¦   °--Refer to TB services                    ,1,pIsolation*cost.prison.cell.isolation,0,0,0,0
-     ¦   ¦       ¦       ¦--Attended                            ,attend.nhs.referral,cost.nhs.tb.service + cost.prison.escort + cost.tb.investigations,0,0,0,0
-     ¦   ¦       ¦       ¦   ¦--TB                              ,soc.prop.tb.dx,0,1,0,0,0
-     ¦   ¦       ¦       ¦   ¦   °--TB outcomes                 ,1,0,0,0,0,0
-     ¦   ¦       ¦       ¦   ¦       ¦--ATT                     ,soc.prop.starting.att,0,0,1,0,0
-     ¦   ¦       ¦       ¦   ¦       ¦   ¦--completed ATT       ,soc.soc.prop.completing.att,(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB),0,0,1,1
-     ¦   ¦       ¦       ¦   ¦       ¦   °--did not complete ATT,1-soc.prop.completing.att,IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + pDSTB*DurDSTB*(cost.dsatt.drugs + cost.dots))+ IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visits + cost.prison.escort)  + (1-pDSTB)*DurMDRTB*(cost.mdratt.drugs + cost.dots)),0,0,1,1
-     ¦   ¦       ¦       ¦   ¦       °--no ATT                  ,1-soc.prop.starting.att,0,0,0,0,1
-     ¦   ¦       ¦       ¦   °--Not TB                          ,1-soc.prop.tb.dx,0,0,0,0,1
-     ¦   ¦       ¦       °--did not Attend                      ,1-attend.nhs.referral,0,0,0,0,0
-     ¦   ¦       ¦           °--no ATT                          ,1-soc.prop.starting.att,0,0,0,0,1
-     ¦   ¦       °--No clinical suspicion of TB                 ,1-soc.prop.tb.suspicion,0,0,0,0,0
-     ¦   ¦           °--no ATT                                  ,1-soc.prop.starting.att,0,0,0,0,1
-     ¦   °--No other TB suggestive symptoms                     ,1-soc.prop.w.other.symptoms,0,0,0,0,0
-     ¦       ¦--Prison GP assessment                            ,soc.prop.prison.gp.assessment,cost.prison.gp.assess + soc.soc.prop.xray*cost.chest.xray,0,0,0,0
-     ¦       ¦   ¦--Clinical suspicion of TB                    ,soc.prop.tb.suspicion,0,0,0,0,0
-     ¦       ¦   ¦   °--Refer to TB services                    ,1,pIsolation*cost.prison.cell.isolation,0,0,0,0
-     ¦       ¦   ¦       ¦--Attended                            ,attend.nhs.referral,cost.nhs.tb.service + cost.prison.escort + cost.tb.investigations,0,0,0,0
-     ¦       ¦   ¦       ¦   ¦--TB                              ,soc.prop.tb.dx,0,1,0,0,0
-     ¦       ¦   ¦       ¦   ¦   °--TB outcomes                 ,1,0,0,0,0,0
-     ¦       ¦   ¦       ¦   ¦       ¦--ATT                     ,soc.prop.starting.att,0,0,1,0,0
-     ¦       ¦   ¦       ¦   ¦       ¦   ¦--completed ATT       ,soc.soc.prop.completing.att,(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB),0,0,1,1
-     ¦       ¦   ¦       ¦   ¦       ¦   °--did not complete ATT,1-soc.prop.completing.att,IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + pDSTB*DurDSTB*(cost.dsatt.drugs + cost.dots))+ IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visits + cost.prison.escort)  + (1-pDSTB)*DurMDRTB*(cost.mdratt.drugs + cost.dots)),0,0,1,1
-     ¦       ¦   ¦       ¦   ¦       °--no ATT                  ,1-soc.prop.starting.att,0,0,0,0,1
-     ¦       ¦   ¦       ¦   °--Not TB                          ,1-soc.prop.tb.dx,0,0,0,0,1
-     ¦       ¦   ¦       °--did not Attend                      ,1-attend.nhs.referral,0,0,0,0,0
-     ¦       ¦   ¦           °--no ATT                          ,1-soc.prop.starting.att,0,0,0,0,1
-     ¦       ¦   °--No clinical suspicion of TB                 ,1-soc.prop.tb.suspicion,0,0,0,0,0
-     ¦       ¦       °--no ATT                                  ,1-soc.prop.starting.att,0,0,0,0,1
-     ¦       °--No prison GP assessment                         ,1-soc.prop.prison.gp.assessment,0,0,0,0,0
-     ¦           °--no ATT                                      ,1-soc.prop.starting.att,0,0,0,0,1
-     °--No cough ≥ 3 weeks                                      ,1-soc.prop.cough.3weeks,0,0,0,0,0
-         ¦--Other TB suggestive symptoms                        ,soc.prop.w.other.symptoms,0,0,0,0,0
-         ¦   ¦--Assessed at next GP appointment                 ,soc.prop.prison.gp.assessment,cost.prison.gp.assess + soc.soc.prop.xray*cost.chest.xray,0,0,0,0
-         ¦   ¦   ¦--Clinical suspicion of TB                    ,soc.prop.tb.suspicion,0,0,0,0,0
-         ¦   ¦   ¦   °--Refer to TB services                    ,1,pIsolation*cost.prison.cell.isolation,0,0,0,0
-         ¦   ¦   ¦       ¦--Attended                            ,attend.nhs.referral,cost.nhs.tb.service + cost.prison.escort + cost.tb.investigations,0,0,0,0
-         ¦   ¦   ¦       ¦   ¦--TB                              ,soc.prop.tb.dx,0,1,0,0,0
-         ¦   ¦   ¦       ¦   ¦   °--TB outcomes                 ,1,0,0,0,0,0
-         ¦   ¦   ¦       ¦   ¦       ¦--ATT                     ,soc.prop.starting.att,0,0,1,0,0
-         ¦   ¦   ¦       ¦   ¦       ¦   ¦--completed ATT       ,soc.soc.prop.completing.att,(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB),0,0,1,1
-         ¦   ¦   ¦       ¦   ¦       ¦   °--did not complete ATT,1-soc.prop.completing.att,IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + pDSTB*DurDSTB*(cost.dsatt.drugs + cost.dots))+ IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visits + cost.prison.escort)  + (1-pDSTB)*DurMDRTB*(cost.mdratt.drugs + cost.dots)),0,0,1,1
-         ¦   ¦   ¦       ¦   ¦       °--no ATT                  ,1-soc.prop.starting.att,0,0,0,0,1
-         ¦   ¦   ¦       ¦   °--Not TB                          ,1-soc.prop.tb.dx,0,0,0,0,1
-         ¦   ¦   ¦       °--did not Attend                      ,1-attend.nhs.referral,0,0,0,0,0
-         ¦   ¦   ¦           °--no ATT                          ,1-soc.prop.starting.att,0,0,0,0,1
-         ¦   ¦   °--No clinical suspicion of TB                 ,1-soc.prop.tb.suspicion,0,0,0,0,0
-         ¦   ¦       °--no ATT                                  ,1-soc.prop.starting.att,0,0,0,0,1
-         ¦   °--Not assessed at next GP appointment             ,1-soc.prop.prison.gp.assessment,0,0,0,0,0
-         ¦       °--no ATT                                      ,1-soc.prop.starting.att,0,0,0,0,1
-         °--No other TB suggestive symptoms                     ,1-soc.prop.w.other.symptoms,0,0,0,0,0
-             °--Advice                                          ,1,0,0,0,0,0
-                 °--no ATT                                      ,1-soc.prop.starting.att,0,0,0,0,1
+Standard of care pathway                                            ,0,0,0,0,0,0
+ °--People in prison and other PPDs                                 ,1,0,0,0,0,0
+     ¦--Develop symptoms                                            ,soc.prop.ppd.symptoms,cost.tb.sympt.assess,0,0,0,0
+     ¦   ¦--Cough ≥ 3 weeks                                         ,soc.prop.cough.3weeks,0,0,0,0,0
+     ¦   ¦   ¦--Other TB suggestive symptoms                        ,soc.prop.w.other.symptoms,0,0,0,0,0
+     ¦   ¦   ¦   ¦--Urgent prison GP assessment                     ,soc.prop.prison.gp.assessment,cost.urgent.prison.gp.assess + int.prop.xray*cost.chest.xray,0,0,0,0
+     ¦   ¦   ¦   ¦   ¦--Clinical suspicion of TB                    ,soc.prop.tb.suspicion,0,0,0,0,0
+     ¦   ¦   ¦   ¦   ¦   °--Refer to TB services                    ,1,pIsolation*cost.prison.cell.isolation,0,0,0,0
+     ¦   ¦   ¦   ¦   ¦       ¦--Attended                            ,attend.nhs.referral,cost.nhs.tb.service + cost.prison.escort + cost.tb.investigations,0,0,0,0
+     ¦   ¦   ¦   ¦   ¦       ¦   ¦--TB                              ,soc.prop.tb.dx,0,1,0,0,0
+     ¦   ¦   ¦   ¦   ¦       ¦   ¦   °--TB outcomes                 ,1,0,0,0,0,0
+     ¦   ¦   ¦   ¦   ¦       ¦   ¦       ¦--ATT                     ,soc.prop.starting.att,0,0,1,0,0
+     ¦   ¦   ¦   ¦   ¦       ¦   ¦       ¦   ¦--completed ATT       ,soc.prop.completing.att,(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB) + cost.inpatient,0,0,1,1
+     ¦   ¦   ¦   ¦   ¦       ¦   ¦       ¦   °--did not complete ATT,1-soc.prop.completing.att,IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + pDSTB*DurDSTB*(cost.dsatt.drugs + cost.dots))+ IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visits + cost.prison.escort)  + (1-pDSTB)*DurMDRTB*(cost.mdratt.drugs + cost.dots)) + cost.inpatient,0,0,1,1
+     ¦   ¦   ¦   ¦   ¦       ¦   ¦       °--no ATT                  ,1-soc.prop.starting.att,0,0,0,0,1
+     ¦   ¦   ¦   ¦   ¦       ¦   °--Not TB                          ,1-soc.prop.tb.dx,0,0,0,0,1
+     ¦   ¦   ¦   ¦   ¦       °--did not Attend                      ,1-attend.nhs.referral,0,0,0,0,0
+     ¦   ¦   ¦   ¦   ¦           ¦--TB                              ,tbprev.symptomatic,0,1,0,0,0
+     ¦   ¦   ¦   ¦   ¦           ¦   °--TB outcomes                 ,1,0,0,0,0,0
+     ¦   ¦   ¦   ¦   ¦           ¦       ¦--ATT                     ,soc.prop.starting.att,0,0,1,0,0
+     ¦   ¦   ¦   ¦   ¦           ¦       ¦   ¦--completed ATT       ,soc.prop.completing.att,(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB) + cost.inpatient,0,0,1,1
+     ¦   ¦   ¦   ¦   ¦           ¦       ¦   °--did not complete ATT,1-soc.prop.completing.att,IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + pDSTB*DurDSTB*(cost.dsatt.drugs + cost.dots))+ IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visits + cost.prison.escort)  + (1-pDSTB)*DurMDRTB*(cost.mdratt.drugs + cost.dots)) + cost.inpatient,0,0,1,1
+     ¦   ¦   ¦   ¦   ¦           ¦       °--no ATT                  ,1-soc.prop.starting.att,0,0,0,0,1
+     ¦   ¦   ¦   ¦   ¦           °--Not TB                          ,1-tbprev.symptomatic,0,0,0,0,1
+     ¦   ¦   ¦   ¦   °--No clinical suspicion of TB                 ,1-soc.prop.tb.suspicion,0,0,0,0,0
+     ¦   ¦   ¦   °--No urgent prison GP assessment                  ,1-soc.prop.prison.gp.assessment,0,0,0,0,0
+     ¦   ¦   ¦       ¦--Clinical suspicion of TB                    ,soc.prop.tb.suspicion,0,0,0,0,0
+     ¦   ¦   ¦       ¦   °--Refer to TB services                    ,1,pIsolation*cost.prison.cell.isolation,0,0,0,0
+     ¦   ¦   ¦       ¦       ¦--Attended                            ,attend.nhs.referral,cost.nhs.tb.service + cost.prison.escort + cost.tb.investigations,0,0,0,0
+     ¦   ¦   ¦       ¦       ¦   ¦--TB                              ,soc.prop.tb.dx,0,1,0,0,0
+     ¦   ¦   ¦       ¦       ¦   ¦   °--TB outcomes                 ,1,0,0,0,0,0
+     ¦   ¦   ¦       ¦       ¦   ¦       ¦--ATT                     ,soc.prop.starting.att,0,0,1,0,0
+     ¦   ¦   ¦       ¦       ¦   ¦       ¦   ¦--completed ATT       ,soc.prop.completing.att,(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB) + cost.inpatient,0,0,1,1
+     ¦   ¦   ¦       ¦       ¦   ¦       ¦   °--did not complete ATT,1-soc.prop.completing.att,IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + pDSTB*DurDSTB*(cost.dsatt.drugs + cost.dots))+ IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visits + cost.prison.escort)  + (1-pDSTB)*DurMDRTB*(cost.mdratt.drugs + cost.dots)) + cost.inpatient,0,0,1,1
+     ¦   ¦   ¦       ¦       ¦   ¦       °--no ATT                  ,1-soc.prop.starting.att,0,0,0,0,1
+     ¦   ¦   ¦       ¦       ¦   °--Not TB                          ,1-soc.prop.tb.dx,0,0,0,0,1
+     ¦   ¦   ¦       ¦       °--did not Attend                      ,1-attend.nhs.referral,0,0,0,0,0
+     ¦   ¦   ¦       ¦           ¦--TB                              ,tbprev.symptomatic,0,1,0,0,0
+     ¦   ¦   ¦       ¦           ¦   °--TB outcomes                 ,1,0,0,0,0,0
+     ¦   ¦   ¦       ¦           ¦       ¦--ATT                     ,soc.prop.starting.att,0,0,1,0,0
+     ¦   ¦   ¦       ¦           ¦       ¦   ¦--completed ATT       ,soc.prop.completing.att,(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB) + cost.inpatient,0,0,1,1
+     ¦   ¦   ¦       ¦           ¦       ¦   °--did not complete ATT,1-soc.prop.completing.att,IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + pDSTB*DurDSTB*(cost.dsatt.drugs + cost.dots))+ IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visits + cost.prison.escort)  + (1-pDSTB)*DurMDRTB*(cost.mdratt.drugs + cost.dots)) + cost.inpatient,0,0,1,1
+     ¦   ¦   ¦       ¦           ¦       °--no ATT                  ,1-soc.prop.starting.att,0,0,0,0,1
+     ¦   ¦   ¦       ¦           °--Not TB                          ,1-tbprev.symptomatic,0,0,0,0,1
+     ¦   ¦   ¦       °--No clinical suspicion of TB                 ,1-soc.prop.tb.suspicion,0,0,0,0,0
+     ¦   ¦   °--No other TB suggestive symptoms                     ,1-soc.prop.w.other.symptoms,0,0,0,0,0
+     ¦   ¦       ¦--Prison GP assessment                            ,soc.prop.prison.gp.assessment,0,0,0,0,0
+     ¦   ¦       ¦   ¦--Clinical suspicion of TB                    ,soc.prop.tb.suspicion,0,0,0,0,0
+     ¦   ¦       ¦   ¦   °--Refer to TB services                    ,1,pIsolation*cost.prison.cell.isolation,0,0,0,0
+     ¦   ¦       ¦   ¦       ¦--Attended                            ,attend.nhs.referral,cost.nhs.tb.service + cost.prison.escort + cost.tb.investigations,0,0,0,0
+     ¦   ¦       ¦   ¦       ¦   ¦--TB                              ,soc.prop.tb.dx,0,1,0,0,0
+     ¦   ¦       ¦   ¦       ¦   ¦   °--TB outcomes                 ,1,0,0,0,0,0
+     ¦   ¦       ¦   ¦       ¦   ¦       ¦--ATT                     ,soc.prop.starting.att,0,0,1,0,0
+     ¦   ¦       ¦   ¦       ¦   ¦       ¦   ¦--completed ATT       ,soc.prop.completing.att,(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB) + cost.inpatient,0,0,1,1
+     ¦   ¦       ¦   ¦       ¦   ¦       ¦   °--did not complete ATT,1-soc.prop.completing.att,IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + pDSTB*DurDSTB*(cost.dsatt.drugs + cost.dots))+ IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visits + cost.prison.escort)  + (1-pDSTB)*DurMDRTB*(cost.mdratt.drugs + cost.dots)) + cost.inpatient,0,0,1,1
+     ¦   ¦       ¦   ¦       ¦   ¦       °--no ATT                  ,1-soc.prop.starting.att,0,0,0,0,1
+     ¦   ¦       ¦   ¦       ¦   °--Not TB                          ,1-soc.prop.tb.dx,0,0,0,0,1
+     ¦   ¦       ¦   ¦       °--did not Attend                      ,1-attend.nhs.referral,0,0,0,0,0
+     ¦   ¦       ¦   ¦           ¦--TB                              ,tbprev.symptomatic,0,1,0,0,0
+     ¦   ¦       ¦   ¦           ¦   °--TB outcomes                 ,1,0,0,0,0,0
+     ¦   ¦       ¦   ¦           ¦       ¦--ATT                     ,soc.prop.starting.att,0,0,1,0,0
+     ¦   ¦       ¦   ¦           ¦       ¦   ¦--completed ATT       ,soc.prop.completing.att,(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB) + cost.inpatient,0,0,1,1
+     ¦   ¦       ¦   ¦           ¦       ¦   °--did not complete ATT,1-soc.prop.completing.att,IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + pDSTB*DurDSTB*(cost.dsatt.drugs + cost.dots))+ IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visits + cost.prison.escort)  + (1-pDSTB)*DurMDRTB*(cost.mdratt.drugs + cost.dots)) + cost.inpatient,0,0,1,1
+     ¦   ¦       ¦   ¦           ¦       °--no ATT                  ,1-soc.prop.starting.att,0,0,0,0,1
+     ¦   ¦       ¦   ¦           °--Not TB                          ,1-tbprev.symptomatic,0,0,0,0,1
+     ¦   ¦       ¦   °--No clinical suspicion of TB                 ,1-soc.prop.tb.suspicion,0,0,0,0,0
+     ¦   ¦       °--No prison GP assessment                         ,1-soc.prop.prison.gp.assessment,0,0,0,0,0
+     ¦   ¦           ¦--TB                                          ,tbprev.symptomatic,0,1,0,0,0
+     ¦   ¦           ¦   °--TB outcomes                             ,1,0,0,0,0,0
+     ¦   ¦           ¦       ¦--ATT                                 ,soc.prop.starting.att,0,0,1,0,0
+     ¦   ¦           ¦       ¦   ¦--completed ATT                   ,soc.prop.completing.att,(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB) + cost.inpatient,0,0,1,1
+     ¦   ¦           ¦       ¦   °--did not complete ATT            ,1-soc.prop.completing.att,IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + pDSTB*DurDSTB*(cost.dsatt.drugs + cost.dots))+ IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visits + cost.prison.escort)  + (1-pDSTB)*DurMDRTB*(cost.mdratt.drugs + cost.dots)) + cost.inpatient,0,0,1,1
+     ¦   ¦           ¦       °--no ATT                              ,1-soc.prop.starting.att,0,0,0,0,1
+     ¦   ¦           °--Not TB                                      ,1-tbprev.symptomatic,0,0,0,0,1
+     ¦   °--No cough ≥ 3 weeks                                      ,1-soc.prop.cough.3weeks,0,0,0,0,0
+     ¦       ¦--Other TB suggestive symptoms                        ,soc.prop.w.other.symptoms,0,0,0,0,0
+     ¦       ¦   ¦--Assessed at next GP appointment                 ,soc.prop.prison.gp.assessment,0,0,0,0,0
+     ¦       ¦   ¦   ¦--Clinical suspicion of TB                    ,soc.prop.tb.suspicion,0,0,0,0,0
+     ¦       ¦   ¦   ¦   °--Refer to TB services                    ,1,pIsolation*cost.prison.cell.isolation,0,0,0,0
+     ¦       ¦   ¦   ¦       ¦--Attended                            ,attend.nhs.referral,cost.nhs.tb.service + cost.prison.escort + cost.tb.investigations,0,0,0,0
+     ¦       ¦   ¦   ¦       ¦   ¦--TB                              ,soc.prop.tb.dx,0,1,0,0,0
+     ¦       ¦   ¦   ¦       ¦   ¦   °--TB outcomes                 ,1,0,0,0,0,0
+     ¦       ¦   ¦   ¦       ¦   ¦       ¦--ATT                     ,soc.prop.starting.att,0,0,1,0,0
+     ¦       ¦   ¦   ¦       ¦   ¦       ¦   ¦--completed ATT       ,soc.prop.completing.att,(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB) + cost.inpatient,0,0,1,1
+     ¦       ¦   ¦   ¦       ¦   ¦       ¦   °--did not complete ATT,1-soc.prop.completing.att,IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + pDSTB*DurDSTB*(cost.dsatt.drugs + cost.dots))+ IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visits + cost.prison.escort)  + (1-pDSTB)*DurMDRTB*(cost.mdratt.drugs + cost.dots)) + cost.inpatient,0,0,1,1
+     ¦       ¦   ¦   ¦       ¦   ¦       °--no ATT                  ,1-soc.prop.starting.att,0,0,0,0,1
+     ¦       ¦   ¦   ¦       ¦   °--Not TB                          ,1-soc.prop.tb.dx,0,0,0,0,1
+     ¦       ¦   ¦   ¦       °--did not Attend                      ,1-attend.nhs.referral,0,0,0,0,0
+     ¦       ¦   ¦   ¦           ¦--TB                              ,tbprev.symptomatic,0,1,0,0,0
+     ¦       ¦   ¦   ¦           ¦   °--TB outcomes                 ,1,0,0,0,0,0
+     ¦       ¦   ¦   ¦           ¦       ¦--ATT                     ,soc.prop.starting.att,0,0,1,0,0
+     ¦       ¦   ¦   ¦           ¦       ¦   ¦--completed ATT       ,soc.prop.completing.att,(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB) + cost.inpatient,0,0,1,1
+     ¦       ¦   ¦   ¦           ¦       ¦   °--did not complete ATT,1-soc.prop.completing.att,IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + pDSTB*DurDSTB*(cost.dsatt.drugs + cost.dots))+ IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visits + cost.prison.escort)  + (1-pDSTB)*DurMDRTB*(cost.mdratt.drugs + cost.dots)) + cost.inpatient,0,0,1,1
+     ¦       ¦   ¦   ¦           ¦       °--no ATT                  ,1-soc.prop.starting.att,0,0,0,0,1
+     ¦       ¦   ¦   ¦           °--Not TB                          ,1-tbprev.symptomatic,0,0,0,0,1
+     ¦       ¦   ¦   °--No clinical suspicion of TB                 ,1-soc.prop.tb.suspicion,0,0,0,0,0
+     ¦       ¦   °--Not assessed at next GP appointment             ,1-soc.prop.prison.gp.assessment,0,0,0,0,0
+     ¦       ¦       ¦--TB                                          ,tbprev.symptomatic,0,1,0,0,0
+     ¦       ¦       ¦   °--TB outcomes                             ,1,0,0,0,0,0
+     ¦       ¦       ¦       ¦--ATT                                 ,soc.prop.starting.att,0,0,1,0,0
+     ¦       ¦       ¦       ¦   ¦--completed ATT                   ,soc.prop.completing.att,(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB) + cost.inpatient,0,0,1,1
+     ¦       ¦       ¦       ¦   °--did not complete ATT            ,1-soc.prop.completing.att,IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + pDSTB*DurDSTB*(cost.dsatt.drugs + cost.dots))+ IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visits + cost.prison.escort)  + (1-pDSTB)*DurMDRTB*(cost.mdratt.drugs + cost.dots)) + cost.inpatient,0,0,1,1
+     ¦       ¦       ¦       °--no ATT                              ,1-soc.prop.starting.att,0,0,0,0,1
+     ¦       ¦       °--Not TB                                      ,1-tbprev.symptomatic,0,0,0,0,1
+     ¦       °--No other TB suggestive symptoms                     ,1-soc.prop.w.other.symptoms,0,0,0,0,0
+     ¦           °--Advice                                          ,1,0,0,0,0,0
+     °--No symptoms                                                 ,1-soc.prop.ppd.symptoms,0,0,0,0,0

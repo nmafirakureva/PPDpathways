@@ -226,6 +226,9 @@ AddDataDrivenLabels <- function(D){
   D[,soc.prop.tb.dx:=ifelse(tb=='TBD',sens.xpert,1-spec.xpert)]
   D[,int.prop.tb.dx:=ifelse(tb=='TBD',sens.xpert,1-spec.xpert)]
   
+  # Passive case detection
+  D[,tbprev.symptomatic:= 0.07]
+  
   # starting ATT
   # Not changed here
   # D[,int.prop.starting.att:=1]
@@ -302,6 +305,8 @@ AddDataDrivenLabels <- function(D){
   D[,cost.urgent.prison.gp.assess:=cost.prison.gp.assess]
   D[,cost.tb.sympt.assess:=cost.tb.sympt.screen]
   D[,durTPT:=DurTPT]
+  D[,cost.inpatient:=(pDSTB*smear.positive*DurDSTBIsolation*(cost.dstb.ipd + cost.prison.bedwatch) + 
+                        (1-pDSTB)*smear.positive*DurMDRTBIsolation*(cost.mdrtb.ipd.smear.positive + cost.prison.bedwatch))]
   # D[,pAttending:=1] # changed to attend.nhs.referral
   D[,pIsolation:=0]
   D[,nhs.referral:=1]

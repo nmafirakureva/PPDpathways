@@ -1,20 +1,20 @@
-ParameterName,Unit cost,Range,Year of cost,Description,Source
-cost.tb.sympt.screen,12.5,6.25-18.75,,TB symptom screening prison/PPD nurse time,Calculated
-cost.overheads,50,,,TB symptom screening space & materials,Assumed
-cost.prison.cell.isolation,280.97,271-283,,Prison single-cell or healthcare unit isolation,EBW Prison costings
-cost.nhs.tb.service,195,,2021/22,NHS TB services outpatient visit,NHS reference costs
-cost.prison.escort,122.78,118-123,?,Prison security & transport,EBW Prison costings
-cost.tb.investigations,104.5,,2015,TB investigations,Drobniewski et al. (2015)
-cost.dstb.opd.visit,115.64,,2015,NHS TB services outpatient visit for DSTB,Drobniewski et al. (2015)
-cost.mdrtb.opd.visit,171.87,,2015,NHS TB services outpatient visit for MDRTB,Drobniewski et al. (2015)
-cost.dsatt.drugs,0.87,,2015,DSTB medicines,Drobniewski et al. (2015)
-cost.mdratt.drugs,21.2,,2015,MDR-TB medicines,Drobniewski et al. (2015)
-cost.att.dots,12.5,6.25-18.75,,DOT costs Prison/PPD officer or nurse time,Calculated
-cost.prison.gp.assess,180,,2009,Prison GP assessment,Unit Costs in Criminal Justice
-cost.chest.xray,24.21,,2013,Chest X-rayÂ²,Drobniewski et al. (2015)
-cost.contact.tracing,842,,2015,Cost per person contact-traced,Drobniewski et al. (2015
-cost.ltbi.drugs,1.09,,,LTBI medicines,BNF
-cost.igra.test,112,,,IGRA test,UK PREDICT TB study
-cost.mdrtb.ipd.smear.positive,1126,,,Negative-pressure isolation (MDRTB),Drobniewski et al. (2015)
-cost.dstb.ipd,390,,,Standard isolation (DSTB),Drobniewski et al. (2015)
-cost.prison.bedwatch,280.97,271-283,,Bedwatch,EBW Prison costings
+ParameterName,Unit cost,Range,Description,Source,SourceFull
+cost.tb.sympt.screen,12.5,6.25-18.75,TB symptom screening prison/PPD nurse time,Calculated,Calculated using PSSRU unit costs and staff time from Sutton et al. (2006)
+cost.overheads,50,,TB symptom screening space & materials,Assumed,Assumed
+cost.prison.cell.isolation,280.97,271-283,Prison single-cell or healthcare unit isolation,London Prison costings,EBW Prison costings
+cost.nhs.tb.service,195,,NHS TB services outpatient visit,NHS reference costs,EBW Prison costings
+cost.prison.escort,122.78,118-123,Prison security & transport,London Prison costings,EBW Prison costings
+cost.tb.investigations,104.5,,TB investigations,Drobniewski et al. (2015),"Drobniewski F, Cooke M, Jordan J, et al. Systematic review, meta-analysis and economic modelling of molecular diagnostic tests for antibiotic resistance in tuberculosis. Southampton (UK): NIHR Journals Library; 2015 May. (Health Technology Assessment, No. 19.34.) Chapter 5, Health-care costs and utilities. Available from: https://www.ncbi.nlm.nih.gov/books/NBK293777/"
+cost.dstb.opd.visit,115.64,,NHS TB services outpatient visit for DSTB,Drobniewski et al. (2015),"Drobniewski F, Cooke M, Jordan J, et al. Systematic review, meta-analysis and economic modelling of molecular diagnostic tests for antibiotic resistance in tuberculosis. Southampton (UK): NIHR Journals Library; 2015 May. (Health Technology Assessment, No. 19.34.) Chapter 5, Health-care costs and utilities. Available from: https://www.ncbi.nlm.nih.gov/books/NBK293777/"
+cost.mdrtb.opd.visit,171.87,,NHS TB services outpatient visit for MDRTB,Drobniewski et al. (2015),"Drobniewski F, Cooke M, Jordan J, et al. Systematic review, meta-analysis and economic modelling of molecular diagnostic tests for antibiotic resistance in tuberculosis. Southampton (UK): NIHR Journals Library; 2015 May. (Health Technology Assessment, No. 19.34.) Chapter 5, Health-care costs and utilities. Available from: https://www.ncbi.nlm.nih.gov/books/NBK293777/"
+cost.dsatt.drugs,0.87,,DSTB medicines,Drobniewski et al. (2015),"Drobniewski F, Cooke M, Jordan J, et al. Systematic review, meta-analysis and economic modelling of molecular diagnostic tests for antibiotic resistance in tuberculosis. Southampton (UK): NIHR Journals Library; 2015 May. (Health Technology Assessment, No. 19.34.) Chapter 5, Health-care costs and utilities. Available from: https://www.ncbi.nlm.nih.gov/books/NBK293777/"
+cost.mdratt.drugs,21.2,,MDR-TB medicines,Drobniewski et al. (2015),"Drobniewski F, Cooke M, Jordan J, et al. Systematic review, meta-analysis and economic modelling of molecular diagnostic tests for antibiotic resistance in tuberculosis. Southampton (UK): NIHR Journals Library; 2015 May. (Health Technology Assessment, No. 19.34.) Chapter 5, Health-care costs and utilities. Available from: https://www.ncbi.nlm.nih.gov/books/NBK293777/"
+cost.att.dots,12.5,6.25-18.75,DOT costs Prison/PPD officer or nurse time,Calculated,Calculated using PSSRU unit costs and staff time from Sutton et al. (2006)
+cost.prison.gp.assess,180,,Prison GP assessment,PSSRU Unit Costs in Criminal Justice,PSSRU Unit Costs in Criminal Justice
+cost.chest.xray,24.21,,Chest X-rayÂ²,Drobniewski et al. (2015),"Drobniewski F, Cooke M, Jordan J, et al. Systematic review, meta-analysis and economic modelling of molecular diagnostic tests for antibiotic resistance in tuberculosis. Southampton (UK): NIHR Journals Library; 2015 May. (Health Technology Assessment, No. 19.34.) Chapter 5, Health-care costs and utilities. Available from: https://www.ncbi.nlm.nih.gov/books/NBK293777/"
+cost.contact.tracing,842,,Cost per person contact-traced,Drobniewski et al. (2015),"Drobniewski F, Cooke M, Jordan J, et al. Systematic review, meta-analysis and economic modelling of molecular diagnostic tests for antibiotic resistance in tuberculosis. Southampton (UK): NIHR Journals Library; 2015 May. (Health Technology Assessment, No. 19.34.) Chapter 5, Health-care costs and utilities. Available from: https://www.ncbi.nlm.nih.gov/books/NBK293777/"
+cost.ltbi.drugs,1.09,,LTBI medicines,British National Formulary (BNF),Joint Formulary Committee. British National Formulary (online) London: BMJ and Pharmaceutical Press <https://bnf.nice.org.uk/drugs/rifampicin-with-isoniazid/medicinal-forms/> [Accessed on [04/07/2024]]
+cost.igra.test,112,,IGRA test,Abubakar et al. (2018),"Abubakar I, Lalvani A, Southern J, Sitch A, Jackson C, Onyimadu O, Lipman M, Deeks JJ, Griffiths C, Bothamley G, Kon OM, Hayward A, Lord J, Drobniewski F. Two interferon gamma release assays for predicting active tuberculosis: the UK PREDICT TB prognostic test study. Health Technol Assess. 2018 Oct;22(56):1-96. doi: 10.3310/hta22560. PMID: 30334521; PMCID: PMC6216045."
+cost.mdrtb.ipd.smear.positive,1126,,Negative-pressure isolation (MDRTB),Drobniewski et al. (2015),"Drobniewski F, Cooke M, Jordan J, et al. Systematic review, meta-analysis and economic modelling of molecular diagnostic tests for antibiotic resistance in tuberculosis. Southampton (UK): NIHR Journals Library; 2015 May. (Health Technology Assessment, No. 19.34.) Chapter 5, Health-care costs and utilities. Available from: https://www.ncbi.nlm.nih.gov/books/NBK293777/"
+cost.dstb.ipd,390,,Standard isolation (DSTB),Drobniewski et al. (2015),"Drobniewski F, Cooke M, Jordan J, et al. Systematic review, meta-analysis and economic modelling of molecular diagnostic tests for antibiotic resistance in tuberculosis. Southampton (UK): NIHR Journals Library; 2015 May. (Health Technology Assessment, No. 19.34.) Chapter 5, Health-care costs and utilities. Available from: https://www.ncbi.nlm.nih.gov/books/NBK293777/"
+cost.prison.bedwatch,280.97,271-283,Bedwatch,London Prison costings,EBW Prison costings

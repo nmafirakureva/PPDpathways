@@ -1,0 +1,11 @@
+ParameterName,Mean,Range,Description,Source,SourceFull
+prop.prev.tb.tx.symp.tb.dx,0.07,,"Past TB diagnosis, started & completed anti-TB treatment, with TB symptoms, attending NHS TB service, TB diagnosis",Calculated using data from prison pilots,
+prop.abn.xray.tb.dx,0.07,,Proportion starting anti-TB treatment,Calculated using data from prison pilots,
+prop.staying.o3.months,0.79,,In prison/ICRC > 3 months,Calculated using data from prison pilots,Rough estimate from Maidstone pilot report
+prop.staying.u3.months.uk,0.79,,"In prison/ICRC <3 months, remaining in the UK",Assuming same figures as above,Assuming same figures as above
+prop.abnormal.xray,0.06,,Abnormal chest X-ray,Calculated using data from prison pilots,"Data for Maidstone, Huntercombe, Lowdham Grange & Swaleside presented in CRG LTBI CENL slides"
+prop.prev.xray,0.01,,Previous chest X-ray < 6 months,Calculated using data from prison pilots,"Data for Maidstone, Huntercombe, Lowdham Grange & Swaleside presented in CRG LTBI CENL slides"
+prop.no.xray.tb.dx,0.07,,"No chest X-ray, attending NHS TB service, TB diagnosis",Calculated using data from prison pilots,Referred for a specialist assessment following a positive screen result in 6 London prisons over 2.4 years (from 2021-04-30 - 2023-09-30)
+prop.prev.tb.dx,0.02,,Past TB diagnosis,Calculated using data from prison pilots,Data from HMP Parc TB Outbreak 2019-2020
+prop.no.prev.tb.dx.symp.tb.dx,0.07,,"No past TB diagnosis,  with TB symptoms, attending NHS TB service, TB diagnosis",Calculated using data from prison pilots,
+prop.no.prev.xray,0.99,,Previous chest X-ray < 6 months,Assumption,
