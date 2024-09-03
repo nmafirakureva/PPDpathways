@@ -32,6 +32,9 @@ brkt <- function(M, L, H, ndp = 0) {
   )
 }
 
+odds <- function(x) x / (1 - x)
+odds.ratio <- function(x, y) odds(x) / odds(y)
+
 
 testfun <- function(times, p) {
   if(p<0) warning('p<0!')
@@ -159,7 +162,7 @@ revise.flow.parms <- function(parms, # original parameter template
   parms
 }
 
-
+## TODO revise 
 ## revise initial states
 revise.instates <- function(parms,tscale=20){
   lam <- parms$foi
@@ -193,6 +196,87 @@ revise.instates <- function(parms,tscale=20){
   parms
 }
 
+
+## adjust costs and se/sp to represent pre-screening
+pre.screen <- function(parms,SE,SP,verbose=FALSE) {
+  if (verbose) {
+    print('------1: att')
+    print(c(
+      parms$inflow_toATT_TB1,
+      parms$inflow_toATT_L1,
+      parms$inflow_toATT_no1
+    ))
+    print("------1: tpt")
+    print(c(
+      parms$inflow_toTPT_TB1,
+      parms$inflow_toTPT_L1,
+      parms$inflow_toTPT_no1
+    ))
+    print("------1: notx")
+    print(c(
+      parms$inflow_notx_TB1,
+      parms$inflow_notx_L1,
+      parms$inflow_notx_no1
+    ))
+    print("------1: UC")
+    print(c(
+      parms$uc_entry_notx_TB,
+      parms$uc_entry_notx_L,
+      parms$uc_entry_notx_no
+    ))
+  }
+  ## save originals for use later in UC adjustments:
+  p_notx_TB1 <- parms$inflow_notx_TB1
+  p_notx_L1 <- parms$inflow_notx_L1
+  p_notx_no1 <- parms$inflow_notx_no1
+  ## see notes:
+  ## ... TBD
+  parms$inflow_toATT_TB1 <- parms$inflow_toATT_TB1 * SE # se
+  parms$inflow_toTPT_TB1 <- parms$inflow_toTPT_TB1 * SE # se
+  parms$inflow_notx_TB1 <- parms$inflow_notx_TB1 * SE + (1-SE) # (1-sp)
+  ## ...TBI
+  parms$inflow_toATT_L1 <- parms$inflow_toATT_L1 * SE # se
+  parms$inflow_toTPT_L1 <- parms$inflow_toTPT_L1 * SE # se
+  parms$inflow_notx_L1 <- parms$inflow_notx_L1 * SE + (1-SE) # (1-sp)
+  ## ...NO TB
+  parms$inflow_toATT_no1 <- parms$inflow_toATT_no1 * (1 - SP) # 1-sp
+  parms$inflow_toTPT_no1 <- parms$inflow_toTPT_no1 * (1 - SP) # 1-sp
+  parms$inflow_notx_no1 <- parms$inflow_notx_no1 * (1 - SP) + SP# (1-sp)g + sp
+  ## COSTS see notes: only notx differ
+  parms$uc_entry_notx_TB <- parms$uc_entry_notx_TB * SE * p_notx_TB1 / parms$inflow_notx_TB1
+  parms$uc_entry_notx_L <- parms$uc_entry_notx_L * SE * p_notx_L1 / parms$inflow_notx_L1
+  parms$uc_entry_notx_no <- parms$uc_entry_notx_no * (1 - SP) * p_notx_no1 / parms$inflow_notx_no1
+  if(verbose){
+    print("------2: att")
+    print(c(
+      parms$inflow_toATT_TB1,
+      parms$inflow_toATT_L1,
+      parms$inflow_toATT_no1
+    ))
+    print("------2: tpt")
+    print(c(
+      parms$inflow_toTPT_TB1,
+      parms$inflow_toTPT_L1,
+      parms$inflow_toTPT_no1
+    ))
+    print("------2: notb")
+    print(c(
+      parms$inflow_notx_TB1,
+      parms$inflow_notx_L1,
+      parms$inflow_notx_no1
+    ))
+    print("------2: UC")
+    print(c(
+      parms$uc_entry_notx_TB,
+      parms$uc_entry_notx_L,
+      parms$uc_entry_notx_no
+    ))
+  }
+  ## return
+  parms
+}
+
+
 ## ## check
 ## revise.instates(parms)
 
@@ -210,9 +294,10 @@ revise.HE.parms <- function(parms, # original parameter template
   A <- list(
     ## ATT for those found passively within the system
     uc_attppd = DR[id==j & tb=='TBD']$int_att_cost * !zero.nonscreen.costs, 
-    uc_attout = 10e3 * !zero.nonscreen.costs, # ATT following release
+    uc_attout = 10e3 * !zero.nonscreen.costs, # ATT following release TODO what is the 10e3
 
     ## ------- BOTH
+    ## ATT
     inflow_toATT_TB0 = DR[id==j & tb=='TBD']$soc_att_check, # NOTE fp ATT doesn't affect state
     inflow_toATT_L0 = DR[id==j & tb=='TBI']$soc_att_check, #
     inflow_toATT_no0 = DR[id==j & tb=='noTB']$soc_att_check,
@@ -220,6 +305,10 @@ revise.HE.parms <- function(parms, # original parameter template
     inflow_toTPT_TB0 = DR[id==j & tb=='TBD']$soc_tpt_check,
     inflow_toTPT_L0 = DR[id==j & tb=='TBI']$soc_tpt_check,
     inflow_toTPT_no0 = DR[id==j & tb=='noTB']$soc_tpt_check,
+    ## ...NOTX
+    inflow_notx_TB0 = DR[id==j & tb=='TBD']$soc_notx_check,
+    inflow_notx_L0 = DR[id==j & tb=='TBI']$soc_notx_check,
+    inflow_notx_no0 = DR[id==j & tb=='noTB']$soc_notx_check,
 
     ## ------- SOC
     ## ... ATT
@@ -230,6 +319,10 @@ revise.HE.parms <- function(parms, # original parameter template
     inflow_toTPT_TB1.soc = DR[id==j & tb=='TBD']$soc_tpt_check,
     inflow_toTPT_L1.soc = DR[id==j & tb=='TBI']$soc_tpt_check,
     inflow_toTPT_no1.soc = DR[id==j & tb=='noTB']$soc_tpt_check,
+    ## ...NOTX
+    inflow_notx_TB1.soc = DR[id==j & tb=='TBD']$soc_notx_check,
+    inflow_notx_L1.soc = DR[id==j & tb=='TBI']$soc_notx_check,
+    inflow_notx_no1.soc = DR[id==j & tb=='noTB']$soc_notx_check,
     ## ...unit costs
     ## ......TPT
     uc_entry_tpt_TB.soc = 0,## DR[id==j & tb=='TBD']$soc_tpt_cost
@@ -252,6 +345,10 @@ revise.HE.parms <- function(parms, # original parameter template
     inflow_toTPT_TB1.int = 0,## DR[id==j & tb=='TBD']$int_tpt_check,
     inflow_toTPT_L1.int = DR[id==j & tb=='TBI']$int_tpt_check,
     inflow_toTPT_no1.int = 0,## DR[id==j & tb=='noTB']$int_tpt_check,
+    ## ...NOTX
+    inflow_notx_TB1.int = DR[id==j & tb=='TBD']$int_notx_check,
+    inflow_notx_L1.int = DR[id==j & tb=='TBI']$int_notx_check,
+    inflow_notx_no1.int = DR[id==j & tb=='noTB']$int_notx_check,
     ## ...unit costs
     ## ......TPT
     uc_entry_tpt_TB.int = 0,## DR[id==j & tb=='TBD']$int_tpt_cost
@@ -292,6 +389,10 @@ revise.HE.parms <- function(parms, # original parameter template
       parms$inflow_toTPT_TB1 <- A$inflow_toTPT_TB1.soc
       parms$inflow_toTPT_L1 <- A$inflow_toTPT_L1.soc
       parms$inflow_toTPT_no1 <- A$inflow_toTPT_no1.soc
+      ## ...NOTX
+      parms$inflow_notx_TB1 <- A$inflow_notx_TB1.soc
+      parms$inflow_notx_L1 <- A$inflow_notx_L1.soc
+      parms$inflow_notx_no1 <- A$inflow_notx_no1.soc
       ## ...unit costs
       ## ......TPT
       parms$uc_entry_tpt_TB <- A$uc_entry_tpt_TB.soc
@@ -314,6 +415,10 @@ revise.HE.parms <- function(parms, # original parameter template
       parms$inflow_toTPT_TB1 <- A$inflow_toTPT_TB1.int
       parms$inflow_toTPT_L1 <- A$inflow_toTPT_L1.int
       parms$inflow_toTPT_no1 <- A$inflow_toTPT_no1.int
+      ## ...NOTX
+      parms$inflow_notx_TB1 <- A$inflow_notx_TB1.int
+      parms$inflow_notx_L1 <- A$inflow_notx_L1.int
+      parms$inflow_notx_no1 <- A$inflow_notx_no1.int
       ## ...unit costs
       ## ......TPT
       parms$uc_entry_tpt_TB <- A$uc_entry_tpt_TB.int
@@ -344,6 +449,7 @@ others <- c('dLYL','deaths','notif100k','CC0','CC','qoldec')
 diffdata <- function(parms,SOCcov=0,INTcov=1){
   parms$inflow_toTPT_L0 <- parms$inflow_toATT_TB0 <- SOCcov #BL zero
   parms$inflow_toTPT_L1 <- parms$inflow_toATT_TB1 <- SOCcov #OFF
+  ## TODO will now require safety: check if used
   tt <- seq(from=0, to=120, by=0.1)  #time frame to run over
   ## SOC:
   y <- runmodel(tt,parms)           #run model
@@ -364,13 +470,13 @@ run.HE.socint <- function(parms,DR,j,
                           zero.nonscreen.costs=FALSE, #for debugging/checking
                           ignore.tree.parms=FALSE,    #for debugging/checking
                           end_time=120,int_time=50,
-                          static=-1,totpop=87489){
+                          static=-1,totpop=87489,prescreen=FALSE){
     tt <- seq(from=0, to=end_time, by=0.1)  #time frame to run over: 70 years after 50 burn
     parms$staticfoi <- static            #dynamic
     parms$int_time <- int_time #fix
     ## SOC: ## sample from tree-derived parms
     if(!ignore.tree.parms)
-      parms <- revise.HE.parms(parms,DR,j,arm='soc',zero.nonscreen.costs=zero.nonscreen.costs)
+      parms <- revise.HE.parms(parms, DR, j, arm = "soc", zero.nonscreen.costs = zero.nonscreen.costs)
     test <- parms; test$staticfoi <- NULL
     if(any(unlist(test)<0)) stop(paste0('Parameter<0 for SOC @ run=',j,'\n parm=',
                                         names(test)[which(unlist(test)<0)],'\n'))
@@ -378,8 +484,17 @@ run.HE.socint <- function(parms,DR,j,
     YO <- runmodelsafely(tt, parms) # run model
     y <- YO$y
     ## INT: ## sample from tree-derived parms
-    if(!ignore.tree.parms)
-      parms <- revise.HE.parms(parms,DR,j,arm='int',zero.nonscreen.costs=zero.nonscreen.costs)
+    if (!ignore.tree.parms) {
+      parms <- revise.HE.parms(parms, DR, j, arm = "int", zero.nonscreen.costs = zero.nonscreen.costs)
+    }
+    if (!prescreen) {
+      SE1 <- 1
+      SP1 <- 0
+    } else {
+      SE1 <- runif(1) * 0.8 + 0.1 # in [0.1,0.9]
+      SP1 <- runif(1) * 0.8 + 0.1 # in [0.1,0.9]
+      parms <- pre.screen(parms,SE1,SP1)
+    }
     test <- parms; test$staticfoi <- NULL
     if(any(unlist(test)<0)) stop(paste0('Parameter<0 for INT @ run=',j,'\n parm=',
                                         names(test)[which(unlist(test)<0)],'\n'))
@@ -388,6 +503,30 @@ run.HE.socint <- function(parms,DR,j,
     ## yi <- runmodel(tt,parms)           #run model
     mid <- which(y[,'t']==int_time)    #NOTE could break if don't fit exactly in units of dt
     end <- nrow(y)
+    if(j==1)
+      save(parms, file = here("transmission/data/first.parms.Rdata"))
+    if(nrow(yi)<nrow(y)){
+      cat("Fewer rows in yi (", nrow(yi), ") than y (", nrow(y), ")!\n")
+      cat("j = ", j, "\n")
+      cat("saving parameters!\n")
+      save(parms, file = here("transmission/data/last.problem.parms.Rdata"))
+      print(c(SE1,SP1))
+      print(c(
+        parms$inflow_toATT_TB1,
+        parms$inflow_toATT_L1,
+        parms$inflow_toATT_no1
+      ))
+      print(c(
+        parms$inflow_toTPT_TB1,
+        parms$inflow_toTPT_L1,
+        parms$inflow_toTPT_no1
+      ))
+      print(c(
+        parms$uc_entry_notx_TB,
+        parms$uc_entry_notx_L,
+        parms$uc_entry_notx_no
+      ))
+    }
     blpop <- y[mid,"ppdpop"]
     ratio <- totpop/blpop
     RES <- data.table(
@@ -416,7 +555,10 @@ run.HE.socint <- function(parms,DR,j,
       int.ccasesout=yi[end,"casesout"],
       int.cTPT=yi[end,'cTPT'],
       int.cATTtp=yi[end,'cATTtp'],
-      int.cATTfp = yi[end, "cATTfp"]
+      int.cATTfp = yi[end, "cATTfp"],
+      ## pre-screen
+      SE1=SE1,
+      SP1=SP1
     )
     RES[,dQ:=(soc.qoldec+soc.dLYL-int.qoldec-int.dLYL)]
     RES[,Q.soc:=soc.qoldec+soc.dLYL]
@@ -429,11 +571,12 @@ run.HE.socint <- function(parms,DR,j,
 ## ## ============= HE workflow =============
 PSAloop <- function(Niter=4e3,parms,smpsd,DR,
                     zero.nonscreen.costs=FALSE,verbose=FALSE,
-                    static=FALSE,community=TRUE,posttb=TRUE){
+                    static=FALSE,community=TRUE,posttb=TRUE,targeting=TRUE){
   if(!static & community & posttb) cat('Running basecase analysis!\n')
   if (static) cat("Running static model!\n")
   if (!community) cat("Running with community transmission turned off!\n")
   if (!posttb) cat("Running with post-TB effects turned off!\n")
+  if (targeting) cat("Running with pre-screen targeting turned on!\n")
   if(Niter>nrow(smpsd)){
     cat('Niter>nrow(smpsd): resampling extra replicates!\n')
     xtra <- smpsd[sample(nrow(smpsd),Niter-nrow(smpsd),replace=TRUE)]
@@ -455,6 +598,7 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,
     if(!j%%50) print(j)
     ## set parms related to PPD flows
     parms <- revise.flow.parms(parms,smpsd,j)
+    ## record for later (redone in run.HE.socint):
     hep <- revise.HE.parms(parms,DR,j,
                            zero.nonscreen.costs=zero.nonscreen.costs,summarize.HEparms = TRUE)
     ## set intervention and HE parms
@@ -479,7 +623,10 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,
       parms$hrqolptb <- 0
     }
     ## === run model:
-    ANS <- run.HE.socint(parms,DR,j,zero.nonscreen.costs=zero.nonscreen.costs)
+    ANS <- run.HE.socint(parms,
+                         DR,j,
+                         zero.nonscreen.costs=zero.nonscreen.costs,
+                         prescreen = targeting)
     ## capture parms also
     V <- unlist(parms)
     nm <- names(V)
@@ -494,6 +641,10 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,
     RES[[j]] <- ANS
   } #end loop
   RES <- rbindlist(RES)
+  ## add pre-screen data
+  RES[, prevTBI := (parm_ifrac_L + parm_ifrac_E + parm_ifrac_epTB + parm_ifrac_lpTB)]
+  RES[, OR := ifelse(targeting, odds.ratio(SP1, SE1), 1)]
+  RES[, frac.screened := ifelse(targeting, prevTBI * SE1 + (1 - prevTBI) * (1 - SP1), 1)]
   ## inspect
   cat('--- deaths diff summary ---\n')
   print(RES[,summary(soc.deaths-int.deaths)])
