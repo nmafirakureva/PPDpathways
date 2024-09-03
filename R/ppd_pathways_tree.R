@@ -140,7 +140,6 @@ SOC$AddChildNode(tempTree)
 
 SOC$name <- 'Standard of care pathway'
 
-
 ## # defining tree quantities 
 ## # p = probability/proportion
 ## # cost = cost
@@ -163,17 +162,14 @@ SOC$name <- 'Standard of care pathway'
 ## # noatt = TB no ATT
 ## # check = check
 
-
-labdat <- c('p','cost',	'cost.ppd',	'cost.nhs',
+labdat <- c('p','cost',	'cost.screen',	'cost.tb.assessment',	'cost.tpt',	'cost.att', 'cost.ppd',	'cost.nhs',
             'screen', 'igra',	'ltbi', 
             'tpt', 'prevtbdx', 'coprevtb','att',  'attend', 'tptend', 'check')
-
 
 tree2file(SOC,filename = here('indata/CSV/SOC.csv'),
           'p','cost',	'cost.ppd',	'cost.nhs',
           'screen', 'igra',	'ltbi', 
           'tpt', 'prevtbdx', 'coprevtb','att',  'attend', 'tptend', 'check')
-
 
 ## create version with probs/costs
 fn <- here('indata/CSV/SOC1.csv')
@@ -190,11 +186,12 @@ if(file.exists(fn)){
   SOC$Set(check=0,filterFun=function(x) length(x$children)>0)
   ## save out
   tree2file(SOC,filename = here('indata/CSV/SOC2.csv'),
-            'p','cost',	'cost.ppd',	'cost.nhs',
+            'p','cost',	'cost.screen',	'cost.tb.assessment',	'cost.tpt',	'cost.att', 'cost.ppd',	'cost.nhs',
             'screen', 'igra',	'ltbi', 
             'tpt', 'prevtbdx', 'coprevtb','att',  'attend', 'tptend', 'check')
 }
 
+names(labz)
 
 ## NOTE this would ideally be moved up into the workflow above
 ## add a notx variable = no ATT *and* no TPT
@@ -241,7 +238,7 @@ if(file.exists(fn)){
   INT$Set(check=0,filterFun=function(x) length(x$children)>0)
   ## save out
   tree2file(INT,filename = here('indata/CSV/INT2.csv'),
-            'p','cost',	'cost.ppd',	'cost.nhs',
+            'p','cost',	'cost.screen',	'cost.tb.assessment',	'cost.tpt',	'cost.att', 'cost.ppd',	'cost.nhs',
             'screen', 'igra',	'ltbi', 
             'tpt', 'prevtbdx', 'coprevtb','att',  'attend', 'tptend', 'check')
 }
@@ -314,8 +311,6 @@ SOC.notx.F <- makeTfuns(SOC.notx,fnmz)
 INT.att.F <- makeTfuns(INT.att,fnmz)
 INT.tpt.F <- makeTfuns(INT.tpt,fnmz)
 INT.notx.F <- makeTfuns(INT.notx,fnmz)
-
-
 
 ## running all function
 runallfuns <- function(D,arm='all'){

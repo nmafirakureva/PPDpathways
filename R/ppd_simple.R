@@ -17,7 +17,8 @@ if(shell){
   ##sensitivity analyses (mostly for PT):
   ## '' = basecase
   ## 'noltfu'= improved TB presumption, GP assessment, clinical suspicion, NHS attendance, starting ATT, starting TPT
-  sacases <- c('','noltfu')
+  # sacases <- c('', 'screenAll','noltfu', 'presumptiveTB', 'prisonGP', 'clinicalSuspicion', 'attendNHS', 'startATT')
+  sacases <- c('', 'screenAll','noltfu', 'FUVisitsCost', 'DOTsCost', 'XrayCost', 'noPrisonEscort')
   SA <- sacases[1]
 }
 
@@ -79,13 +80,13 @@ names(PS) <- names(RD) <- names(CD) <- names
 
 PD.SOC <- PD |> 
   mutate(NAME = case_when(
-    !grepl('tb.presum|.tpt|started.att|ltbi|verbal|prog.tb|nContacts|sens.|spec.', NAME) ~ paste0('soc.', NAME),
+    !grepl('tb.presum|started.att|ltbi|verbal|prog.tb|nContacts|sens.|spec.', NAME) ~ paste0('soc.', NAME),
     .default = NAME
   ))
 
 PD.INT <- PD |> 
   mutate(NAME = case_when(
-    !grepl('tb.presum|.tpt|started.att|ltbi|verbal|prog.tb|nContacts|sens.|spec.', NAME) ~ paste0('int.', NAME),
+    !grepl('tb.presum|started.att|ltbi|verbal|prog.tb|nContacts|sens.|spec.', NAME) ~ paste0('int.', NAME),
     .default = NAME
   ))
 
@@ -159,7 +160,8 @@ rcsts <- CD
 names(CD)
 
 rcsts <- rcsts |> 
-  mutate(Mean = as.numeric(Mean), Range = as.character(Range),
+  mutate(ParameterName = paste0('u', ParameterName),
+         Mean = as.numeric(Mean), Range = as.character(Range),
          Median = ifelse(Range!='', paste0(Mean, ' (', Range, ')'), Range))
 
 rcsts <- rcsts %>%
@@ -185,9 +187,30 @@ C <- MakeCostData(allcosts[iso3=='GBR'],nreps)               # make cost PSA NOT
 ## add cost data
 D <- merge(D0,C,by=c('id'),all.x=TRUE)       # merge into PSA (differentiated D and D0 to facilitate rerunning)
 
+D[,.(ucost.att.dots)]
+
+if(SA == 'FUVisitsCost'){
+  # No followup visit costs
+  D[,dstb.visits:=0]
+  D[,mdrtb.visits:=0]
+  D[,TPT.visits:=0]
+}
+
+if(SA == 'DOTsCost'){
+  # No DOTs costs
+  D[,ucost.att.dots:=0]
+}
+
+
+if(SA == 'noPrisonEscort'){
+  # No followup visit costs
+  D[,ucost.prison.escort:=0]
+  D[,mdrtb.visits:=0]
+}
+
 if(SA == 'noltfu'){
   # TB symptom screening
-  # D[,int.prop.tb.sympt.screen:=1] 
+  D[,int.prop.tb.sympt.screen:=1]
   # TB symptoms at screening
   D[,int.prop.presumtive.tb:=ifelse(tb=='TBD',1,1-spec.symptom)]
   # Prison GP assessment
@@ -206,16 +229,96 @@ if(SA == 'noltfu'){
   # D[,int.prop.completing.tpt:=1]
 } 
 
+
+if(SA == 'screenAll'){
+  # TB symptom screening
+  D[,int.prop.tb.sympt.screen:=1]
+} 
+
+if(SA == 'presumptiveTB'){
+  # TB symptom screening
+  # D[,int.prop.tb.sympt.screen:=1] 
+  # TB symptoms at screening
+  D[,int.prop.presumtive.tb:=ifelse(tb=='TBD',1,1-spec.symptom)]
+} 
+
+if(SA == 'prisonGP'){
+  # TB symptom screening
+  # D[,int.prop.tb.sympt.screen:=1] 
+  # TB symptoms at screening
+  D[,int.prop.presumtive.tb:=ifelse(tb=='TBD',1,1-spec.symptom)]
+  # Prison GP assessment
+  D[,int.prop.prison.gp.assessment:=1]
+  # D[,soc.prop.prison.gp.assessment:=1]
+}
+
+if(SA == 'clinicalSuspicion'){
+  # TB symptom screening
+  # D[,int.prop.tb.sympt.screen:=1] 
+  # TB symptoms at screening
+  D[,int.prop.presumtive.tb:=ifelse(tb=='TBD',1,1-spec.symptom)]
+  # Prison GP assessment
+  D[,int.prop.prison.gp.assessment:=1]
+  # D[,soc.prop.prison.gp.assessment:=1]
+  # Clinical suspicion of TB disease
+  # D[,soc.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.symptom)]
+  D[,int.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.any.abn.xray)]
+}
+
+if(SA == 'attendNHS'){
+  # TB symptom screening
+  # D[,int.prop.tb.sympt.screen:=1] 
+  # TB symptoms at screening
+  D[,int.prop.presumtive.tb:=ifelse(tb=='TBD',1,1-spec.symptom)]
+  # Prison GP assessment
+  D[,int.prop.prison.gp.assessment:=1]
+  # D[,soc.prop.prison.gp.assessment:=1]
+  # Clinical suspicion of TB disease
+  # D[,soc.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.symptom)]
+  D[,int.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.any.abn.xray)]
+  # Attending NHS referral
+  D[,int.prop.attend.nhs.referral:=1]
+}
+
+if(SA == 'startATT'){
+  # TB symptom screening
+  # D[,int.prop.tb.sympt.screen:=1] 
+  # TB symptoms at screening
+  D[,int.prop.presumtive.tb:=ifelse(tb=='TBD',1,1-spec.symptom)]
+  # Prison GP assessment
+  D[,int.prop.prison.gp.assessment:=1]
+  # D[,soc.prop.prison.gp.assessment:=1]
+  # Clinical suspicion of TB disease
+  # D[,soc.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.symptom)]
+  D[,int.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.any.abn.xray)]
+  # Attending NHS referral
+  D[,int.prop.attend.nhs.referral:=1]
+  # starting & completing ATT
+  D[,int.prop.starting.att:=1]
+  # D[,int.prop.completing.att:=1]
+}
+
+
+
+
 ## compute other parameters (adds by side-effect)
 MakeTreeParms(D,P)
 
 names(D)[grepl('cost', names(D))]
+
+
+D[,.(cost.chest.xray)]
+if(SA == 'XrayCost'){
+  # No DOTs costs
+  D[,cost.chest.xray:=0]
+}
 
 ## checks
 D[,sum(value),by=.(isoz,id)] #CHECK
 # D[,sum(value),by=.(isoz,id,age)] #CHECK
 
 D[,.(isoz,age,soc.prop.tb.sympt.screen, int.prop.tb.sympt.screen)]
+D[,.(ucost.dots)]
 
 ## check for leaks
 head(SOC.F$checkfun(D)) #SOC arm
@@ -327,16 +430,21 @@ fwrite(DRS,file=fn1)
 summary(D[,.(cost.soc, cost.int)])
 
 ## cost of getting ATT (from CSV output)
-D[,mean((pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + 
-           (1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visit + cost.prison.escort)) + 
-          (pDSTB*DurDSTB*cost.dsatt.drugs + (1-pDSTB)*DurMDRTB*cost.mdratt.drugs) + cost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB) +
-          cost.inpatient),
+D[,mean(
+  pDSTB*dstb.visits*(ucost.dstb.opd.visit + ucost.prison.escort) + # DSTB visits
+    (1-pDSTB)*mdrtb.visits*(ucost.mdrtb.opd.visit + ucost.prison.escort) + # MDRTB visits
+    pDSTB*DurDSTB*ucost.dsatt.drugs + (1-pDSTB)*DurMDRTB*ucost.mdratt.drugs + # ATT drugs
+          ucost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB) + # DOTS
+          cost.inpatient), 
   by=tb]
-D[,mean(IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(cost.dstb.opd.visit + cost.prison.escort) + pDSTB*DurDSTB*(cost.dsatt.drugs + cost.dots)) + 
-          IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(cost.mdrtb.opd.visits + cost.prison.escort)  + (1-pDSTB)*DurMDRTB*(cost.mdratt.drugs + cost.dots)) + 
-          cost.inpatient
+D[,mean(
+  IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(ucost.dstb.opd.visit + ucost.prison.escort) + 
+                           pDSTB*DurDSTB*(ucost.dsatt.drugs + ucost.dots)) + 
+    IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(ucost.mdrtb.opd.visit + ucost.prison.escort)  + 
+                               (1-pDSTB)*DurMDRTB*(ucost.mdratt.drugs + ucost.dots)) + 
+    cost.inpatient
 ),by=tb]
-D[,mean(durTPT*(cost.ltbi.drugs + cost.dots)),by=tb]
-D[,mean(durTPT*(cost.ltbi.drugs + cost.dots) + TPT.visits*(cost.tpt.opd.visit + cost.prison.escort)),by=tb]
-D[,mean(IncompDurTPT*(durTPT*(cost.ltbi.drugs + cost.dots) + TPT.visits*(cost.tpt.opd.visit + cost.prison.escort))),by=tb] # BUG fixed
-D[,mean(IncompDurTPT/durTPT*(durTPT*(cost.ltbi.drugs + cost.dots) + TPT.visits*(cost.tpt.opd.visit + cost.prison.escort))),by=tb]
+D[,mean(durTPT*(ucost.ltbi.drugs + ucost.dots)),by=tb]
+D[,mean(durTPT*(ucost.ltbi.drugs + ucost.dots) + TPT.visits*(ucost.tpt.opd.visit + ucost.prison.escort)),by=tb]
+D[,mean(IncompDurTPT*(durTPT*(ucost.ltbi.drugs + ucost.dots) + TPT.visits*(ucost.tpt.opd.visit + ucost.prison.escort))),by=tb] # BUG fixed
+D[,mean(IncompDurTPT/durTPT*(durTPT*(ucost.ltbi.drugs + ucost.dots) + TPT.visits*(ucost.tpt.opd.visit + ucost.prison.escort))),by=tb]

@@ -82,8 +82,8 @@ AddDataDrivenLabels <- function(D){
   # assuming a baseline some fraction lower than INT for TB screening & prop.xray
   # could also use any TB symptom sensitivity/specificity for TB screening assuming no xray in SOC
   D[,soc.fac:=rbeta(nrow(D),5/1.5,10)]
-  curve(dbeta(x,5/3,10),from=0,to=1,n=200)
-  summary(D$soc.fac)
+  # curve(dbeta(x,5/3,10),from=0,to=1,n=200)
+  # summary(D$soc.fac)
   # D[,soc.fac:=1]
   
   # TB symptom screening
@@ -188,17 +188,45 @@ AddDataDrivenLabels <- function(D){
   
   # Just a few more changes/naming
   # names(D)[grepl('.dots', names(D))]
-  D[,cost.dots:=cost.att.dots]
-  D[,cost.tpt.opd.visit:=cost.dstb.opd.visit]
-  D[,cost.mdrtb.opd.visits:=cost.mdrtb.opd.visit]
-  D[,cost.dstb.opd.visits:=cost.dstb.opd.visit]
+  D[,cost.chest.xray:=ucost.chest.xray+ucost.prison.escort]
+  D[,cost.prison.gp.assessessment:=pIsolation*ucost.prison.cell.isolation + ucost.prison.gp.assess + int.prop.xray*cost.chest.xray]
+  D[,cost.contact.management:=pIsolation*ucost.prison.cell.isolation + nContacts*ucost.contact.tracing]
+  D[,cost.tb.evaluation:=ucost.nhs.tb.service + ucost.prison.escort + ucost.tb.investigations]
+  D[,cost.attending.nhs.tb.service:=ucost.nhs.tb.service + ucost.prison.escort]
+  D[,cost.att.initiation:=ucost.nhs.tb.service + ucost.prison.escort]
+  D[,cost.tpt.initiation:=ucost.nhs.tb.service + ucost.prison.escort]
+  D[,cost.prison.isolation:=pIsolation*ucost.prison.cell.isolation]
+  
+  D[,ucost.dots:=ucost.att.dots]
+  D[,ucost.att.dots:=NULL]
+  D[,ucost.tpt.opd.visit:=ucost.dstb.opd.visit]
+  # D[,ucost.mdrtb.opd.visits:=ucost.mdrtb.opd.visit]
+  # D[,ucost.opd.visit:=ucost.dstb.opd.visit]
+  # D[,ucost.dstb.opd.visit:=NULL]
   D[,durTPT:=DurTPT]
   # D[,cost.inpatient:=(pDSTB*smear.positive*DurDSTBIsolation*(cost.dstb.ipd + cost.prison.bedwatch) + 
   #                       (1-pDSTB)*smear.positive*DurMDRTBIsolation*(cost.mdrtb.ipd.smear.positive + cost.prison.bedwatch))]
-  D[,cost.inpatient:=(pDSTB*smear.positive*DurDSTBIsolation*(cost.dstb.ipd + cost.prison.bedwatch) + 
-                        (1-pDSTB)*smear.positive*DurMDRTBIsolation*(cost.mdrtb.ipd.smear.positive + cost.prison.bedwatch))]
+  D[,cost.inpatient:=(pDSTB*smear.positive*DurDSTBIsolation*(ucost.dstb.ipd + ucost.prison.bedwatch) + 
+                        (1-pDSTB)*smear.positive*DurMDRTBIsolation*(ucost.mdrtb.ipd + ucost.prison.bedwatch))]
+  D[,cost.att.complete:=pDSTB*dstb.visits*(ucost.dstb.opd.visit + ucost.prison.escort) + # DSTB outpatient visits
+      (1-pDSTB)*mdrtb.visits*(ucost.mdrtb.opd.visit + ucost.prison.escort) + # MDRTB outpatient visits
+      pDSTB*DurDSTB*ucost.dsatt.drugs + # DSTB drugs
+      (1-pDSTB)*DurMDRTB*ucost.mdratt.drugs + # MDRTB drugs
+      ucost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB) + cost.inpatient]
+  D[,cost.att.incomplete:= IncompDurDSTB/DurDSTB*(
+    pDSTB*dstb.visits*(ucost.dstb.opd.visit + ucost.prison.escort) + 
+      pDSTB*DurDSTB*(ucost.dsatt.drugs + ucost.dots)) + 
+      IncompDurMDRTB/DurMDRTB*(
+        (1-pDSTB)*mdrtb.visits*(ucost.mdrtb.opd.visit + ucost.prison.escort)  + 
+          (1-pDSTB)*DurMDRTB*(ucost.mdratt.drugs + ucost.dots)) + 
+      cost.inpatient]
+  D[,cost.tpt.complete:=durTPT*(ucost.ltbi.drugs + ucost.dots) + TPT.visits*(ucost.tpt.opd.visit + ucost.prison.escort)]
+  D[,cost.tpt.incomplete:=IncompDurTPT/durTPT*(durTPT*(ucost.ltbi.drugs + ucost.dots) + TPT.visits*(ucost.tpt.opd.visit + ucost.prison.escort))]
+  
   # D[,pAttending:=1] # changed to attend.nhs.referral
-  D[,cost.tb.sympt.screen:=cost.tb.sympt.screen+cost.overheads]
+  D[,cost.tb.sympt.screen:=ucost.tb.sympt.screen+ucost.overheads]
+  D[,cost.igra.test:=ucost.igra.test]
+  # D[,cost.chest.xray:=ucost.tst.test]
   D[,pIsolation:=0]
   D[,nhs.referral:=1]
   D[,soc.fac:=NULL] # remove temporary variable
