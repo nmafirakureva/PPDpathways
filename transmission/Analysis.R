@@ -98,15 +98,45 @@ head(y)
 ## ============= CHECKING ===================
 ## see checks.R
 
+## hep <- revise.HE.parms(parms, DR, 1,arm='int',
+##   zero.nonscreen.costs = FALSE, summarize.HEparms = FALSE
+## )
+## hep
+## names(hep)
+
+
+## test <- pre.screen(hep, 1, 0, verbose = TRUE) # ie no change
+## test <- pre.screen(hep, 0.8, 0.2, verbose = TRUE) # ie no change
+
+
 ## ====================
 ## TODO adjust hyperparms for foi and disease to match data
 Nruns <- 1e3
 ## parms$staticfoi <- -1 # dynamic=-1
 set.seed(sd)
-RES <- PSAloop(Niter = Nruns, parms, smpsd, DR, zero.nonscreen.costs = TRUE, verbose = FALSE)
+RES <- PSAloop(
+  Niter = Nruns, parms, smpsd, DR,
+  zero.nonscreen.costs = FALSE, verbose = FALSE, targeting = TRUE
+)
 summary(RES$problem)
 RES[,problem:=NULL]
 
+## look at pre-screen
+
+summary(RES[,.(prevTBI,OR,frac.screened)])
+RES[,plot(frac.screened,OR)]
+RES[, plot(frac.screened, SP1)] # linear down: want SP>0.5 for minority screening
+RES[, plot(OR, 1/odds(SE1))] # linear down: want SP>0.5 for minority screening
+
+RES[, OR.cat := cut(OR, breaks = c(0, 1, 2, 4, 10, Inf), include.lowest = TRUE)]
+RES[, x.cat := cut(frac.screened, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), include.lowest = TRUE)]
+## RES[, OR.cat := factor(OR.cat, levels = levels(OR.cat), ordered = TRUE)]
+
+SMY <- RES[, .(ICER = mean(int.CC - soc.CC) / mean(dQ)), by = .(OR.cat, x.cat)]
+ggplot(SMY,aes(OR.cat,x.cat,fill=ICER))+
+  geom_tile()
+
+## TODO find boundary
 
 
 ## ===== inspect

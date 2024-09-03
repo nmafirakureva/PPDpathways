@@ -332,3 +332,122 @@ laus <- function(x) {
 ##
 ## [[2]]
 ## <simpleWarning in x(5): A warning>
+
+load(here("transmission/data/last.problem.parms.Rdata"))
+YOI <- runmodelsafely(seq(from = 0, to = 120, by = 0.1), parms) # run model
+probpms <- parms
+
+load(here("transmission/data/first.parms.Rdata"))
+YOI <- runmodelsafely(seq(from = 0, to = 120, by = 0.1), parms) # run model
+goodpms <- parms
+
+(qns <- unlist(probpms) / unlist(goodpms))
+who <- !is.finite(qns)
+unlist(probpms)[who]
+unlist(goodpms)[who]
+qq <- (unlist(probpms) / unlist(goodpms))[!who]
+plot(qq)
+focus <- names(qq)[qq > 3]
+unlist(probpms)[names(unlist(probpms)) %in% focus]
+
+unlist(goodpms)[names(unlist(goodpms)) %in% focus]
+
+testpms <- probpms
+for(nm in focus[-1]) testpms[[nm]] <- 0.1
+testpms[["inflow_toTPT_L0"]] <- 1
+
+testpms <- probpms
+for (nm in focus) testpms[[nm]] <- goodpms[[nm]]
+YOI <- runmodelsafely(seq(from = 0, to = 120, by = 0.1), testpms) # run model
+
+## TODO problem elsewhere: bisect to identify
+nmz <- names(goodpms)
+## NOTE problem in inflows
+inz <- grep("inflow", nmz, value = TRUE)
+nmz <- inz[-1] #OK
+
+## nmz <- grep(1,nmz,value=TRUE) #1 BUG 
+## nmz <- grep(0, nmz, value = TRUE) # 0 worse BUG
+## above suggests mainly but not all about the 1s
+
+testpms <- probpms
+for (nm in nmz) testpms[[nm]] <- goodpms[[nm]]
+YOI <- runmodelsafely(seq(from = 0, to = 120, by = 0.1), testpms) # run model
+
+
+(okp <- unlist(goodpms)[names(unlist(goodpms)) %in% nmz])
+(badp <- unlist(probpms)[names(unlist(probpms)) %in% nmz])
+plot(okp,badp); abline(a=0,b=1,col=2)
+
+names(badp)[badp>0.5]
+(badp)[badp > 0.5]
+(okp)[badp > 0.5]
+
+## TODO check inflow parametrization with particular attention to TPT+ATT
+
+
+## NOTE difference between ODEs and cost drivers - FPs not in ODEs
+check_flow <- function(P,multiply=TRUE) {
+  dnmz <- list(
+    tx = c("ATT", "TPT", "notx"),
+    tb = c("TBD", "TBI", "notb")
+  )
+  if(multiply){
+    M <- with(data = P, {
+      matrix(
+        c(
+          inflow_toATT_TB, 0, 0,
+          (1 - inflow_toATT_TB) * inflow_toTPT_TB, inflow_toTPT_L, inflow_toTPT_no,
+          (1 - inflow_toATT_TB) * (1 - inflow_toTPT_TB), (1 - inflow_toTPT_L), (1 - inflow_toTPT_no)
+        ),
+        byrow = TRUE, nrow = 3, ncol = 3,dimnames = dnmz
+      ) })
+  } else {
+    M <- with(data = P, {
+      matrix(
+      c(
+        inflow_toATT_TB, inflow_toTPT_TB, inflow_toATT_no,
+        inflow_toTPT_TB, inflow_toTPT_L, inflow_toTPT_no,
+        (1 - inflow_toATT_TB - inflow_toTPT_TB), (1 - inflow_toTPT_L - inflow_toTPT_TB), (1 - inflow_toATT_no - inflow_toTPT_no)
+      ),
+        byrow = TRUE, nrow = 3, ncol = 3,dimnames = dnmz
+      ) })
+  }
+  M
+}
+
+
+okp1 <- okp[grepl(1, names(okp))]
+names(okp1) <- gsub(1, "", names(okp1))
+okp1 <- as.list(okp1)
+
+check_flow(okp1)
+check_flow(okp1,multiply=FALSE)
+
+
+badp1 <- badp[grepl(1, names(badp))]
+names(badp1) <- gsub(1, "", names(badp1))
+badp1 <- as.list(badp1)
+
+check_flow(badp1)
+check_flow(badp1, multiply = FALSE) #BUG
+
+## note ATT excluded
+## TODO check in ODEs not multiply!
+## TODO ATT excluded first!
+CCDinflow <- inflow * (
+  ## TPT
+  uc_entry_tpt_TB * (inflow_toTPT_TB) * (parm_frac_SD + parm_frac_CD) +
+  ## TODO take out ATT FP? - unless done in creating...
+  uc_entry_tpt_L * (inflow_toTPT_L) * (parm_frac_E + parm_frac_L + parm_frac_epTB + parm_frac_lpTB) +
+  uc_entry_tpt_no * (inflow_toTPT_no) * parm_frac_U +
+  ## ATT
+  uc_entry_att_TB * (inflow_toATT_TB) * (parm_frac_SD + parm_frac_CD) +
+  uc_entry_att_L * (inflow_toATT_L) * (parm_frac_E + parm_frac_L + parm_frac_epTB + parm_frac_lpTB) + # FP for L
+  uc_entry_att_no * (inflow_toATT_no) * parm_frac_U + # FP for no
+  ## no TX
+  uc_entry_notx_TB * (inflow_toNOTX_TB) * (parm_frac_SD + parm_frac_CD) +
+  uc_entry_notx_L * (inflow_toNOTX_L) * (parm_frac_E + parm_frac_L + parm_frac_epTB + parm_frac_lpTB) +
+  uc_entry_notx_no * (inflow_toNOTX_no) * parm_frac_U
+)
+
