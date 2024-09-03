@@ -210,23 +210,23 @@ if(SA == 'PrisonEscort'){
 
 if(SA == 'noltfu'){
   # TB symptom screening
-  D[,int.prop.tb.sympt.screen:=1]
+  # D[,int.prop.tb.sympt.screen:=1]
   # TB symptoms at screening
-  D[,int.prop.presumtive.tb:=ifelse(tb=='TBD',1,1-spec.symptom)]
+  # D[,int.prop.presumtive.tb:=ifelse(tb=='TBD',1,1-spec.symptom)]
   # Prison GP assessment
   D[,int.prop.prison.gp.assessment:=1]
   # D[,soc.prop.prison.gp.assessment:=1]
   # Clinical suspicion of TB disease
   # D[,soc.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.symptom)]
-  D[,int.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.any.abn.xray)]
+  # D[,int.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.any.abn.xray)]
   # Attending NHS referral
   D[,int.prop.attend.nhs.referral:=1]
   # starting & completing ATT
   D[,int.prop.starting.att:=1]
-  # D[,int.prop.completing.att:=1]
+  D[,int.prop.completing.att:=1]
   # # starting & completing TPT
   D[,int.prop.starting.tpt:=1]
-  # D[,int.prop.completing.tpt:=1]
+  D[,int.prop.completing.tpt:=1]
 } 
 
 
@@ -297,9 +297,6 @@ if(SA == 'startATT'){
   D[,int.prop.starting.att:=1]
   # D[,int.prop.completing.att:=1]
 }
-
-
-
 
 ## compute other parameters (adds by side-effect)
 MakeTreeParms(D,P)
