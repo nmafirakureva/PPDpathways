@@ -2,7 +2,7 @@
 ## quick run through the PPD pathways tree
 
 ## flags for sensitivity analyses
-shell <- FALSE # whether running from shell script or not
+shell <- TRUE # whether running from shell script or not
 if(shell){
   ## running from shell
   args <- commandArgs(trailingOnly=TRUE)
@@ -18,7 +18,7 @@ if(shell){
   ## '' = basecase
   ## 'noltfu'= improved TB presumption, GP assessment, clinical suspicion, NHS attendance, starting ATT, starting TPT
   # sacases <- c('', 'screenAll','noltfu', 'presumptiveTB', 'prisonGP', 'clinicalSuspicion', 'attendNHS', 'startATT')
-  sacases <- c('', 'screenAll','noltfu', 'FUVisitsCost', 'DOTsCost', 'XrayCost', 'noPrisonEscort')
+  sacases <- c('', 'screenAll','noltfu', 'FUVisitsCost', 'DOTsCost', 'XrayCost', 'PrisonEscort')
   SA <- sacases[1]
 }
 
@@ -202,7 +202,7 @@ if(SA == 'DOTsCost'){
 }
 
 
-if(SA == 'noPrisonEscort'){
+if(SA == 'PrisonEscort'){
   # No followup visit costs
   D[,ucost.prison.escort:=0]
   D[,mdrtb.visits:=0]
