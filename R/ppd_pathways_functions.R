@@ -188,15 +188,15 @@ AddDataDrivenLabels <- function(D){
   
   # Just a few more changes/naming
   # names(D)[grepl('.dots', names(D))]
-  D[,cost.chest.xray:=ucost.chest.xray+ucost.prison.escort]
-  D[,cost.prison.gp.assessessment:=pIsolation*ucost.prison.cell.isolation + ucost.prison.gp.assess + int.prop.xray*cost.chest.xray]
-  D[,cost.contact.management:=pIsolation*ucost.prison.cell.isolation + nContacts*ucost.contact.tracing]
-  D[,cost.tb.evaluation:=ucost.nhs.tb.service + ucost.prison.escort + ucost.tb.investigations]
-  D[,cost.attending.nhs.tb.service:=ucost.nhs.tb.service + ucost.prison.escort]
-  D[,cost.att.initiation:=ucost.nhs.tb.service + ucost.prison.escort]
-  D[,cost.tpt.initiation:=ucost.nhs.tb.service + ucost.prison.escort]
+  D[,pxray:=1]
+  D[,cost.chest.xray:=pxray*(ucost.chest.xray+ucost.prison.escort)]
   D[,cost.prison.isolation:=pIsolation*ucost.prison.cell.isolation]
-  
+  D[,cost.prison.gp.assessessment:=cost.prison.isolation + ucost.prison.gp.assess + int.prop.xray*cost.chest.xray]
+  D[,cost.contact.management:=cost.prison.isolation + nContacts*ucost.contact.tracing]
+  D[,cost.attending.nhs.tb.service:=ucost.nhs.tb.service + ucost.prison.escort]
+  D[,cost.tb.evaluation:=cost.attending.nhs.tb.service + ucost.tb.investigations]
+  D[,cost.att.initiation:=cost.attending.nhs.tb.service]
+  D[,cost.tpt.initiation:=cost.attending.nhs.tb.service]
   D[,ucost.dots:=ucost.att.dots]
   D[,ucost.att.dots:=NULL]
   D[,ucost.tpt.opd.visit:=ucost.dstb.opd.visit]
@@ -204,10 +204,15 @@ AddDataDrivenLabels <- function(D){
   # D[,ucost.opd.visit:=ucost.dstb.opd.visit]
   # D[,ucost.dstb.opd.visit:=NULL]
   D[,durTPT:=DurTPT]
+  D[,DurMDRTB:=DurDSTB/DurMDRTBfactor]
+  D[,IncompDurDSTB:=DurDSTB*IncompTxfactor]
+  D[,IncompDurMDRTB:=DurMDRTB*IncompTxfactor]
+  D[,IncompDurTPT:=durTPT*IncompTxfactor]
   # D[,cost.inpatient:=(pDSTB*smear.positive*DurDSTBIsolation*(cost.dstb.ipd + cost.prison.bedwatch) + 
   #                       (1-pDSTB)*smear.positive*DurMDRTBIsolation*(cost.mdrtb.ipd.smear.positive + cost.prison.bedwatch))]
   D[,cost.inpatient:=(pDSTB*smear.positive*DurDSTBIsolation*(ucost.dstb.ipd + ucost.prison.bedwatch) + 
-                        (1-pDSTB)*smear.positive*DurMDRTBIsolation*(ucost.mdrtb.ipd + ucost.prison.bedwatch))]
+                        (1-pDSTB)*smear.positive*DurMDRTB2Isolation*(ucost.mdrtb.ipd + ucost.prison.bedwatch) +
+                        (1 - pDSTB) * (1-smear.positive) * DurMDRTBIsolation * (ucost.mdrtb.ipd + ucost.prison.bedwatch))]
   D[,cost.att.complete:=pDSTB*dstb.visits*(ucost.dstb.opd.visit + ucost.prison.escort) + # DSTB outpatient visits
       (1-pDSTB)*mdrtb.visits*(ucost.mdrtb.opd.visit + ucost.prison.escort) + # MDRTB outpatient visits
       pDSTB*DurDSTB*ucost.dsatt.drugs + # DSTB drugs
@@ -227,12 +232,11 @@ AddDataDrivenLabels <- function(D){
   D[,cost.tb.sympt.screen:=ucost.tb.sympt.screen+ucost.overheads]
   D[,cost.igra.test:=ucost.igra.test]
   # D[,cost.chest.xray:=ucost.tst.test]
-  D[,pIsolation:=0]
+  # D[,pIsolation:=0]
   D[,nhs.referral:=1]
   D[,soc.fac:=NULL] # remove temporary variable
   
 }
-
 
 ## combined function to add the labels to the tree prior to calculations
 MakeTreeParms <- function(D,P){

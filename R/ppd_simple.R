@@ -1,6 +1,3 @@
-## Pete version
-## quick run through the PPD pathways tree
-
 ## flags for sensitivity analyses
 shell <- TRUE # whether running from shell script or not
 if(shell){
@@ -14,11 +11,17 @@ if(shell){
 } else { #set by hand
   rm(list=ls()) #clear all
   shell <- FALSE #whether running from shell script or not
-  ##sensitivity analyses (mostly for PT):
+  ##sensitivity analyses flags:
   ## '' = basecase
-  ## 'noltfu'= improved TB presumption, GP assessment, clinical suspicion, NHS attendance, starting ATT, starting TPT
-  # sacases <- c('', 'screenAll','noltfu', 'presumptiveTB', 'prisonGP', 'clinicalSuspicion', 'attendNHS', 'startATT')
-  sacases <- c('', 'screenAll','noltfu', 'FUVisitsCost', 'DOTsCost', 'XrayCost', 'PrisonEscort')
+  ## 'AllattendNHS' = Assumes 100% NHS referral attendance
+  ## 'noltfu'= 100% GP assessment, clinical suspicion, NHS attendance, starting & completing ATT,  starting & completing TPT
+  ## 'FUVisitsCost' = No follow-up visit costs for both ATT and TPT
+  ## 'DOTsCost' = No DOTs costs for both ATT and TPT
+  ## 'XrayCost' = No X-ray costs
+  ## 'PrisonEscort' = No prison escort costs
+  ## 'ContactTracing' = No contact tracing costs
+  ## 'InpatientCost' = No inpatient costs
+  sacases <- c('', 'AllattendNHS','noltfu', 'FUVisitsCost', 'DOTsCost', 'XrayCost', 'PrisonEscort', 'ContactTracing', 'InpatientCost')
   SA <- sacases[1]
 }
 
@@ -40,35 +43,13 @@ tblevels <- c('TBD','TBI', 'noTB') # TB disease, TB infection, no TB
 agelevels <- c('15-100')
 isoz <- c('GBR') #relevant countries
 
-## --- life years and other outputs NOTE needs to be set FALSE on first run thru
-LYSdone <- TRUE
-if(!LYSdone){
-  ## make discounted life-years if they haven't been done
-  LYKc <- GetLifeYears(isolist=isoz,discount.rate=0.03,yearfrom=2021)
-  LYKc0 <- GetLifeYears(isolist=isoz,discount.rate=0.00,yearfrom=2021)
-  LYKc5 <- GetLifeYears(isolist=isoz,discount.rate=0.05,yearfrom=2021)
-  LYKc <- merge(LYKc,LYKc0[,.(iso3,age,LYS0=LYS)],by=c('iso3','age'))
-  LYKc <- merge(LYKc,LYKc5[,.(iso3,age,LYS5=LYS)],by=c('iso3','age'))
-  LYK <- LYKc[,.(LYS=mean(LYS),LYS0=mean(LYS0),LYS5=mean(LYS5)),by=.(age)] #averaged life-years 4 generic tests
-  save(LYKc,file=here('indata/LYKc.Rdata'))
-  save(LYK,file=here('indata/LYK.Rdata'))
-} else {
-  load(file=here('indata/LYKc.Rdata'))
-  load(file=here('indata/LYK.Rdata'))
-}
-
-# Sensitivity analysis: 0% & 5% discount rates
-if(SA %in% c('hi','lo')){
-  LYKc[,LYS:=ifelse(SA=='lo', LYS0, 
-                    ifelse(SA=='hi',LYS5, LYS))]  
-}
-
 ## prior parameters
-PD <- read.csv(here('indata/ProbParms.csv')) #read in probability parameters
+PD <- read.csv(here('indata/ProbParms.csv')) # read in probability parameters
 PS <- read.csv(here('indata/ProbParmsFixed.csv')) #read in fixed parameters
-RD <- fread(gh('indata/RUParms.csv'))    #read resource use data
-CD <- fread(gh('indata/CostParms.csv'))    #read cost data
+RD <- fread(gh('indata/RUParms.csv'))    # read resource use data
+CD <- fread(gh('indata/CostParms.csv'))    # read cost data
 
+# pre-process parameters
 names(PD)
 names(PS)
 names(RD)
@@ -80,13 +61,13 @@ names(PS) <- names(RD) <- names(CD) <- names
 
 PD.SOC <- PD |> 
   mutate(NAME = case_when(
-    !grepl('tb.presum|started.att|ltbi|verbal|prog.tb|nContacts|sens.|spec.', NAME) ~ paste0('soc.', NAME),
+    !grepl('tb.presum|started.att|ltbi|verbal|prog.tb|nContacts|sens.|spec.|pIsolation|DurMDRTB|Incomp|DurDSTB|pDSTB|smear', NAME) ~ paste0('soc.', NAME),
     .default = NAME
   ))
 
 PD.INT <- PD |> 
   mutate(NAME = case_when(
-    !grepl('tb.presum|started.att|ltbi|verbal|prog.tb|nContacts|sens.|spec.', NAME) ~ paste0('int.', NAME),
+    !grepl('tb.presum|started.att|ltbi|verbal|prog.tb|nContacts|sens.|spec.|pIsolation|DurMDRTB|Incomp|DurDSTB|pDSTB|smear', NAME) ~ paste0('int.', NAME),
     .default = NAME
   ))
 
@@ -112,8 +93,9 @@ PD1 <- rbind(
   PS |> 
     select(ParameterName, Mean),
   RD |> 
-    select(ParameterName, Mean)
-  ) |>
+    select(ParameterName, Mean) |> 
+    filter(!ParameterName %in% unique(PD0$NAME))
+) |>
   distinct() |> 
   pivot_wider(names_from = ParameterName, values_from = Mean) 
 
@@ -136,7 +118,7 @@ summary(D0)
 # Filter variables in prob_vrz that have values > 1
 prob_vrz <- names(P)
 impossible_values <- sapply(D0[, ..prob_vrz], function(x) any(x > 1))
-filtered_cols <- prob_vrz[impossible_values]
+filtered_cols <- prob_vrz[impossible_values] # Note: these are Okay to be > 1
 
 # Summary of filtered columns
 # These are okay
@@ -153,7 +135,7 @@ D0[,sum(value),by=.(id, tb)] #CHECK
 
 # merge in fixed parameters
 D0 <- cbind(D0, PD1)
-  
+
 ## read and make cost data
 rcsts <- CD
 
@@ -207,6 +189,26 @@ if(SA == 'PrisonEscort'){
   D[,ucost.prison.escort:=0]
   D[,mdrtb.visits:=0]
 }
+
+if(SA == 'XrayCost'){
+  # No DOTs costs
+  D[,pxray:=0]
+}
+
+# if(SA == 'InpatientCost'){
+#   # No DOTs costs
+#   D[,inpatient:=0]
+# } else {
+#   D[,inpatient:=1]
+# }
+
+if(SA == 'InpatientCost'){
+  # No inpatient costs
+  D[,DurDSTBIsolation:=0]
+  D[,DurMDRTBIsolation:=0]
+  D[,DurMDRTB2Isolation:=0]
+}
+
 
 if(SA == 'noltfu'){
   # TB symptom screening
@@ -265,17 +267,17 @@ if(SA == 'clinicalSuspicion'){
   D[,int.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.any.abn.xray)]
 }
 
-if(SA == 'attendNHS'){
+if(SA == 'AllattendNHS'){
   # TB symptom screening
   # D[,int.prop.tb.sympt.screen:=1] 
   # TB symptoms at screening
-  D[,int.prop.presumtive.tb:=ifelse(tb=='TBD',1,1-spec.symptom)]
+  # D[,int.prop.presumtive.tb:=ifelse(tb=='TBD',1,1-spec.symptom)]
   # Prison GP assessment
-  D[,int.prop.prison.gp.assessment:=1]
+  # D[,int.prop.prison.gp.assessment:=1]
   # D[,soc.prop.prison.gp.assessment:=1]
   # Clinical suspicion of TB disease
   # D[,soc.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.symptom)]
-  D[,int.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.any.abn.xray)]
+  # D[,int.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.any.abn.xray)]
   # Attending NHS referral
   D[,int.prop.attend.nhs.referral:=1]
 }
@@ -303,13 +305,11 @@ MakeTreeParms(D,P)
 
 names(D)[grepl('cost', names(D))]
 
-
-D[,.(cost.chest.xray)]
-if(SA == 'XrayCost'){
-  # No DOTs costs
-  D[,cost.chest.xray:=0]
+if(SA == 'ContactTracing'){
+  # No contact management costs
+  D[,cost.contact.management:=0]
 }
-
+summary(D$cost.contact.management)
 ## checks
 D[,sum(value),by=.(isoz,id)] #CHECK
 # D[,sum(value),by=.(isoz,id,age)] #CHECK
@@ -383,7 +383,7 @@ DR <- D[,.(id,tb,
            int_tpt_ppdcost=int_tpt_ppd/int_tpt_cost,
            int_notx_check,
            int_notx_cost
-           )]
+)]
 
 ## condition costs on outcome
 DR[,c('soc_att_cost',
@@ -412,36 +412,28 @@ options(scipen=999)
 fn1 <- glue(here('outdata/DRS')) + SA + '.csv'
 fwrite(DRS,file=fn1)
 
-# D[tb=='noTB',.(soc.prop.prev.tb.dx,
-#     soc.prop.no.prev.tb.dx.symp,
-#     soc.prop.no.prev.tb.dx.symp.gp.assess,
-#     soc.prop.no.prev.tb.dx.symp.tb.suspicion,
-#     soc.prop.no.prev.tb.dx.symp.nhs.referral,
-#     soc.prop.no.prev.tb.dx.symp.tb.dx,
-#     soc.prop.starting.att,
-#     soc.prop.completing.att,
-#     sens.any.abn.xray,spec.any.abn.xray)]
-
-## soc.prop.no.prev.tb.dx.symp.tb.dx??
 
 summary(D[,.(cost.soc, cost.int)])
 
 ## cost of getting ATT (from CSV output)
-D[,mean(
-  pDSTB*dstb.visits*(ucost.dstb.opd.visit + ucost.prison.escort) + # DSTB visits
-    (1-pDSTB)*mdrtb.visits*(ucost.mdrtb.opd.visit + ucost.prison.escort) + # MDRTB visits
-    pDSTB*DurDSTB*ucost.dsatt.drugs + (1-pDSTB)*DurMDRTB*ucost.mdratt.drugs + # ATT drugs
-          ucost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB) + # DOTS
-          cost.inpatient), 
-  by=tb]
-D[,mean(
-  IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(ucost.dstb.opd.visit + ucost.prison.escort) + 
-                           pDSTB*DurDSTB*(ucost.dsatt.drugs + ucost.dots)) + 
-    IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(ucost.mdrtb.opd.visit + ucost.prison.escort)  + 
-                               (1-pDSTB)*DurMDRTB*(ucost.mdratt.drugs + ucost.dots)) + 
-    cost.inpatient
-),by=tb]
-D[,mean(durTPT*(ucost.ltbi.drugs + ucost.dots)),by=tb]
-D[,mean(durTPT*(ucost.ltbi.drugs + ucost.dots) + TPT.visits*(ucost.tpt.opd.visit + ucost.prison.escort)),by=tb]
-D[,mean(IncompDurTPT*(durTPT*(ucost.ltbi.drugs + ucost.dots) + TPT.visits*(ucost.tpt.opd.visit + ucost.prison.escort))),by=tb] # BUG fixed
-D[,mean(IncompDurTPT/durTPT*(durTPT*(ucost.ltbi.drugs + ucost.dots) + TPT.visits*(ucost.tpt.opd.visit + ucost.prison.escort))),by=tb]
+# D[,mean(
+#   pDSTB*dstb.visits*(ucost.dstb.opd.visit + ucost.prison.escort) + # DSTB visits
+#     (1-pDSTB)*mdrtb.visits*(ucost.mdrtb.opd.visit + ucost.prison.escort) + # MDRTB visits
+#     pDSTB*DurDSTB*ucost.dsatt.drugs + (1-pDSTB)*DurMDRTB*ucost.mdratt.drugs + # ATT drugs
+#           ucost.dots*(pDSTB*DurDSTB + (1-pDSTB)*DurMDRTB) + # DOTS
+#           cost.inpatient),
+#   by=tb]
+# 
+# D[,mean(
+#   IncompDurDSTB/DurDSTB*(pDSTB*dstb.visits*(ucost.dstb.opd.visit + ucost.prison.escort) +
+#                            pDSTB*DurDSTB*(ucost.dsatt.drugs + ucost.dots)) +
+#     IncompDurMDRTB/DurMDRTB*((1-pDSTB)*mdrtb.visits*(ucost.mdrtb.opd.visit + ucost.prison.escort)  +
+#                                (1-pDSTB)*DurMDRTB*(ucost.mdratt.drugs + ucost.dots)) +
+#     cost.inpatient
+# ),by=tb]
+# 
+# D[,mean(durTPT*(ucost.ltbi.drugs + ucost.dots)),by=tb]
+# D[,mean(durTPT*(ucost.ltbi.drugs + ucost.dots) + TPT.visits*(ucost.tpt.opd.visit + ucost.prison.escort)),by=tb]
+# D[,mean(IncompDurTPT*(durTPT*(ucost.ltbi.drugs + ucost.dots) + TPT.visits*(ucost.tpt.opd.visit + ucost.prison.escort))),by=tb] # BUG fixed
+# D[,mean(IncompDurTPT/durTPT*(durTPT*(ucost.ltbi.drugs + ucost.dots) + TPT.visits*(ucost.tpt.opd.visit + ucost.prison.escort))),by=tb]
+
