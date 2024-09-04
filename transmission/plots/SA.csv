@@ -1,5 +1,5 @@
 analysis,"ICER, unrestricted TB rates","ICER, restricted TB rates"
-base case,56540,83414
-Static model,52084,78562
-"Static model, no community transmission",82006,119793
-"Static model, no community transmission or post-TB effects",115274,167864
+base case,35874,75490
+Static model,17521,37090
+"Static model, no community transmission",28756,57085
+"Static model, no community transmission or post-TB effects",41718,81430

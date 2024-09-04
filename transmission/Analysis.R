@@ -9,10 +9,10 @@ tt <- seq(from=0, to=10, by=0.1)  #time frame to run over
 y <- runmodel(tt,parms)           #run model
 head(y)
 
-## ## example use of using 1st row of churn samples
-parms <- revise.flow.parms(parms,smpsd,1) #change flow parameter to 1st row of samples
-y <- runmodel(tt,parms)           #run model
-tail(y)
+## ## ## example use of using 1st row of churn samples
+## parms <- revise.flow.parms(parms,smpsd,1) #change flow parameter to 1st row of samples
+## y <- runmodel(tt,parms)           #run model
+## tail(y)
 
 ## ## trying with tree parameters also
 ## parms <- revise.HE.parms(parms,DR,1,arm='soc')
@@ -110,69 +110,15 @@ tail(y)
 
 
 ## ====================
-## TODO adjust hyperparms for foi and disease to match data
-## TODO stan update
 Nruns <- 1e3
 ## parms$staticfoi <- -1 # dynamic=-1
 set.seed(sd)
 RES <- PSAloop(
-  Niter = Nruns, parms, smpsd, DR,
-  zero.nonscreen.costs = FALSE, verbose = FALSE, targeting = TRUE
+  Niter = 5*Nruns, parms, smpsd, DR,
+  zero.nonscreen.costs = FALSE, verbose = FALSE, targeting = FALSE
 )
 summary(RES$problem)
 RES[,problem:=NULL]
-
-RES[, OR := odds.ratio(SP1, SE1)]
-RES[, frac.screened := prevTBI * SE1 + (1 - prevTBI) * (1 - SP1)]
-RES[, OR.cat := cut(OR, breaks = c(0, 1, 2, 4, 10, Inf), include.lowest = TRUE)]
-RES[, x.cat := cut(frac.screened, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), include.lowest = TRUE)]
-
-## look at pre-screen
-save(RES, file = here("transmission/data/RES.Rdata"))
-
-RES[, NB := 35e3 * dQ - (int.CC - soc.CC)]
-
-
-## summary(RES[,.(NB,SE1,SP1,prevTBI,OR,frac.screened)])
-## RES[,plot(frac.screened,OR)]
-## RES[, plot(frac.screened, SP1)] # linear down: want SP>0.5 for minority screening
-## RES[, plot(OR, 1/odds(SE1))] # linear down: want SP>0.5 for minority screening
-
-## ## RES[, OR.cat := factor(OR.cat, levels = levels(OR.cat), ordered = TRUE)]
-## RES[, OR.cat := cut(OR, breaks = c(0, 1, 2, 4, 10, Inf), include.lowest = TRUE)]
-## RES[, x.cat := cut(frac.screened, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), include.lowest = TRUE)]
-## SMY <- RES[, .(NB=mean(NB)), by = .(OR.cat, x.cat)]
-## ggplot(SMY, aes(OR.cat, x.cat, fill = NB)) +
-##   geom_tile() +
-##   scale_fill_distiller(palette = "BrBG")
-
-
-## SMY <- RES[, .(ICER = mean(int.CC - soc.CC) / mean(dQ)), by = .(OR.cat, x.cat)]
-## ggplot(SMY,aes(OR.cat,x.cat,fill=ICER-35e3))+
-##   geom_tile() + scale_fill_distiller(palette = "PiYG")
-bks <- seq(from = 0.1, to = 0.9, length.out = 8)
-RES[, SP1.cat := cut(SP1, breaks = bks, include.lowest = TRUE)]
-RES[, SE1.cat := cut(SE1, breaks = bks, include.lowest = TRUE)]
-SMY2 <- RES[, .(NB = mean(NB)), by = .(SE1.cat, SP1.cat)]
-## ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = ICER)) +
-##   geom_tile()+scale_fill_viridis()
-## dcast(SMY2, SE1.cat ~ SP1.cat, value.var = "ICER")
-ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB)) +
-  geom_tile() +
-  scale_fill_distiller(palette = "BrBG") # PiYG
-
-## BrBG, PiYG, PRGn, PuOr, RdBu, RdGy, RdYlBu, RdYlGn, Spectral
-
-## RES[, icer := (int.CC - soc.CC) / dQ]
-
-## ggplot(RES,aes(OR,frac.screened,col=ifelse(icer<35e3,'green','red')))+
-##   geom_point()
-
-## ggplot(RES, aes(SE1, SP1, col = ifelse(icer<35e3,'green','red'))) +
-##   geom_point()
-
-## ggplot(RES, aes(SE1, SP1, z = icer)) +
-##   geom_contour(bins=10)
 
 ## ===== inspect
 RES[,mean(int.CC-soc.CC)]
@@ -180,7 +126,7 @@ RES[,mean(int.deaths-soc.deaths)] #fewer deaths
 RES[, mean(int.ccases - soc.ccases)] # fewer cases
 RES[, mean(int.dLYL - soc.dLYL)] # fewer LYL
 RES[, mean(Q.int - Q.soc)] # less qol decrement + LYL
-RES[,mean(int.CC-soc.CC)/mean(dQ)]/1e3 #ICER ~ 777K; static + w/o multiplier + w/o PTB = 1M
+RES[,mean(int.CC-soc.CC)/mean(dQ)]/1e3 #54
 
 RES[mid.notes<100 & mid.notes>30,mean(int.CC-soc.CC)]
 RES[mid.notes<100 & mid.notes>30,mean(Q.int - Q.soc)]
@@ -196,7 +142,7 @@ RES[,.(mean(mid.notes),quantile(mid.notes,0.025),quantile(mid.notes,0.975))]
 ## ======== table
 tabkey <- c(
   "Undiscounted Costs" = "CC0",
-  "QALYs" = "Q",
+  "QALYs lost to TB" = "Q",
   "ATT courses" = "cATT",
   "TPT courses" = "cTPT",
   "Incident TB" = "ccases",
@@ -306,15 +252,14 @@ RES[, TBIC := cut(TBI, quantile(TBI, probs = seq(0, 1, l = 10)), include.lowest 
 smyd <- RES[, .(ICER = mean(int.CC - soc.CC) / mean(dQ)), by = TBDC]
 smyi <- RES[, .(ICER = mean(int.CC - soc.CC) / mean(dQ)), by = TBIC]
 
-str(smyd)
+ggplot(smyi, aes(TBIC, ICER,group=1)) +
+  geom_point() + geom_line()+
+  scale_y_continuous(limits =c(0,NA),label=comma)+
+  xlab('TB infection prevalence')+
+  ylab('ICER (GBP per QALY gained)')+
+  theme_linedraw()
 
-ggplot(smyd, aes(TBDC, ICER)) +
-  geom_point() +
-  expand_limits(y = 0)
-
-ggplot(smyi, aes(TBIC, ICER)) +
-  geom_point() +
-  expand_limits(y = 0)
+ggsave(file = here("transmission/plots/p_ICERbyTBI.png"), w = 12, h = 7)
 
 
 ## looking at SAVI
@@ -361,9 +306,6 @@ PMS <- RES[,.(
   uc_entry_notx_L.int, uc_entry_notx_no.int
 )]
 fwrite(PMS,file='~/Downloads/PMS.csv')
-
- 
-
 
 
 ## =========== loop for SAs
@@ -420,16 +362,181 @@ SA[[4]] <- data.table(
   ]
 )
 ## join
-SA <- rbindlist(SA)
-SA[, `ICER, unrestricted TB rates` := paste0(round(ICER))]
-SA[, `ICER, restricted TB rates` := paste0(round(ICERr))]
-SA[, c("ICER", "ICERr") := NULL]
+SAT <- rbindlist(SA)
+SAT[, `ICER, unrestricted TB rates` := paste0(round(ICER))]
+SAT[, `ICER, restricted TB rates` := paste0(round(ICERr))]
+SAT[, c("ICER", "ICERr") := NULL]
+print(SAT)
+fwrite(SAT, file = here("transmission/plots/SA.csv"))
 
-fwrite(SA, file = here("transmission/plots/SA.csv"))
+## extras from DR files
+for (snm in saznmz) {
+  print(snm)
+  set.seed(sd)
+  RES1 <- PSAloop(
+    Niter = Nruns, parms, smpsd, Dlist[[snm]],
+    zero.nonscreen.costs = FALSE, verbose = FALSE, targeting = FALSE
+  )
+  SA[[snm]] <- data.table(
+    analysis = snm,
+    ICER = RES1[, mean(int.CC - soc.CC) / mean(dQ)],
+    ICERr = RES1[
+      mid.notes < 100 & mid.notes > 30,
+      mean(int.CC - soc.CC) / mean(dQ)
+    ]
+  )
+}
+
+## join
+SATF <- rbindlist(SA)
+SATF[, `ICER, unrestricted TB rates` := paste0(round(ICER))]
+SATF[, `ICER, restricted TB rates` := paste0(round(ICERr))]
+SAT[, c("ICER", "ICERr") := NULL]
+print(SATF)
+
+fwrite(SATF, file = here("transmission/plots/SA.full.csv"))
+
+
+
+## ========== TARGETING
+RES <- PSAloop(
+  Niter = 10e3, parms, smpsd, DR,
+  zero.nonscreen.costs = FALSE, verbose = FALSE, targeting = TRUE
+)
+summary(RES$problem)
+RES[,problem:=NULL]
+
+RES[, OR := odds.ratio(SE1, SP1)]
+RES[, frac.screened := prevTBI * SE1 + (1 - prevTBI) * (1 - SP1)]
+RES[, OR.cat := cut(OR, breaks = c(0, 1, 2, 4, 10), include.lowest = TRUE)]
+RES[, x.cat := cut(frac.screened, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), include.lowest = TRUE)]
+RES[, NB := 30e3 * dQ - (int.CC - soc.CC)]
+
+## look at pre-screen
+save(RES, file = here("transmission/data/RES.tgt.Rdata"))
+
+summary(RES$NB)
+qplot(RES$NB)
+
+
+
+## summary(RES[,.(NB,SE1,SP1,prevTBI,OR,frac.screened)])
+## RES[,plot(frac.screened,OR)]
+## RES[, plot(frac.screened, SP1)] # linear down: want SP>0.5 for minority screening
+## RES[, plot(OR, 1/odds(SE1))] # linear down: want SP>0.5 for minority screening
+
+## RES[, OR.cat := factor(OR.cat, levels = levels(OR.cat), ordered = TRUE)]
+
+## RES[,OR:=odds.ratio(SE1,SP1)]
+
+
+## ggplot(RES, aes(OR, frac.screened, col = (NB > 0))) +
+##   geom_point() +
+##   xlab("OR") +
+##   ylab("Frac screened") +
+##   theme_linedraw()
+
+
+nbks <- 5
+RES[, OR.cat := cut(OR, breaks = nbks, include.lowest = TRUE)]
+RES[, x.cat := cut(frac.screened, breaks = nbks, include.lowest = TRUE)]
+SMY <- RES[, .(NB=mean(NB)), by = .(OR.cat, x.cat)]
+## ggplot(SMY, aes(OR.cat, x.cat, fill = NB)) +
+##   geom_tile() +
+##   scale_fill_scico(palette = "vik", midpoint = 0)
+
+
+## ggplot(RES, aes(SE1, SP1, col = (NB>0))) +
+##   geom_point() +
+##   xlab("Pre-screen sensitivity") +
+##   ylab("Pre-screen specificity") +
+##   theme_linedraw()
+
+## bks <- seq(from = 0.1, to = 0.9, length.out = 8)
+## RES[, SP1.cat := cut(SP1, breaks = bks, include.lowest = TRUE)]
+## RES[, SE1.cat := cut(SE1, breaks = bks, include.lowest = TRUE)]
+
+nbks <- 5
+bks1 <- c(0:5) / 5
+bks2 <- bks1/2+0.5
+RES[, SP1.cat := cut(SP1, breaks = bks2, include.lowest = TRUE)]
+RES[, SE1.cat := cut(SE1, breaks = bks1, include.lowest = TRUE)]
+SMY2 <- RES[, .(NB = mean(NB)), by = .(SE1.cat, SP1.cat)]
+
+ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB)) +
+  geom_tile() +
+  xlab("Pre-screen sensitivity") +
+  ylab("Pre-screen specificity") +
+  scale_fill_scico(palette = "vik", midpoint = 0) +
+  theme_linedraw() +
+  labs(fill = "Net benefit")
+
+
+ggsave(file = here("transmission/plots/p_target_tile_NB.png"), w = 14, h = 7)
+
+
+XZ <- (bks1[-1]+bks1[1:5])/2 #SE
+YZ <- (bks2[-1] + bks2[1:5]) / 2 # SP
+ZZ <- expand.grid(XZ, YZ)
+Z <- expand.grid(1:5,1:5)
+ZOR <- odds.ratio(ZZ[,1],ZZ[,2])             #OR
+ZFR <- (ZZ[, 1] * 0.1 + (1 - ZZ[, 2]) * 0.9) #fraction screened
+ZLP <- (ZZ[, 1] * 0.1)/ZFR                   #TBI prev
+
+TXT <- paste0("TBI=", round(1e2 * ZLP), "%\nProportion=", round(1e2 * ZFR), "%\n")
+keep <- which(ZLP>0.15)#1:nrow(Z)
+
+ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB)) +
+  geom_tile() +
+  xlab("Pre-screen sensitivity") +
+  ylab("Pre-screen specificity") +
+  scale_fill_scico(palette = "vik", midpoint = 0) +
+  theme_linedraw() +
+  labs(fill = "Net benefit") +
+  annotate("text", label = TXT[keep], col = 'yellow', x = Z[keep,1], y = Z[keep,2])
+
+
+ggsave(file = here("transmission/plots/p_target_tile_NB2.png"), w = 14, h = 7)
+
+
+## ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB)) +
+##   geom_tile() +
+##   xlab("Pre-screen sensitivity") +
+##   ylab("Pre-screen specificity") +
+##   scale_fill_distiller(palette = "BrBG") # PiYG
+## ggsave(file = here("transmission/plots/p_target_tile_NB.png"), w = 14, h = 7)
+
+
+## sez <- seq(from = 0.1, to = 0.9, length.out = 300)
+## fdat <- rbindlist(list(
+##   data.table(x = sez, OR = 2),
+##   data.table(x = sez, OR = 4),
+##   data.table(x = sez, OR = 10)
+## ))
+## fdat[,oddsy:=odds(x)/OR]
+## fdat[, y := oddsy / (1 + oddsy)]
+## fdat[,NB:=NA_real_]
+## fac <- 7
+
+ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB > 0)) +
+  geom_tile() +
+  xlab("Pre-screen sensitivity") +
+  ylab("Pre-screen specificity") +
+  scale_colour_manual(values = c("red", "green")) ## +
+ggsave(file = here("transmission/plots/p_target_tile.png"), w = 7, h = 7)
+
+## geom_line(data = fdat, aes(x = (1 + x * fac),
+  ##                            y = (1 + y * fac),
+  ##                            linetype = as.factor(OR)), col = 2)
+## BrBG, PiYG, PRGn, PuOr, RdBu, RdGy, RdYlBu, RdYlGn, Spectral
 
 
 ## ========== Authors only:
+flz <- c("SA.csv", "SA.full.csv", "tabout.csv")
+for(fn in flz)
+  upload.to.sheets(here('transmission/plots/'),fn,shid)
 
-## flz <- c("SA.csv", "tabout.csv")
-## for(fn in flz)
-##   upload.to.sheets(here('transmission/plots/'),fn,shid)
+flz <- c("DRS.csv")
+for (fn in flz) {
+  upload.to.sheets(here("outdata/"), fn, shid)
+}

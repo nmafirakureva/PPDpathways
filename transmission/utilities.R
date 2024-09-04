@@ -5,11 +5,14 @@ library(stringr)
 library(ggplot2)
 library(scales)
 library(glue)
-library(viridis)
-## library(googlesheets4) #only for authors to upload
+library(scico)
 
 source(system.file("extdata", "parameters.R", package="ecrins")) #this loads some fns for PSA
 data(parms)                       #some default parameters
+
+## introducing remand TBI prevalence separately
+parms$tbip <- 0.1
+hyperparms[["tbip"]] <- list(shape1=10,shape2=90)
 
 ## prisons parameters
 ## parms
@@ -19,6 +22,17 @@ load(here('churn/outdata/smpsd.Rdata')) #TODO change/update
 load(here('outdata/DR.Rdata'))
 DRS <- fread(here('outdata/DRS.csv'))
 
+DR.basecase <- copy(DR) # keep
+
+## pick up the extra sensitivity analyses
+saz <- dir(here("outdata"), pattern = ".Rdata")
+saz <- saz[saz != "DR.Rdata"]
+saznmz <- gsub("DR", "", gsub("\\.Rdata", "", saz))
+Dlist <- list()
+for(i in 1:length(saz)){
+  load(here('outdata',saz[i]))
+  Dlist[[saznmz[i]]] <- copy(DR)
+}
 
 
 ## helpers
@@ -34,6 +48,7 @@ brkt <- function(M, L, H, ndp = 0) {
 }
 
 odds <- function(x) x / (1 - x)
+inv.odds <- function(x) x / (1 + x)
 odds.ratio <- function(x, y) odds(x) / odds(y)
 
 
@@ -165,7 +180,7 @@ revise.flow.parms <- function(parms, # original parameter template
 
 ## TODO revise 
 ## revise initial states
-revise.instates <- function(parms,tscale=20){
+revise.instates <- function(parms,tscale=20,rescale=TRUE){
   lam <- parms$foi
   ## utilities
   Delt <- 2.3 * lam + 0.1
@@ -194,6 +209,30 @@ revise.instates <- function(parms,tscale=20){
   parms$parm_frac_CD <- parms$parm_ifrac_CD <- parm_frac_CD / totparm
   parms$parm_frac_epTB <- parms$parm_ifrac_epTB <- parm_frac_epTB / totparm
   parms$parm_frac_lpTB <- parms$parm_ifrac_lpTB <- parm_frac_lpTB / totparm
+  if(rescale){
+    ## scale the inflow separately:
+    tbip <- parms$tbip #
+    tbip0 <- (1 - parm_frac_U / totparm)
+    fac <- tbip / tbip0 #factor to apply to TBI+
+    facn <- (1-fac * tbip0) / (1-tbip0) #factor to apply to TBI- st. total=1
+    parms$parm_ifrac_U <- parms$parm_ifrac_U * facn
+    parms$parm_ifrac_E <- parms$parm_ifrac_E * fac
+    parms$parm_ifrac_L <- parms$parm_ifrac_L * fac
+    parms$parm_ifrac_ATT <- parms$parm_ifrac_ATT * fac
+    parms$parm_ifrac_SD <- parms$parm_ifrac_SD * fac
+    parms$parm_ifrac_CD <- parms$parm_ifrac_CD * fac
+    parms$parm_ifrac_epTB <- parms$parm_ifrac_epTB * fac
+    parms$parm_ifrac_lpTB <- parms$parm_ifrac_lpTB * fac
+    if( with(data=parms,{(parm_ifrac_U+
+                          parm_ifrac_E+
+                          parm_ifrac_L+
+                          parm_ifrac_ATT+
+                          parm_ifrac_SD+
+                          parm_ifrac_CD+
+                          parm_ifrac_epTB+
+                          parm_ifrac_lpTB -1)^2})>1e-2) warning('Check scaling in revise instates!')
+  }
+  ## return
   parms
 }
 
@@ -492,8 +531,11 @@ run.HE.socint <- function(parms,DR,j,
       SE1 <- 1
       SP1 <- 0
     } else {
-      SE1 <- runif(1) * 0.8 + 0.1 # in [0.1,0.9]
-      SP1 <- runif(1) * 0.8 + 0.1 # in [0.1,0.9]
+      orv <- runif(n = 1, min = 1, max = 10) #OR
+      SP1 <- runif(n = 1, min = 0.5, max = 1) #SP
+      SE1 <- runif(n = 1, min = 0, max = 1) # SP
+      ## oddssp <- odds(SP1)
+      ## SE1 <- inv.odds(orv * oddssp)
       parms <- pre.screen(parms,SE1,SP1)
     }
     test <- parms; test$staticfoi <- NULL
@@ -643,8 +685,8 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,
   RES <- rbindlist(RES)
   ## add pre-screen data
   RES[, prevTBI := (parm_ifrac_L + parm_ifrac_E + parm_ifrac_epTB + parm_ifrac_lpTB)]
-  RES[, SP1.cat := cut(SP1, breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1), include.lowest = TRUE)]
-  RES[, SE1.cat := cut(SE1, breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1), include.lowest = TRUE)]
+  ## RES[, SP1.cat := cut(SP1, breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1), include.lowest = TRUE)]
+  ## RES[, SE1.cat := cut(SE1, breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1), include.lowest = TRUE)]
   RES[, icer := (int.CC - soc.CC) / dQ]
   ## inspect
   cat('--- deaths diff summary ---\n')
@@ -657,15 +699,22 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,
 }
 
 
-## ## =============== Authors only:
-## yourl <- "https://docs.google.com/spreadsheets/d/1XYIWB4NAYUzLNESdLBDGqviXcDP_s0RIIDqmQKa5T7I/edit?gid=1037492332#gid=1037492332"
+## =============== Authors only:
+library(googlesheets4) # only for authors to upload
 
-## shid <- as.character(as_sheets_id(yourl))
+yourl <- "https://docs.google.com/spreadsheets/d/1XYIWB4NAYUzLNESdLBDGqviXcDP_s0RIIDqmQKa5T7I/edit?gid=1037492332#gid=1037492332"
 
-## ## utility function
-## upload.to.sheets <- function(basename, filename, sheetid) {
-##   filename <- gsub("\\.csv$", "", filename) # safety in case csv included at and
-##   fn <- glue(basename) + filename + ".csv"
-##   tmp <- fread(file = fn)
-##   write_sheet(tmp, sheetid, sheet = filename)
-## }
+shid <- as.character(as_sheets_id(yourl))
+
+## utility function
+upload.to.sheets <- function(basename, filename, sheetid) {
+  filename <- gsub("\\.csv$", "", filename) # safety in case csv included at and
+  fn <- glue(basename) + filename + ".csv"
+  tmp <- fread(file = fn)
+  ## NOTE nonsense to deal with potential Inf error in googlesheets
+  for (j in seq_len(ncol(tmp))) {
+    if(class(tmp[[j]])=='numeric')
+      set(tmp, which(!is.finite(tmp[[j]])), j, -1)
+  }
+  write_sheet(tmp, sheetid, sheet = filename)
+}
