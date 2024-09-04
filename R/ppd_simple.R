@@ -1,5 +1,5 @@
 ## flags for sensitivity analyses
-shell <- TRUE # whether running from shell script or not
+shell <- FALSE # whether running from shell script or not
 if(shell){
   ## running from shell
   args <- commandArgs(trailingOnly=TRUE)
@@ -13,7 +13,7 @@ if(shell){
   shell <- FALSE #whether running from shell script or not
   ##sensitivity analyses flags:
   ## '' = basecase
-  ## 'AllattendNHS' = Assumes 100% NHS referral attendance
+  ## 'AllattendNHS' = Assumes 100% NHS referral attendance. The rest of the SA are built on this assumption
   ## 'noltfu'= 100% GP assessment, clinical suspicion, NHS attendance, starting & completing ATT,  starting & completing TPT
   ## 'FUVisitsCost' = No follow-up visit costs for both ATT and TPT
   ## 'DOTsCost' = No DOTs costs for both ATT and TPT
@@ -171,8 +171,14 @@ D <- merge(D0,C,by=c('id'),all.x=TRUE)       # merge into PSA (differentiated D 
 
 D[,.(ucost.att.dots)]
 
+
+names(D)[grepl('cost', names(D))]
+
+# defining a range of scenarios
+# TODO: check if these should be before makeTreeParms or after
 if(SA == 'FUVisitsCost'){
   # No followup visit costs
+  D[,int.prop.attend.nhs.referral:=1]
   D[,dstb.visits:=0]
   D[,mdrtb.visits:=0]
   D[,TPT.visits:=0]
@@ -180,35 +186,34 @@ if(SA == 'FUVisitsCost'){
 
 if(SA == 'DOTsCost'){
   # No DOTs costs
+  D[,int.prop.attend.nhs.referral:=1]
   D[,ucost.att.dots:=0]
 }
 
 
 if(SA == 'PrisonEscort'){
   # No followup visit costs
+  D[,int.prop.attend.nhs.referral:=1]
   D[,ucost.prison.escort:=0]
   D[,mdrtb.visits:=0]
 }
 
 if(SA == 'XrayCost'){
   # No DOTs costs
+  D[,int.prop.attend.nhs.referral:=1]
   D[,pxray:=0]
 }
 
-# if(SA == 'InpatientCost'){
-#   # No DOTs costs
-#   D[,inpatient:=0]
-# } else {
-#   D[,inpatient:=1]
-# }
-
 if(SA == 'InpatientCost'){
   # No inpatient costs
+  D[,int.prop.attend.nhs.referral:=1]
   D[,DurDSTBIsolation:=0]
   D[,DurMDRTBIsolation:=0]
   D[,DurMDRTB2Isolation:=0]
 }
 
+## compute other parameters (adds by side-effect)
+MakeTreeParms(D,P)
 
 if(SA == 'noltfu'){
   # TB symptom screening
@@ -225,91 +230,25 @@ if(SA == 'noltfu'){
   D[,int.prop.attend.nhs.referral:=1]
   # starting & completing ATT
   D[,int.prop.starting.att:=1]
-  D[,int.prop.completing.att:=1]
+  # D[,int.prop.completing.att:=1]
   # # starting & completing TPT
   D[,int.prop.starting.tpt:=1]
   D[,int.prop.completing.tpt:=1]
 } 
 
 
-if(SA == 'screenAll'){
-  # TB symptom screening
-  D[,int.prop.tb.sympt.screen:=1]
-} 
-
-if(SA == 'presumptiveTB'){
-  # TB symptom screening
-  # D[,int.prop.tb.sympt.screen:=1] 
-  # TB symptoms at screening
-  D[,int.prop.presumtive.tb:=ifelse(tb=='TBD',1,1-spec.symptom)]
-} 
-
-if(SA == 'prisonGP'){
-  # TB symptom screening
-  # D[,int.prop.tb.sympt.screen:=1] 
-  # TB symptoms at screening
-  D[,int.prop.presumtive.tb:=ifelse(tb=='TBD',1,1-spec.symptom)]
-  # Prison GP assessment
-  D[,int.prop.prison.gp.assessment:=1]
-  # D[,soc.prop.prison.gp.assessment:=1]
-}
-
-if(SA == 'clinicalSuspicion'){
-  # TB symptom screening
-  # D[,int.prop.tb.sympt.screen:=1] 
-  # TB symptoms at screening
-  D[,int.prop.presumtive.tb:=ifelse(tb=='TBD',1,1-spec.symptom)]
-  # Prison GP assessment
-  D[,int.prop.prison.gp.assessment:=1]
-  # D[,soc.prop.prison.gp.assessment:=1]
-  # Clinical suspicion of TB disease
-  # D[,soc.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.symptom)]
-  D[,int.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.any.abn.xray)]
-}
-
 if(SA == 'AllattendNHS'){
-  # TB symptom screening
-  # D[,int.prop.tb.sympt.screen:=1] 
-  # TB symptoms at screening
-  # D[,int.prop.presumtive.tb:=ifelse(tb=='TBD',1,1-spec.symptom)]
-  # Prison GP assessment
-  # D[,int.prop.prison.gp.assessment:=1]
-  # D[,soc.prop.prison.gp.assessment:=1]
-  # Clinical suspicion of TB disease
-  # D[,soc.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.symptom)]
-  # D[,int.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.any.abn.xray)]
   # Attending NHS referral
   D[,int.prop.attend.nhs.referral:=1]
 }
 
-if(SA == 'startATT'){
-  # TB symptom screening
-  # D[,int.prop.tb.sympt.screen:=1] 
-  # TB symptoms at screening
-  D[,int.prop.presumtive.tb:=ifelse(tb=='TBD',1,1-spec.symptom)]
-  # Prison GP assessment
-  D[,int.prop.prison.gp.assessment:=1]
-  # D[,soc.prop.prison.gp.assessment:=1]
-  # Clinical suspicion of TB disease
-  # D[,soc.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.symptom)]
-  D[,int.prop.clinical.tb.suspicion:=ifelse(tb=='TBD',1,1-spec.any.abn.xray)]
-  # Attending NHS referral
-  D[,int.prop.attend.nhs.referral:=1]
-  # starting & completing ATT
-  D[,int.prop.starting.att:=1]
-  # D[,int.prop.completing.att:=1]
-}
-
-## compute other parameters (adds by side-effect)
-MakeTreeParms(D,P)
-
-names(D)[grepl('cost', names(D))]
 
 if(SA == 'ContactTracing'){
   # No contact management costs
+  D[,int.prop.attend.nhs.referral:=1]
   D[,cost.contact.management:=0]
 }
-summary(D$cost.contact.management)
+
 ## checks
 D[,sum(value),by=.(isoz,id)] #CHECK
 # D[,sum(value),by=.(isoz,id,age)] #CHECK
