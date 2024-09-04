@@ -10,9 +10,9 @@ y <- runmodel(tt,parms)           #run model
 head(y)
 
 ## ## example use of using 1st row of churn samples
-## parms <- revise.flow.parms(parms,smpsd,1) #change flow parameter to 1st row of samples
-## y <- runmodel(tt,parms)           #run model
-## tail(y)
+parms <- revise.flow.parms(parms,smpsd,1) #change flow parameter to 1st row of samples
+y <- runmodel(tt,parms)           #run model
+tail(y)
 
 ## ## trying with tree parameters also
 ## parms <- revise.HE.parms(parms,DR,1,arm='soc')
@@ -111,6 +111,7 @@ head(y)
 
 ## ====================
 ## TODO adjust hyperparms for foi and disease to match data
+## TODO stan update
 Nruns <- 1e3
 ## parms$staticfoi <- -1 # dynamic=-1
 set.seed(sd)
@@ -121,23 +122,57 @@ RES <- PSAloop(
 summary(RES$problem)
 RES[,problem:=NULL]
 
-## look at pre-screen
-
-summary(RES[,.(prevTBI,OR,frac.screened)])
-RES[,plot(frac.screened,OR)]
-RES[, plot(frac.screened, SP1)] # linear down: want SP>0.5 for minority screening
-RES[, plot(OR, 1/odds(SE1))] # linear down: want SP>0.5 for minority screening
-
+RES[, OR := odds.ratio(SP1, SE1)]
+RES[, frac.screened := prevTBI * SE1 + (1 - prevTBI) * (1 - SP1)]
 RES[, OR.cat := cut(OR, breaks = c(0, 1, 2, 4, 10, Inf), include.lowest = TRUE)]
 RES[, x.cat := cut(frac.screened, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), include.lowest = TRUE)]
-## RES[, OR.cat := factor(OR.cat, levels = levels(OR.cat), ordered = TRUE)]
 
-SMY <- RES[, .(ICER = mean(int.CC - soc.CC) / mean(dQ)), by = .(OR.cat, x.cat)]
-ggplot(SMY,aes(OR.cat,x.cat,fill=ICER))+
-  geom_tile()
+## look at pre-screen
+save(RES, file = here("transmission/data/RES.Rdata"))
 
-## TODO find boundary
+RES[, NB := 35e3 * dQ - (int.CC - soc.CC)]
 
+
+## summary(RES[,.(NB,SE1,SP1,prevTBI,OR,frac.screened)])
+## RES[,plot(frac.screened,OR)]
+## RES[, plot(frac.screened, SP1)] # linear down: want SP>0.5 for minority screening
+## RES[, plot(OR, 1/odds(SE1))] # linear down: want SP>0.5 for minority screening
+
+## ## RES[, OR.cat := factor(OR.cat, levels = levels(OR.cat), ordered = TRUE)]
+## RES[, OR.cat := cut(OR, breaks = c(0, 1, 2, 4, 10, Inf), include.lowest = TRUE)]
+## RES[, x.cat := cut(frac.screened, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), include.lowest = TRUE)]
+## SMY <- RES[, .(NB=mean(NB)), by = .(OR.cat, x.cat)]
+## ggplot(SMY, aes(OR.cat, x.cat, fill = NB)) +
+##   geom_tile() +
+##   scale_fill_distiller(palette = "BrBG")
+
+
+## SMY <- RES[, .(ICER = mean(int.CC - soc.CC) / mean(dQ)), by = .(OR.cat, x.cat)]
+## ggplot(SMY,aes(OR.cat,x.cat,fill=ICER-35e3))+
+##   geom_tile() + scale_fill_distiller(palette = "PiYG")
+bks <- seq(from = 0.1, to = 0.9, length.out = 8)
+RES[, SP1.cat := cut(SP1, breaks = bks, include.lowest = TRUE)]
+RES[, SE1.cat := cut(SE1, breaks = bks, include.lowest = TRUE)]
+SMY2 <- RES[, .(NB = mean(NB)), by = .(SE1.cat, SP1.cat)]
+## ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = ICER)) +
+##   geom_tile()+scale_fill_viridis()
+## dcast(SMY2, SE1.cat ~ SP1.cat, value.var = "ICER")
+ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB)) +
+  geom_tile() +
+  scale_fill_distiller(palette = "BrBG") # PiYG
+
+## BrBG, PiYG, PRGn, PuOr, RdBu, RdGy, RdYlBu, RdYlGn, Spectral
+
+## RES[, icer := (int.CC - soc.CC) / dQ]
+
+## ggplot(RES,aes(OR,frac.screened,col=ifelse(icer<35e3,'green','red')))+
+##   geom_point()
+
+## ggplot(RES, aes(SE1, SP1, col = ifelse(icer<35e3,'green','red'))) +
+##   geom_point()
+
+## ggplot(RES, aes(SE1, SP1, z = icer)) +
+##   geom_contour(bins=10)
 
 ## ===== inspect
 RES[,mean(int.CC-soc.CC)]

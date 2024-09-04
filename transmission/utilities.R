@@ -5,6 +5,7 @@ library(stringr)
 library(ggplot2)
 library(scales)
 library(glue)
+library(viridis)
 ## library(googlesheets4) #only for authors to upload
 
 source(system.file("extdata", "parameters.R", package="ecrins")) #this loads some fns for PSA
@@ -447,9 +448,9 @@ others <- c('dLYL','deaths','notif100k','CC0','CC','qoldec')
 ## ## ============= diff plot  =============
 ## make comparison data for SOC vs INT
 diffdata <- function(parms,SOCcov=0,INTcov=1){
-  parms$inflow_toTPT_L0 <- parms$inflow_toATT_TB0 <- SOCcov #BL zero
-  parms$inflow_toTPT_L1 <- parms$inflow_toATT_TB1 <- SOCcov #OFF
-  ## TODO will now require safety: check if used
+  parms$inflow_notx_no0 <- parms$inflow_notx_no1 <- 0
+  parms$inflow_toTPT_L0 <- parms$inflow_toATT_TB0 <- SOCcov # BL zero
+  parms$inflow_toTPT_L1 <- parms$inflow_toATT_TB1 <- SOCcov # OFF
   tt <- seq(from=0, to=120, by=0.1)  #time frame to run over
   ## SOC:
   y <- runmodel(tt,parms)           #run model
@@ -510,7 +511,6 @@ run.HE.socint <- function(parms,DR,j,
       cat("j = ", j, "\n")
       cat("saving parameters!\n")
       save(parms, file = here("transmission/data/last.problem.parms.Rdata"))
-      print(c(SE1,SP1))
       print(c(
         parms$inflow_toATT_TB1,
         parms$inflow_toATT_L1,
@@ -643,8 +643,9 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,
   RES <- rbindlist(RES)
   ## add pre-screen data
   RES[, prevTBI := (parm_ifrac_L + parm_ifrac_E + parm_ifrac_epTB + parm_ifrac_lpTB)]
-  RES[, OR := ifelse(targeting, odds.ratio(SP1, SE1), 1)]
-  RES[, frac.screened := ifelse(targeting, prevTBI * SE1 + (1 - prevTBI) * (1 - SP1), 1)]
+  RES[, SP1.cat := cut(SP1, breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1), include.lowest = TRUE)]
+  RES[, SE1.cat := cut(SE1, breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1), include.lowest = TRUE)]
+  RES[, icer := (int.CC - soc.CC) / dQ]
   ## inspect
   cat('--- deaths diff summary ---\n')
   print(RES[,summary(soc.deaths-int.deaths)])
