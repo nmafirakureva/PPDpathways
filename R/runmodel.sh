@@ -5,6 +5,7 @@
 R --slave --vanilla --args <ppd_simple.R AllattendNHS & R --slave --vanilla --args <ppd_simple.R noltfu &
 R --slave --vanilla --args <ppd_simple.R DOTsCost & R --slave --vanilla --args <ppd_simple.R XrayCost &
 R --slave --vanilla --args <ppd_simple.R FUVisitsCost & R --slave --vanilla --args <ppd_simple.R InpatientCost &
+R --slave --vanilla --args <ppd_simple.R PrisonEscort & R --slave --vanilla --args <ppd_simple.R ContactTracing &
 R --slave --vanilla --args <ppd_simple.R none
 
 
