@@ -315,10 +315,11 @@ RES[, NB := 30e3 * dQ - (int.CC - soc.CC)]
 ## look at pre-screen
 save(RES, file = here("transmission/data/RES.tgt.Rdata"))
 
+load(file = here("transmission/data/RES.tgt.Rdata"))
+
+
 summary(RES$NB)
 qplot(RES$NB)
-
-
 
 ## summary(RES[,.(NB,SE1,SP1,prevTBI,OR,frac.screened)])
 ## RES[,plot(frac.screened,OR)]
@@ -386,7 +387,7 @@ ZLP <- (ZZ[, 1] * 0.1)/ZFR                   #TBI prev
 TXT <- paste0("TBI=", round(1e2 * ZLP), "%\nProportion=", round(1e2 * ZFR), "%\n")
 keep <- which(ZLP>0.15)#1:nrow(Z)
 
-ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB)) +
+GP <- ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB)) +
   geom_tile() +
   xlab("Pre-screen sensitivity") +
   ylab("Pre-screen specificity") +
@@ -394,9 +395,30 @@ ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB)) +
   theme_linedraw() +
   labs(fill = "Net benefit") +
   annotate("text", label = TXT[keep], col = 'yellow', x = Z[keep,1], y = Z[keep,2])
+GP
+
+ggsave(GP, file = here("transmission/plots/p_target_tile_NB2.png"), w = 14, h = 7)
 
 
-ggsave(file = here("transmission/plots/p_target_tile_NB2.png"), w = 14, h = 7)
+## ---- with specific annotations
+## se,sp
+## 18,95
+## 30,70
+
+se1x <- 1 + (18 / 100 - 0.1) / 0.2
+sp1x <- 1 + (95 / 100 - 0.55) / 0.1
+se2x <- 1 + (30 / 100 - 0.1) / 0.2
+sp2x <- 1 + (70 / 100 - 0.55) / 0.1
+
+sz <- 5
+cl <- "magenta"
+GPA <- GP + annotate(geom = "point", x = se1x, y = sp1x, col = cl, size = sz, shape=1)+
+  annotate(geom = "text", x = se1x, y = sp1x, col = cl, size = sz*0.9, label = "1") +
+  annotate(geom = "point", x = se2x, y = sp2x, col = cl, size = sz, shape = 1) +
+  annotate(geom = "text", x = se2x, y = sp2x, col = cl, size = sz*0.9, label = "2")+
+  theme(panel.grid = element_blank(), panel.border = element_blank())
+
+ggsave(GPA, file = here("transmission/plots/p_target_tile_NB3.png"), w = 14, h = 7)
 
 
 ## ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB)) +
