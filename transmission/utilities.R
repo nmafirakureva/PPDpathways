@@ -16,12 +16,43 @@ hyperparms[["tbip"]] <- list(shape1=10,shape2=90)
 
 ## prisons parameters
 ## parms
-load(here('churn/outdata/smpsd.Rdata')) #TODO change/update
+load(here('churn/outdata/smpsd.Rdata'))
 
 ## tree outputs
 load(here('outdata/DR.Rdata'))
 DRS <- fread(here('outdata/DRS.csv'))
 
+## save summary table
+sdc <- c("soc_att_check", "soc_tpt_check","soc_notx_check",
+         "soc_att_cost", "soc_tpt_cost","soc_notx_cost",
+         "int_att_check", "int_tpt_check","int_notx_check",
+         "int_att_cost", "int_tpt_cost","int_notx_cost")
+SDR1 <- DR[, lapply(.SD, mean), by = tb, .SDcols = sdc]
+SDR2 <- DR[, lapply(.SD, function(x)quantile(x,0.025)), by = tb, .SDcols = sdc]
+SDR3 <- DR[, lapply(.SD, function(x)quantile(x,1-0.025)), by = tb, .SDcols = sdc]
+
+preformat <- function(X) {
+  X <- transpose(X, keep.names = "tb")
+  X <- X[2:nrow(X), 2:4]
+  X <- as.matrix(X)
+  X[c(1:3, 7:9), ] <- matrix(paste0(round(100 * as.numeric(X[c(1:3, 7:9), ]), 1), "%"), ncol = 3)
+  X[c(4:6, 10:12), ] <- matrix(paste0(format(round(as.numeric(X[c(4:6, 10:12), ])), big.mark = ",")),
+    ncol = 3
+    )
+  X <- trimws(X)
+  X[c(4:6, 10:12), ] <- matrix(paste0("£", X[c(4:6, 10:12), ]), ncol = 3)
+  as.matrix(X)
+}
+
+SDRtab <- paste0(preformat(SDR1), " (", preformat(SDR2), " to ", preformat(SDR3), ")")
+SDRtab[grepl("Inf", SDRtab)] <- "-"
+SDRtab <- matrix(SDRtab,ncol=3)
+colnames(SDRtab) <- c("TBD", "TBI", "noTB")
+rownames(SDRtab) <- sdc
+
+write.csv(SDRtab,file=here('transmission/plots/SDRtab.csv'))
+
+## --- copy of base data
 DR.basecase <- copy(DR) # keep
 
 ## pick up the extra sensitivity analyses
