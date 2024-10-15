@@ -11,6 +11,7 @@ head(y)
 
 ## ====================
 Nruns <- 1e3
+
 ## parms$staticfoi <- -1 # dynamic=-1
 set.seed(sd)
 RES <- PSAloop(
@@ -31,12 +32,6 @@ RES[,mean(int.CC-soc.CC)/mean(dQ)]/1e3 #54
 RES[mid.notes<100 & mid.notes>30,mean(int.CC-soc.CC)]
 RES[mid.notes<100 & mid.notes>30,mean(Q.int - Q.soc)]
 RES[mid.notes<100 & mid.notes>30,mean(int.CC-soc.CC)/mean(dQ)]/1e3 # 1M
-
-RES[,.(mean(mid.notes),quantile(mid.notes,0.025),quantile(mid.notes,0.975))]
-
-## Martinez estimate for UK
-## 144 32 342
-
 
 
 ## ======== table
@@ -223,7 +218,7 @@ SA[[1]] <- data.table(
 set.seed(sd)
 RES1 <- PSAloop(
   Niter = Nruns, parms, smpsd, DR,
-  static = TRUE, community = TRUE, posttb = TRUE
+  static = TRUE, community = TRUE, posttb = TRUE, targeting = FALSE
 )
 SA[[2]] <- data.table(
   analysis = "Static model",
@@ -237,7 +232,7 @@ SA[[2]] <- data.table(
 set.seed(sd)
 RES1 <- PSAloop(
   Niter = Nruns, parms, smpsd, DR,
-  static = TRUE, community = FALSE, posttb = TRUE
+  static = TRUE, community = FALSE, posttb = TRUE, targeting = FALSE
 )
 SA[[3]] <- data.table(
   analysis = "Static model, no community transmission",
@@ -251,7 +246,7 @@ SA[[3]] <- data.table(
 set.seed(sd)
 RES1 <- PSAloop(
   Niter = Nruns, parms, smpsd, DR,
-  static = TRUE, community = FALSE, posttb = FALSE
+  static = TRUE, community = FALSE, posttb = FALSE, targeting = FALSE
 )
 SA[[4]] <- data.table(
   analysis = "Static model, no community transmission or post-TB effects",
@@ -267,6 +262,7 @@ SAT[, `ICER, unrestricted TB rates` := paste0(round(ICER))]
 SAT[, `ICER, restricted TB rates` := paste0(round(ICERr))]
 SAT[, c("ICER", "ICERr") := NULL]
 print(SAT)
+
 fwrite(SAT, file = here("transmission/plots/SA.csv"))
 
 ## extras from DR files
@@ -376,6 +372,14 @@ ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB)) +
 ggsave(file = here("transmission/plots/p_target_tile_NB.png"), w = 14, h = 7)
 
 
+ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB > 0)) +
+  geom_tile() +
+  xlab("Pre-screen sensitivity") +
+  ylab("Pre-screen specificity") +
+  scale_colour_manual(values = c("red", "green")) ## +
+ggsave(file = here("transmission/plots/p_target_tile.png"), w = 7, h = 7)
+
+
 XZ <- (bks1[-1]+bks1[1:5])/2 #SE
 YZ <- (bks2[-1] + bks2[1:5]) / 2 # SP
 ZZ <- expand.grid(XZ, YZ)
@@ -420,45 +424,87 @@ GPA <- GP + annotate(geom = "point", x = se1x, y = sp1x, col = cl, size = sz, sh
 
 ggsave(GPA, file = here("transmission/plots/p_target_tile_NB3.png"), w = 14, h = 7)
 
+## Targeting: explicit evaluation of two strategies
+TGT <- list()
 
-## ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB)) +
-##   geom_tile() +
-##   xlab("Pre-screen sensitivity") +
-##   ylab("Pre-screen specificity") +
-##   scale_fill_distiller(palette = "BrBG") # PiYG
-## ggsave(file = here("transmission/plots/p_target_tile_NB.png"), w = 14, h = 7)
+## group 1
+set.seed(sd)
+REST <- PSAloop(
+  Niter = Nruns, parms, smpsd, DR,
+  static = FALSE, community = TRUE, posttb = TRUE,
+  targeting = TRUE, screen.acc = list(SE1 = 0.18, SP1 = 0.95)
+)
+TGT[[1]] <- data.table(
+  analysis = "Target group 1",
+  ICER = REST[, mean(int.CC - soc.CC) / mean(dQ)],
+  ICERr = REST[
+    mid.notes < 100 & mid.notes > 30,
+    mean(int.CC - soc.CC) / mean(dQ)
+  ],
+  NB = REST[, 30e3 * mean(dQ) - mean(int.CC - soc.CC)],
+  NBr = REST[
+    mid.notes < 100 & mid.notes > 30,
+    30e3 * mean(dQ) - mean(int.CC - soc.CC)
+  ],
+  dC = REST[, mean(int.CC - soc.CC)],
+  dQ = REST[, mean(dQ)],
+  dCr = REST[mid.notes < 100 & mid.notes > 30, mean(int.CC - soc.CC)],
+  dQr = REST[mid.notes < 100 & mid.notes > 30, mean(dQ)],
+  NB.sd = REST[, 30e3 * sd(dQ) - sd(int.CC - soc.CC)],
+  NBr.sd = REST[
+    mid.notes < 100 & mid.notes > 30,
+    30e3 * sd(dQ) - sd(int.CC - soc.CC)
+  ],
+  dC.sd = REST[, sd(int.CC - soc.CC)],
+  dQ.sd = REST[, sd(dQ)],
+  dCr.sd = REST[mid.notes < 100 & mid.notes > 30, sd(int.CC - soc.CC)],
+  dQr.sd = REST[mid.notes < 100 & mid.notes > 30, sd(dQ)]
+)
 
+## group 2
+set.seed(sd)
+REST <- PSAloop(
+  Niter = Nruns, parms, smpsd, DR,
+  static = FALSE, community = TRUE, posttb = TRUE,
+  targeting = TRUE, screen.acc = list(SE1 = 0.30, SP1 = 0.70)
+)
+TGT[[2]] <- data.table(
+  analysis = "Target group 2",
+  ICER = REST[, mean(int.CC - soc.CC) / mean(dQ)],
+  ICERr = REST[
+    mid.notes < 100 & mid.notes > 30,
+    mean(int.CC - soc.CC) / mean(dQ)
+  ],
+  NB = REST[, 30e3 * mean(dQ) - mean(int.CC - soc.CC)],
+  NBr = REST[
+    mid.notes < 100 & mid.notes > 30,
+    30e3 * mean(dQ) - mean(int.CC - soc.CC)
+  ],
+  dC = REST[, mean(int.CC - soc.CC)],
+  dQ = REST[, mean(dQ)],
+  dCr = REST[mid.notes < 100 & mid.notes > 30, mean(int.CC - soc.CC)],
+  dQr = REST[mid.notes < 100 & mid.notes > 30, mean(dQ)],
+  NB.sd = REST[, 30e3 * sd(dQ) - sd(int.CC - soc.CC)],
+  NBr.sd = REST[
+    mid.notes < 100 & mid.notes > 30,
+    30e3 * sd(dQ) - sd(int.CC - soc.CC)
+  ],
+  dC.sd = REST[, sd(int.CC - soc.CC)],
+  dQ.sd = REST[, sd(dQ)],
+  dCr.sd = REST[mid.notes < 100 & mid.notes > 30, sd(int.CC - soc.CC)],
+  dQr.sd = REST[mid.notes < 100 & mid.notes > 30, sd(dQ)]
+)
 
-## sez <- seq(from = 0.1, to = 0.9, length.out = 300)
-## fdat <- rbindlist(list(
-##   data.table(x = sez, OR = 2),
-##   data.table(x = sez, OR = 4),
-##   data.table(x = sez, OR = 10)
-## ))
-## fdat[,oddsy:=odds(x)/OR]
-## fdat[, y := oddsy / (1 + oddsy)]
-## fdat[,NB:=NA_real_]
-## fac <- 7
+## combine
+TGT <- rbindlist(TGT)
 
-ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB > 0)) +
-  geom_tile() +
-  xlab("Pre-screen sensitivity") +
-  ylab("Pre-screen specificity") +
-  scale_colour_manual(values = c("red", "green")) ## +
-ggsave(file = here("transmission/plots/p_target_tile.png"), w = 7, h = 7)
-
-## geom_line(data = fdat, aes(x = (1 + x * fac),
-  ##                            y = (1 + y * fac),
-  ##                            linetype = as.factor(OR)), col = 2)
-## BrBG, PiYG, PRGn, PuOr, RdBu, RdGy, RdYlBu, RdYlGn, Spectral
+## save out
+fwrite(TGT, file=here("transmission/plots/TGT.csv"))
 
 
 ## ========== Authors only:
-flz <- c("SA.csv", "SA.full.csv", "tabout.csv")
+upload.to.sheets(here("outdata/"), "DRS.csv", shid)
+
+flz <- c("SA.csv", "SA.full.csv", "tabout.csv", "TGT.csv", "SDRtab.csv")
 for(fn in flz)
   upload.to.sheets(here('transmission/plots/'),fn,shid)
-
-flz <- c("DRS.csv")
-for (fn in flz) {
-  upload.to.sheets(here("outdata/"), fn, shid)
-}

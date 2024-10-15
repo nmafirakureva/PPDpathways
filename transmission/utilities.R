@@ -541,7 +541,8 @@ run.HE.socint <- function(parms,DR,j,
                           zero.nonscreen.costs=FALSE, #for debugging/checking
                           ignore.tree.parms=FALSE,    #for debugging/checking
                           end_time=120,int_time=50,
-                          static=-1,totpop=87489,prescreen=FALSE){
+                          static=-1,totpop=87489,
+                          prescreen=FALSE,screen.acc=NULL){
     tt <- seq(from=0, to=end_time, by=0.1)  #time frame to run over: 70 years after 50 burn
     parms$staticfoi <- static            #dynamic
     parms$int_time <- int_time #fix
@@ -558,16 +559,20 @@ run.HE.socint <- function(parms,DR,j,
     if (!ignore.tree.parms) {
       parms <- revise.HE.parms(parms, DR, j, arm = "int", zero.nonscreen.costs = zero.nonscreen.costs)
     }
-    if (!prescreen) {
+    if (!prescreen) { #no pre-screen targetting
       SE1 <- 1
       SP1 <- 0
-    } else {
+    } else if(is.null(screen.acc)){           #sample random pre-screen accuracy
       orv <- runif(n = 1, min = 1, max = 10) #OR
       SP1 <- runif(n = 1, min = 0.5, max = 1) #SP
       SE1 <- runif(n = 1, min = 0, max = 1) # SP
       ## oddssp <- odds(SP1)
       ## SE1 <- inv.odds(orv * oddssp)
       parms <- pre.screen(parms,SE1,SP1)
+    } else { #use a specific pre-screen accuracy
+      SE1 <- screen.acc$SE1
+      SP1 <- screen.acc$SP1
+      parms <- pre.screen(parms, screen.acc$SE1, screen.acc$SP1)
     }
     test <- parms; test$staticfoi <- NULL
     if(any(unlist(test)<0)) stop(paste0('Parameter<0 for INT @ run=',j,'\n parm=',
@@ -644,12 +649,15 @@ run.HE.socint <- function(parms,DR,j,
 ## ## ============= HE workflow =============
 PSAloop <- function(Niter=4e3,parms,smpsd,DR,
                     zero.nonscreen.costs=FALSE,verbose=FALSE,
-                    static=FALSE,community=TRUE,posttb=TRUE,targeting=TRUE){
+                    static=FALSE,community=TRUE,posttb=TRUE,
+                    targeting=FALSE,screen.acc=NULL){
   if(!static & community & posttb) cat('Running basecase analysis!\n')
   if (static) cat("Running static model!\n")
   if (!community) cat("Running with community transmission turned off!\n")
   if (!posttb) cat("Running with post-TB effects turned off!\n")
   if (targeting) cat("Running with pre-screen targeting turned on!\n")
+  if (targeting & !is.null(screen.acc)) print(screen.acc)
+  if (!targeting & !is.null(screen.acc)) cat("Targeting off but screen SE/SP supplied! Ignoring...\n")
   if(Niter>nrow(smpsd)){
     cat('Niter>nrow(smpsd): resampling extra replicates!\n')
     xtra <- smpsd[sample(nrow(smpsd),Niter-nrow(smpsd),replace=TRUE)]
@@ -699,7 +707,7 @@ PSAloop <- function(Niter=4e3,parms,smpsd,DR,
     ANS <- run.HE.socint(parms,
                          DR,j,
                          zero.nonscreen.costs=zero.nonscreen.costs,
-                         prescreen = targeting)
+                         prescreen = targeting, screen.acc = screen.acc)
     ## capture parms also
     V <- unlist(parms)
     nm <- names(V)
