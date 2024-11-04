@@ -613,16 +613,16 @@ run.HE.socint <- function(parms,DR,j,
       int.to.end=end_time-int_time,
       mid.notes=y[mid,"notif100k"],
       ## SOC
-      soc.CC0=y[end,"CC0"], ## * ratio,
-      soc.CC=y[end,"CC"], ## * ratio,
-      soc.deaths=y[end,"deaths"],
-      soc.qoldec=y[end,"qoldec"],
-      soc.dLYL=y[end,"dLYL"],
-      soc.ccases=y[end,"cases"],
-      soc.ccasesout=y[end,"casesout"],
-      soc.cTPT=y[end,'cTPT'],
-      soc.cATTtp=y[end,'cATTtp'],
-      soc.cATTfp=y[end,'cATTfp'],
+      soc.CC0=y[end,"CC0"], ## * ratio, ##undiscounted cumulative cost drivers
+      soc.CC=y[end,"CC"], ## * ratio, ##discounted cumulative cost drivers
+      soc.deaths=y[end,"deaths"], #deaths - not discounted
+      soc.qoldec=y[end,"qoldec"], #discounted QoL decrement
+      soc.dLYL=y[end,"dLYL"],     #discounted LYL
+      soc.ccases=y[end,"cases"], #TB cumulative incidence
+      soc.ccasesout=y[end,"casesout"], #TB cumulative incidence outside
+      soc.cTPT=y[end,'cTPT'],          ##(not discounted)
+      soc.cATTtp=y[end,'cATTtp'],      ##(not discounted)
+      soc.cATTfp=y[end,'cATTfp'],      ##(not discounted)
       ## INT
       int.CC0=yi[end,"CC0"], ## * ratio,
       int.CC=yi[end,"CC"], ## * ratio,
@@ -647,7 +647,7 @@ run.HE.socint <- function(parms,DR,j,
 }
 
 ## ## ============= HE workflow =============
-PSAloop <- function(Niter=4e3,parms,smpsd,DR,
+PSAlloop <- function(Niter=4e3,parms,smpsd,DR,
                     zero.nonscreen.costs=FALSE,verbose=FALSE,
                     static=FALSE,community=TRUE,posttb=TRUE,
                     targeting=FALSE,screen.acc=NULL){

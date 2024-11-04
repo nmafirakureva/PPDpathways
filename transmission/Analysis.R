@@ -337,7 +337,8 @@ qplot(RES$NB)
 nbks <- 5
 RES[, OR.cat := cut(OR, breaks = nbks, include.lowest = TRUE)]
 RES[, x.cat := cut(frac.screened, breaks = nbks, include.lowest = TRUE)]
-SMY <- RES[, .(NB=mean(NB)), by = .(OR.cat, x.cat)]
+SMY <- RES[, .(NB = mean(NB * ratio)), by = .(OR.cat, x.cat)]
+
 ## ggplot(SMY, aes(OR.cat, x.cat, fill = NB)) +
 ##   geom_tile() +
 ##   scale_fill_scico(palette = "vik", midpoint = 0)
@@ -358,9 +359,10 @@ bks1 <- c(0:5) / 5
 bks2 <- bks1/2+0.5
 RES[, SP1.cat := cut(SP1, breaks = bks2, include.lowest = TRUE)]
 RES[, SE1.cat := cut(SE1, breaks = bks1, include.lowest = TRUE)]
-SMY2 <- RES[, .(NB = mean(NB)), by = .(SE1.cat, SP1.cat)]
+SMY2 <- RES[, .(NB = mean(NB * ratio)), by = .(SE1.cat, SP1.cat)]
 
-ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB)) +
+
+ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB )) +
   geom_tile() +
   xlab("Pre-screen sensitivity") +
   ylab("Pre-screen specificity") +
@@ -377,6 +379,7 @@ ggplot(SMY2, aes(SE1.cat, SP1.cat, fill = NB > 0)) +
   xlab("Pre-screen sensitivity") +
   ylab("Pre-screen specificity") +
   scale_colour_manual(values = c("red", "green")) ## +
+
 ggsave(file = here("transmission/plots/p_target_tile.png"), w = 7, h = 7)
 
 
@@ -434,32 +437,35 @@ REST <- PSAloop(
   static = FALSE, community = TRUE, posttb = TRUE,
   targeting = TRUE, screen.acc = list(SE1 = 0.18, SP1 = 0.95)
 )
+gp1 <- copy(REST)
+
 TGT[[1]] <- data.table(
   analysis = "Target group 1",
-  ICER = REST[, mean(int.CC - soc.CC) / mean(dQ)],
+  ICER = REST[, mean((int.CC - soc.CC) * ratio) / mean(dQ * ratio)],
   ICERr = REST[
     mid.notes < 100 & mid.notes > 30,
-    mean(int.CC - soc.CC) / mean(dQ)
+    mean((int.CC - soc.CC) * ratio) / mean(dQ * ratio)
   ],
-  NB = REST[, 30e3 * mean(dQ) - mean(int.CC - soc.CC)],
+  NB = REST[, 30e3 * mean(dQ * ratio) - mean((int.CC - soc.CC) * ratio)],
   NBr = REST[
     mid.notes < 100 & mid.notes > 30,
-    30e3 * mean(dQ) - mean(int.CC - soc.CC)
+    30e3 * mean(dQ * ratio) - mean((int.CC - soc.CC) * ratio)
   ],
-  dC = REST[, mean(int.CC - soc.CC)],
-  dQ = REST[, mean(dQ)],
-  dCr = REST[mid.notes < 100 & mid.notes > 30, mean(int.CC - soc.CC)],
-  dQr = REST[mid.notes < 100 & mid.notes > 30, mean(dQ)],
-  NB.sd = REST[, 30e3 * sd(dQ) - sd(int.CC - soc.CC)],
+  dC = REST[, mean((int.CC - soc.CC) * ratio)],
+  dQ = REST[, mean(dQ * ratio)],
+  dCr = REST[mid.notes < 100 & mid.notes > 30, mean((int.CC - soc.CC) * ratio)],
+  dQr = REST[mid.notes < 100 & mid.notes > 30, mean(dQ * ratio)],
+  NB.sd = REST[, 30e3 * sd(dQ * ratio) - sd((int.CC - soc.CC) * ratio)],
   NBr.sd = REST[
     mid.notes < 100 & mid.notes > 30,
-    30e3 * sd(dQ) - sd(int.CC - soc.CC)
+    30e3 * sd(dQ * ratio) - sd((int.CC - soc.CC) * ratio)
   ],
-  dC.sd = REST[, sd(int.CC - soc.CC)],
-  dQ.sd = REST[, sd(dQ)],
-  dCr.sd = REST[mid.notes < 100 & mid.notes > 30, sd(int.CC - soc.CC)],
-  dQr.sd = REST[mid.notes < 100 & mid.notes > 30, sd(dQ)]
+  dC.sd = REST[, sd((int.CC - soc.CC) * ratio)],
+  dQ.sd = REST[, sd(dQ * ratio)],
+  dCr.sd = REST[mid.notes < 100 & mid.notes > 30, sd((int.CC - soc.CC) * ratio)],
+  dQr.sd = REST[mid.notes < 100 & mid.notes > 30, sd(dQ * ratio)]
 )
+
 
 ## group 2
 set.seed(sd)
@@ -470,29 +476,29 @@ REST <- PSAloop(
 )
 TGT[[2]] <- data.table(
   analysis = "Target group 2",
-  ICER = REST[, mean(int.CC - soc.CC) / mean(dQ)],
+  ICER = REST[, mean((int.CC - soc.CC) * ratio) / mean(dQ * ratio)],
   ICERr = REST[
     mid.notes < 100 & mid.notes > 30,
-    mean(int.CC - soc.CC) / mean(dQ)
+    mean((int.CC - soc.CC) * ratio) / mean(dQ * ratio)
   ],
-  NB = REST[, 30e3 * mean(dQ) - mean(int.CC - soc.CC)],
+  NB = REST[, 30e3 * mean(dQ * ratio) - mean((int.CC - soc.CC) * ratio)],
   NBr = REST[
     mid.notes < 100 & mid.notes > 30,
-    30e3 * mean(dQ) - mean(int.CC - soc.CC)
+    30e3 * mean(dQ * ratio) - mean((int.CC - soc.CC) * ratio)
   ],
-  dC = REST[, mean(int.CC - soc.CC)],
-  dQ = REST[, mean(dQ)],
-  dCr = REST[mid.notes < 100 & mid.notes > 30, mean(int.CC - soc.CC)],
-  dQr = REST[mid.notes < 100 & mid.notes > 30, mean(dQ)],
-  NB.sd = REST[, 30e3 * sd(dQ) - sd(int.CC - soc.CC)],
+  dC = REST[, mean((int.CC - soc.CC) * ratio)],
+  dQ = REST[, mean(dQ * ratio)],
+  dCr = REST[mid.notes < 100 & mid.notes > 30, mean((int.CC - soc.CC) * ratio)],
+  dQr = REST[mid.notes < 100 & mid.notes > 30, mean(dQ * ratio)],
+  NB.sd = REST[, 30e3 * sd(dQ * ratio) - sd((int.CC - soc.CC) * ratio)],
   NBr.sd = REST[
     mid.notes < 100 & mid.notes > 30,
-    30e3 * sd(dQ) - sd(int.CC - soc.CC)
+    30e3 * sd(dQ * ratio) - sd((int.CC - soc.CC) * ratio)
   ],
-  dC.sd = REST[, sd(int.CC - soc.CC)],
-  dQ.sd = REST[, sd(dQ)],
-  dCr.sd = REST[mid.notes < 100 & mid.notes > 30, sd(int.CC - soc.CC)],
-  dQr.sd = REST[mid.notes < 100 & mid.notes > 30, sd(dQ)]
+  dC.sd = REST[, sd((int.CC - soc.CC) * ratio)],
+  dQ.sd = REST[, sd(dQ * ratio)],
+  dCr.sd = REST[mid.notes < 100 & mid.notes > 30, sd((int.CC - soc.CC) * ratio)],
+  dQr.sd = REST[mid.notes < 100 & mid.notes > 30, sd(dQ * ratio)]
 )
 
 ## combine
@@ -502,9 +508,53 @@ TGT <- rbindlist(TGT)
 fwrite(TGT, file=here("transmission/plots/TGT.csv"))
 
 
+## === exploring details of group 1:
+
+tmp <- gp1[,.(blpop,mid.notes,
+      ratio,int.to.end,
+      soc.CC0,int.CC0, dCC0=-soc.CC0+int.CC0,
+      soc.ccases,int.ccases,dccases=-soc.ccases+int.ccases,
+      soc.ccasesout,int.ccasesout,dccasesout=-soc.ccasesout+int.ccasesout,
+      soc.deaths,int.deaths,ddeaths=-soc.deaths+int.deaths,
+      soc.cTPT,int.cTPT,dcTPT=-soc.cTPT+int.cTPT,
+      soc.cATT=soc.cATTtp+soc.cATTfp,int.cATT=int.cATTtp+int.cATTfp,
+      dcATT=-soc.cATTtp-soc.cATTfp+int.cATTtp+int.cATTfp
+      )]
+
+tmp[, .(87489/blpop,ratio)]
+
+
+projs <- tmp[, .(dc.m=-mean(ratio * dccases / 70),
+                 dc.lo=lo(-ratio * dccases / 70),dc.hi=hi(-ratio * dccases / 70),
+                 dco.m=mean(-ratio * dccasesout / 70),
+                 dco.lo=lo(-ratio * dccasesout / 70),dco.hi=hi(-ratio * dccasesout / 70),
+                 dd.m=mean(-ratio * ddeaths / 70),
+                 dd.lo=lo(-ratio * ddeaths / 70),dd.hi=hi(-ratio * ddeaths / 70),
+                 da.m=mean(-ratio * dcATT / 70),
+                 da.lo=lo(-ratio * dcATT / 70),da.hi=hi(-ratio * dcATT / 70),
+                 dC.m=mean(-ratio * dCC0 / 70/1e5),
+                 dC.lo=lo(-ratio * dCC0 / 70/1e5),dC.hi=hi(-ratio * dCC0 / 70/1e5))]
+
+projt <- transpose(projs)
+projt[, var := names(projs)]
+projt[, c("variable", "type") := tstrsplit(var, "\\.")]
+projt[, var := NULL]
+names(projt)[1] <- "value"
+projt[,nm:=fcase(variable=='dc','TB incidence averted',
+                 variable=='dco','TB incidence outside averted',
+                 variable=='dd','TB deaths averted',
+                 variable=='da','TB treatments averted',
+                 variable=='dC','cost averted/100K '
+                 )]
+
+projt <- dcast(projt,nm~type,value.var  ='value')
+
+fwrite(projt[,.(nm,m,lo,hi)], file = here("transmission/plots/proj.csv"))
+
+
 ## ========== Authors only:
 upload.to.sheets(here("outdata/"), "DRS.csv", shid)
 
-flz <- c("SA.csv", "SA.full.csv", "tabout.csv", "TGT.csv", "SDRtab.csv")
+flz <- c("SA.csv", "SA.full.csv", "tabout.csv", "TGT.csv", "SDRtab.csv", "proj.csv")
 for(fn in flz)
   upload.to.sheets(here('transmission/plots/'),fn,shid)
