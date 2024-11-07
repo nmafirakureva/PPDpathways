@@ -474,6 +474,8 @@ REST <- PSAloop(
   static = FALSE, community = TRUE, posttb = TRUE,
   targeting = TRUE, screen.acc = list(SE1 = 0.30, SP1 = 0.70)
 )
+gp2 <- copy(REST)
+
 TGT[[2]] <- data.table(
   analysis = "Target group 2",
   ICER = REST[, mean((int.CC - soc.CC) * ratio) / mean(dQ * ratio)],
@@ -509,47 +511,122 @@ fwrite(TGT, file=here("transmission/plots/TGT.csv"))
 
 
 ## === exploring details of group 1:
+tmp1 <- gp1[, .(
+  group = "group 1",
+  blpop, mid.notes,
+  ratio, int.to.end,
+  soc.CC0, int.CC0,
+  soc.CC0inflow, int.CC0inflow,
+  soc.CC0inside, int.CC0inside,
+  soc.CC0outside, int.CC0outside,
+  dCC0 = -soc.CC0 + int.CC0,
+  dCC0inflow = -soc.CC0inflow + int.CC0inflow,
+  dCC0inside = -soc.CC0inside + int.CC0inside,
+  dCC0outside = -soc.CC0outside + int.CC0outside,
+  soc.ccases, int.ccases, dccases = -soc.ccases + int.ccases,
+  soc.ccasesout, int.ccasesout, dccasesout = -soc.ccasesout + int.ccasesout,
+  soc.deaths, int.deaths, ddeaths = -soc.deaths + int.deaths,
+  soc.cTPT, int.cTPT, dcTPT = -soc.cTPT + int.cTPT,
+  soc.cATT = soc.cATTtp + soc.cATTfp, int.cATT = int.cATTtp + int.cATTfp,
+  dcATT = -soc.cATTtp - soc.cATTfp + int.cATTtp + int.cATTfp,
+  soc.Cinflow = soc.cInflow, int.Cinflow = int.cInflow
+)]
 
-tmp <- gp1[,.(blpop,mid.notes,
-      ratio,int.to.end,
-      soc.CC0,int.CC0, dCC0=-soc.CC0+int.CC0,
-      soc.ccases,int.ccases,dccases=-soc.ccases+int.ccases,
-      soc.ccasesout,int.ccasesout,dccasesout=-soc.ccasesout+int.ccasesout,
-      soc.deaths,int.deaths,ddeaths=-soc.deaths+int.deaths,
-      soc.cTPT,int.cTPT,dcTPT=-soc.cTPT+int.cTPT,
-      soc.cATT=soc.cATTtp+soc.cATTfp,int.cATT=int.cATTtp+int.cATTfp,
-      dcATT=-soc.cATTtp-soc.cATTfp+int.cATTtp+int.cATTfp
-      )]
+tmp1[, .(87489/blpop,ratio)]
 
-tmp[, .(87489/blpop,ratio)]
+tmp2 <- gp2[, .(
+  group = "group 2",
+  blpop, mid.notes,
+  ratio, int.to.end,
+  soc.CC0, int.CC0,
+  soc.CC0inflow, int.CC0inflow,
+  soc.CC0inside, int.CC0inside,
+  soc.CC0outside, int.CC0outside,
+  dCC0 = -soc.CC0 + int.CC0,
+  dCC0inflow = -soc.CC0inflow + int.CC0inflow,
+  dCC0inside = -soc.CC0inside + int.CC0inside,
+  dCC0outside = -soc.CC0outside + int.CC0outside,
+  soc.ccases, int.ccases, dccases = -soc.ccases + int.ccases,
+  soc.ccasesout, int.ccasesout, dccasesout = -soc.ccasesout + int.ccasesout,
+  soc.deaths, int.deaths, ddeaths = -soc.deaths + int.deaths,
+  soc.cTPT, int.cTPT, dcTPT = -soc.cTPT + int.cTPT,
+  soc.cATT = soc.cATTtp + soc.cATTfp, int.cATT = int.cATTtp + int.cATTfp,
+  dcATT = -soc.cATTtp - soc.cATTfp + int.cATTtp + int.cATTfp,
+  soc.Cinflow = soc.cInflow, int.Cinflow = int.cInflow
+)]
+
+save(tmp1,tmp2,file=here('transmission/data/tmporary.Rdata'))
 
 
-projs <- tmp[, .(dc.m=-mean(ratio * dccases / 70),
-                 dc.lo=lo(-ratio * dccases / 70),dc.hi=hi(-ratio * dccases / 70),
-                 dco.m=mean(-ratio * dccasesout / 70),
-                 dco.lo=lo(-ratio * dccasesout / 70),dco.hi=hi(-ratio * dccasesout / 70),
-                 dd.m=mean(-ratio * ddeaths / 70),
-                 dd.lo=lo(-ratio * ddeaths / 70),dd.hi=hi(-ratio * ddeaths / 70),
-                 da.m=mean(-ratio * dcATT / 70),
-                 da.lo=lo(-ratio * dcATT / 70),da.hi=hi(-ratio * dcATT / 70),
-                 dC.m=mean(-ratio * dCC0 / 70/1e5),
-                 dC.lo=lo(-ratio * dCC0 / 70/1e5),dC.hi=hi(-ratio * dCC0 / 70/1e5))]
+
+projs <- rbind(
+  tmp1[, .(
+    group[1],
+    dc.m = -mean(ratio * dccases / 70),
+    dc.lo = lo(-ratio * dccases / 70), dc.hi = hi(-ratio * dccases / 70),
+    dco.m = mean(-ratio * dccasesout / 70),
+    dco.lo = lo(-ratio * dccasesout / 70), dco.hi = hi(-ratio * dccasesout / 70),
+    dd.m = mean(-ratio * ddeaths / 70),
+    dd.lo = lo(-ratio * ddeaths / 70), dd.hi = hi(-ratio * ddeaths / 70),
+    da.m = mean(-ratio * dcATT / 70),
+    da.lo = lo(-ratio * dcATT / 70), da.hi = hi(-ratio * dcATT / 70),
+    dC.m = mean(-ratio * dCC0 / 70) / 1e3,
+    dC.lo = lo(-ratio * dCC0 / 70) / 1e3, dC.hi = hi(-ratio * dCC0 / 70) / 1e3,
+    dCinflow.m = mean(-ratio * dCC0inflow / 70) / 1e3,
+    dCinflow.lo = lo(-ratio * dCC0inflow / 70) / 1e3, dCinflow.hi = hi(-ratio * dCC0inflow / 70) / 1e3,
+    dCinside.m = mean(-ratio * dCC0inside / 70) / 1e3,
+    dCinside.lo = lo(-ratio * dCC0inside / 70) / 1e3, dCinside.hi = hi(-ratio * dCC0inside / 70) / 1e3,
+    dCoutside.m = mean(-ratio * dCC0outside / 70) / 1e3,
+    dCoutside.lo = lo(-ratio * dCC0outside / 70) / 1e3,
+    dCoutside.hi = hi(-ratio * dCC0outside / 70) / 1e3
+  )],
+  tmp2[, .(
+    group[1],
+    dc.m = -mean(ratio * dccases / 70),
+    dc.lo = lo(-ratio * dccases / 70), dc.hi = hi(-ratio * dccases / 70),
+    dco.m = mean(-ratio * dccasesout / 70),
+    dco.lo = lo(-ratio * dccasesout / 70), dco.hi = hi(-ratio * dccasesout / 70),
+    dd.m = mean(-ratio * ddeaths / 70),
+    dd.lo = lo(-ratio * ddeaths / 70), dd.hi = hi(-ratio * ddeaths / 70),
+    da.m = mean(-ratio * dcATT / 70),
+    da.lo = lo(-ratio * dcATT / 70), da.hi = hi(-ratio * dcATT / 70),
+    dC.m = mean(-ratio * dCC0 / 70) / 1e3,
+    dC.lo = lo(-ratio * dCC0 / 70) / 1e3, dC.hi = hi(-ratio * dCC0 / 70) / 1e3,
+    dCinflow.m = mean(-ratio * dCC0inflow / 70) / 1e3,
+    dCinflow.lo = lo(-ratio * dCC0inflow / 70) / 1e3, dCinflow.hi = hi(-ratio * dCC0inflow / 70) / 1e3,
+    dCinside.m = mean(-ratio * dCC0inside / 70) / 1e3,
+    dCinside.lo = lo(-ratio * dCC0inside / 70) / 1e3, dCinside.hi = hi(-ratio * dCC0inside / 70) / 1e3,
+    dCoutside.m = mean(-ratio * dCC0outside / 70) / 1e3,
+    dCoutside.lo = lo(-ratio * dCC0outside / 70) / 1e3,
+    dCoutside.hi = hi(-ratio * dCC0outside / 70) / 1e3
+  )]
+)
 
 projt <- transpose(projs)
 projt[, var := names(projs)]
 projt[, c("variable", "type") := tstrsplit(var, "\\.")]
 projt[, var := NULL]
-names(projt)[1] <- "value"
-projt[,nm:=fcase(variable=='dc','TB incidence averted',
-                 variable=='dco','TB incidence outside averted',
-                 variable=='dd','TB deaths averted',
-                 variable=='da','TB treatments averted',
-                 variable=='dC','cost averted/100K '
-                 )]
+names(projt)[1:2] <- unlist(projt[1, 1:2])
+projt <- projt[!is.na(type)]
+projt[, nm := fcase(
+  variable == "dc", "TB incidence averted",
+  variable == "dco", "TB incidence outside averted",
+  variable == "dd", "TB deaths averted",
+  variable == "da", "TB treatments averted",
+  variable == "dC", "cost averted/K",
+  variable == "dCinflow", "inflow cost averted/K",
+  variable == "dCinside", "inside cost averted/K",
+  variable == "dCoutside", "outside cost averted/K"
+)]
+projt <- melt(projt[, .(nm, type, `group 1`, `group 2`)], id = c("nm", "type"))
+projt <- dcast(projt, nm + variable ~ type, value.var = "value")
+setcolorder(projt, c("variable", "nm", "m", "lo", "hi"))
+setkey(projt, variable, nm)
 
-projt <- dcast(projt,nm~type,value.var  ='value')
 
-fwrite(projt[,.(nm,m,lo,hi)], file = here("transmission/plots/proj.csv"))
+fwrite(projt, file = here("transmission/plots/proj.csv"))
+
+projt[variable == "group 1"]
 
 
 ## ========== Authors only:

@@ -450,6 +450,10 @@ revise.HE.parms <- function(parms, # original parameter template
     parms$inflow_toTPT_TB0 <- A$inflow_toTPT_TB0
     parms$inflow_toTPT_L0 <- A$inflow_toTPT_L0
     parms$inflow_toTPT_no0 <- A$inflow_toTPT_no0
+    ## ...NOTX
+    parms$inflow_notx_TB0 <- A$inflow_notx_TB0
+    parms$inflow_notx_L0 <- A$inflow_notx_L0
+    parms$inflow_notx_no0 <- A$inflow_notx_no0
     ## INT
     if(arm=='soc'){
       ## ... ATT
@@ -504,7 +508,6 @@ revise.HE.parms <- function(parms, # original parameter template
       parms$uc_entry_notx_L <- A$uc_entry_notx_L.int
       parms$uc_entry_notx_no <- A$uc_entry_notx_no.int
     }
-
     return(parms)
   } else {
     return(A)
@@ -555,6 +558,10 @@ run.HE.socint <- function(parms,DR,j,
     ## y <- runmodel(tt,parms)           #run model
     YO <- runmodelsafely(tt, parms) # run model
     y <- YO$y
+    flnmz <- grep("C0inFM", colnames(y), value = TRUE) #cumulative inflow names
+    if(j==1){
+      save(parms, file = here("transmission/data/first.parms.soc.Rdata"))
+    }
     ## INT: ## sample from tree-derived parms
     if (!ignore.tree.parms) {
       parms <- revise.HE.parms(parms, DR, j, arm = "int", zero.nonscreen.costs = zero.nonscreen.costs)
@@ -582,8 +589,11 @@ run.HE.socint <- function(parms,DR,j,
     ## yi <- runmodel(tt,parms)           #run model
     mid <- which(y[,'t']==int_time)    #NOTE could break if don't fit exactly in units of dt
     end <- nrow(y)
-    if(j==1)
-      save(parms, file = here("transmission/data/first.parms.Rdata"))
+    if (j == 1) {
+        save(parms, file = here("transmission/data/first.parms.int.Rdata"))
+        check <<- list(y=y,yi=yi) #TODO parm_frac_SD etc
+        ## TODO check ifrac vs frac
+    }
     if(nrow(yi)<nrow(y)){
       cat("Fewer rows in yi (", nrow(yi), ") than y (", nrow(y), ")!\n")
       cat("j = ", j, "\n")
@@ -614,6 +624,9 @@ run.HE.socint <- function(parms,DR,j,
       mid.notes=y[mid,"notif100k"],
       ## SOC
       soc.CC0=y[end,"CC0"], ## * ratio, ##undiscounted cumulative cost drivers
+      soc.CC0inside=y[end,"CC0inside"], ## * ratio, ##undiscounted cumulative cost drivers
+      soc.CC0outside=y[end,"CC0outside"], ## * ratio, ##undiscounted cumulative cost drivers
+      soc.CC0inflow=y[end,"CC0inflow"], ## * ratio, ##undiscounted cumulative cost drivers
       soc.CC=y[end,"CC"], ## * ratio, ##discounted cumulative cost drivers
       soc.deaths=y[end,"deaths"], #deaths - not discounted
       soc.qoldec=y[end,"qoldec"], #discounted QoL decrement
@@ -623,8 +636,12 @@ run.HE.socint <- function(parms,DR,j,
       soc.cTPT=y[end,'cTPT'],          ##(not discounted)
       soc.cATTtp=y[end,'cATTtp'],      ##(not discounted)
       soc.cATTfp=y[end,'cATTfp'],      ##(not discounted)
+      soc.cInflow=sum(y[end,flnmz]),   #(not discounted)
       ## INT
       int.CC0=yi[end,"CC0"], ## * ratio,
+      int.CC0inside=yi[end,"CC0inside"], ## * ratio, ##undiscounted cumulative cost drivers
+      int.CC0outside=yi[end,"CC0outside"], ## * ratio, ##undiscounted cumulative cost drivers
+      int.CC0inflow=yi[end,"CC0inflow"], ## * ratio, ##undiscounted cumulative cost drivers
       int.CC=yi[end,"CC"], ## * ratio,
       int.deaths=yi[end,"deaths"],
       int.qoldec=yi[end,"qoldec"],
@@ -634,6 +651,7 @@ run.HE.socint <- function(parms,DR,j,
       int.cTPT=yi[end,'cTPT'],
       int.cATTtp=yi[end,'cATTtp'],
       int.cATTfp = yi[end, "cATTfp"],
+      int.cInflow=sum(yi[end,flnmz]),   #(not discounted)
       ## pre-screen
       SE1=SE1,
       SP1=SP1
@@ -647,7 +665,7 @@ run.HE.socint <- function(parms,DR,j,
 }
 
 ## ## ============= HE workflow =============
-PSAlloop <- function(Niter=4e3,parms,smpsd,DR,
+PSAloop <- function(Niter=4e3,parms,smpsd,DR,
                     zero.nonscreen.costs=FALSE,verbose=FALSE,
                     static=FALSE,community=TRUE,posttb=TRUE,
                     targeting=FALSE,screen.acc=NULL){
