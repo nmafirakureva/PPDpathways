@@ -158,53 +158,15 @@ ggsave(file = here("transmission/plots/p_ICERbyTBI.png"), w = 12, h = 7)
 
 
 ## looking at SAVI
-save(RES,file='~/Dropbox/Holocron/tmp/RES.Rdata')
-load('~/Dropbox/Holocron/tmp/RES.Rdata')
+fn <- here("transmission/data/RES.Rdata")
+save(RES, file = fn)
 
+load(fn)
 
-## ============ VOI stuff =========
-## effects
-mx <- max(RES$Q.int,RES$Q.soc)
-EFF <- RES[,.(effect1=mx-Q.soc,effect2=mx-Q.int)]
-fwrite(EFF,file='~/Downloads/EFF.csv')
-
-## costs
-CST <- RES[,.(costs1=soc.CC,costs2=int.CC)]
-fwrite(CST,file='~/Downloads/CST.csv')
-
-## parameters
-PMS <- RES[,.(
-  parm_frac_U, parm_frac_E,
-  parm_frac_L, parm_frac_SD, parm_frac_CD, parm_frac_ATT,
-  parm_frac_epTB, parm_frac_lpTB, parm_ifrac_U, parm_ifrac_E,
-  parm_ifrac_L, parm_ifrac_SD, parm_ifrac_CD, parm_ifrac_ATT, 
-  parm_ifrac_epTB, parm_ifrac_lpTB, parm_ifrac_prevTPT1, parm_ifrac_prevTPT2, 
-  parm_ifrac_prevTPT3, inflow, remand_short, remand_long, 
-  remand_release, long_short, short_release, short_open, 
-  long_release, open_release, previous_remand, parm_init_PPD1, 
-  parm_init_PPD2, parm_init_PPD3, parm_init_PPD4, parm_init_PPD5, 
-  staticfoi, ptn, foi, stb, 
-  prg, eps, rel, CDR, 
-  drn, txf, CFR, m, 
-  tptHR, tpt_drn, wsn, mHR, 
-  att_time, late_post_time, mort, hrqolptb, 
-  int_time, disc_rate, LifeExp, uc_attppd, 
-  uc_attout, hrqol, inflow_toATT_TB0, inflow_toATT_L0, 
-  inflow_toATT_no0, inflow_toTPT_TB0, inflow_toTPT_L0, inflow_toTPT_no0, 
-  inflow_toATT_TB1.soc, inflow_toATT_L1.soc, inflow_toATT_no1, inflow_toTPT_TB1.soc, 
-  inflow_toTPT_L1.soc, inflow_toTPT_no1.soc, uc_entry_tpt_TB.soc, uc_entry_tpt_L.soc, 
-  uc_entry_tpt_no.soc, uc_entry_att_TB.soc, uc_entry_att_L.soc, uc_entry_att_no.soc, 
-  uc_entry_notx_TB.soc, uc_entry_notx_L.soc, uc_entry_notx_no.soc, inflow_toATT_TB1.int, 
-  inflow_toATT_L1.int, inflow_toATT_no1.int, inflow_toTPT_TB1.int, inflow_toTPT_L1.int, 
-  inflow_toTPT_no1.int, uc_entry_tpt_TB.int, uc_entry_tpt_L.int, uc_entry_tpt_no.int, 
-  uc_entry_att_TB.int, uc_entry_att_L.int, uc_entry_att_no.int, uc_entry_notx_TB.int, 
-  uc_entry_notx_L.int, uc_entry_notx_no.int
-)]
-fwrite(PMS,file='~/Downloads/PMS.csv')
 
 
 ## =========== loop for SAs
-SA <- list()
+RESA <- SA <- list()
 ## bascase results from above
 SA[[1]] <- data.table(
   analysis = "base case",
@@ -214,6 +176,8 @@ SA[[1]] <- data.table(
     mean(int.CC - soc.CC) / mean(dQ)
   ]
 )
+RESA[[1]] <- copy(RES)
+RESA[[1]][, analysis := "base case"]
 ## Static model
 set.seed(sd)
 RES1 <- PSAloop(
@@ -228,6 +192,8 @@ SA[[2]] <- data.table(
     mean(int.CC - soc.CC) / mean(dQ)
   ]
 )
+RESA[[2]] <- copy(RES1)
+RESA[[2]][, analysis := "Static model"]
 ## Static model, no community transmission
 set.seed(sd)
 RES1 <- PSAloop(
@@ -242,6 +208,8 @@ SA[[3]] <- data.table(
     mean(int.CC - soc.CC) / mean(dQ)
   ]
 )
+RESA[[3]] <- copy(RES1)
+RESA[[3]][, analysis := "Static model, no community transmission"]
 ## Static model, no community transmission or post-TB effects
 set.seed(sd)
 RES1 <- PSAloop(
@@ -256,6 +224,9 @@ SA[[4]] <- data.table(
     mean(int.CC - soc.CC) / mean(dQ)
   ]
 )
+RESA[[4]] <- copy(RES1)
+RESA[[4]][, analysis := "Static model, no community transmission or post-TB effects"]
+
 ## join
 SAT <- rbindlist(SA)
 SAT[, `ICER, unrestricted TB rates` := paste0(round(ICER))]
@@ -264,6 +235,7 @@ SAT[, c("ICER", "ICERr") := NULL]
 print(SAT)
 
 fwrite(SAT, file = here("transmission/plots/SA.csv"))
+
 
 ## extras from DR files
 for (snm in saznmz) {
@@ -281,6 +253,8 @@ for (snm in saznmz) {
       mean(int.CC - soc.CC) / mean(dQ)
     ]
   )
+  RESA[[snm]] <- copy(RES1)
+  RESA[[snm]][, analysis := snm]
 }
 
 ## join
@@ -292,6 +266,17 @@ print(SATF)
 
 fwrite(SATF, file = here("transmission/plots/SA.full.csv"))
 
+
+## trim 1st element
+dropcolz <- setdiff(names(RESA[[1]]), names(RESA[[2]]))
+RESA[[1]][, c(dropcolz) := NULL]
+for (i in 2:length(RESA)) RESA[[i]][, problem := NULL]
+
+## join & save
+RESA <- rbindlist(RESA)
+
+fn <- here("transmission/data/RESA.Rdata")
+save(RESA, file = fn)
 
 
 ## ========== TARGETING
@@ -317,43 +302,8 @@ load(file = here("transmission/data/RES.tgt.Rdata"))
 summary(RES$NB)
 qplot(RES$NB)
 
-## summary(RES[,.(NB,SE1,SP1,prevTBI,OR,frac.screened)])
-## RES[,plot(frac.screened,OR)]
-## RES[, plot(frac.screened, SP1)] # linear down: want SP>0.5 for minority screening
-## RES[, plot(OR, 1/odds(SE1))] # linear down: want SP>0.5 for minority screening
 
-## RES[, OR.cat := factor(OR.cat, levels = levels(OR.cat), ordered = TRUE)]
-
-## RES[,OR:=odds.ratio(SE1,SP1)]
-
-
-## ggplot(RES, aes(OR, frac.screened, col = (NB > 0))) +
-##   geom_point() +
-##   xlab("OR") +
-##   ylab("Frac screened") +
-##   theme_linedraw()
-
-
-nbks <- 5
-RES[, OR.cat := cut(OR, breaks = nbks, include.lowest = TRUE)]
-RES[, x.cat := cut(frac.screened, breaks = nbks, include.lowest = TRUE)]
-SMY <- RES[, .(NB = mean(NB * ratio)), by = .(OR.cat, x.cat)]
-
-## ggplot(SMY, aes(OR.cat, x.cat, fill = NB)) +
-##   geom_tile() +
-##   scale_fill_scico(palette = "vik", midpoint = 0)
-
-
-## ggplot(RES, aes(SE1, SP1, col = (NB>0))) +
-##   geom_point() +
-##   xlab("Pre-screen sensitivity") +
-##   ylab("Pre-screen specificity") +
-##   theme_linedraw()
-
-## bks <- seq(from = 0.1, to = 0.9, length.out = 8)
-## RES[, SP1.cat := cut(SP1, breaks = bks, include.lowest = TRUE)]
-## RES[, SE1.cat := cut(SE1, breaks = bks, include.lowest = TRUE)]
-
+## breaks for plotting
 nbks <- 5
 bks1 <- c(0:5) / 5
 bks2 <- bks1/2+0.5
@@ -426,6 +376,8 @@ GPA <- GP + annotate(geom = "point", x = se1x, y = sp1x, col = cl, size = sz, sh
   theme(panel.grid = element_blank(), panel.border = element_blank())
 
 ggsave(GPA, file = here("transmission/plots/p_target_tile_NB3.png"), w = 14, h = 7)
+ggsave(GPA, file = here("transmission/plots/p_target_tile_NB3.pdf"), w = 14, h = 7)
+ggsave(GPA, file = here("transmission/plots/p_target_tile_NB3.eps"), w = 14, h = 7)
 
 ## Targeting: explicit evaluation of two strategies
 TGT <- list()
@@ -508,6 +460,8 @@ TGT <- rbindlist(TGT)
 
 ## save out
 fwrite(TGT, file=here("transmission/plots/TGT.csv"))
+save(gp1, gp2, file = here("transmission/data/gpso.Rdata"))
+
 
 
 ## === exploring details of group 1:
@@ -531,6 +485,7 @@ tmp1 <- gp1[, .(
   dcATT = -soc.cATTtp - soc.cATTfp + int.cATTtp + int.cATTfp,
   soc.Cinflow = soc.cInflow, int.Cinflow = int.cInflow
 )]
+
 
 tmp1[, .(87489/blpop,ratio)]
 
@@ -627,6 +582,83 @@ setkey(projt, variable, nm)
 fwrite(projt, file = here("transmission/plots/proj.csv"))
 
 projt[variable == "group 1"]
+
+
+
+## CE plot?
+CE <- rbind(
+  RESA[analysis == "base case"][, .(
+    scenario = "Base case",
+    dC.m = mean(ratio * (-soc.CC + int.CC) ) ,
+    dC.lo = lo(ratio * (-soc.CC + int.CC)), dC.hi = hi(ratio * (-soc.CC + int.CC)),
+    dQ.m = mean(ratio * dQ),
+    dQ.lo = lo(ratio * dQ), dQ.hi = hi(ratio * dQ)
+    )],
+  ## RESA[analysis == "PrisonEscort"][, .(
+  ##   scenario = "No escort costs",
+  ##   dC.m = mean(ratio * (-soc.CC + int.CC) ) ,
+  ##   dC.lo = lo(ratio * (-soc.CC + int.CC)), dC.hi = hi(ratio * (-soc.CC + int.CC)),
+  ##   dQ.m = mean(ratio * dQ),
+  ##   dQ.lo = lo(ratio * dQ), dQ.hi = hi(ratio * dQ)
+  ## )],
+  gp1[, .(
+    scenario = "Targeted, group 1",
+    dC.m = mean(ratio * (-soc.CC + int.CC) ) ,
+    dC.lo = lo(ratio * (-soc.CC + int.CC)), dC.hi = hi(ratio * (-soc.CC + int.CC)),
+    dQ.m = mean(ratio * dQ),
+    dQ.lo = lo(ratio * dQ), dQ.hi = hi(ratio * dQ)
+  )],
+  gp2[, .(
+    scenario = "Targeted, group 2",
+    dC.m = mean(ratio * (-soc.CC + int.CC) ) ,
+    dC.lo = lo(ratio * (-soc.CC + int.CC)), dC.hi = hi(ratio * (-soc.CC + int.CC)),
+    dQ.m = mean(ratio * dQ),
+    dQ.lo = lo(ratio * dQ), dQ.hi = hi(ratio * dQ)
+  )]
+)
+CE
+
+fwrite(CE, file = here("transmission/plots/CEdata.csv"))
+
+
+
+library(scales)
+library(geomtextpath)
+
+colz <- c("#000000", "#E69F00", "#56B4E9","#009E73")
+## ,  "#F0E442", "#0072B2", "#D55E00", "#CC79A7"
+
+
+ggplot(CE, aes(
+  x = dQ.m, y = dC.m / 1e6,
+  xmin = dQ.lo, xmax = dQ.hi,
+  ymin = dC.lo / 1e6, ymax = dC.hi / 1e6,
+  col = scenario
+)) +
+  geom_textabline(
+    intercept = 0, slope = 30e-3, col = 2, lty = 2,
+    label = "30K GBP/QALY", vjust = 1.1, fontface = "italic"
+  ) +
+  geom_abline(intercept = 0, slope = 0, col = 2, lty = 2) +
+  geom_vline(xintercept = 0, col = 2, lty = 2) +
+  geom_errorbar(width = 1) +
+  geom_errorbarh(height = 1) +
+  geom_point(size = 2) +
+  scale_color_manual(values = colz) +
+  theme_classic() +
+  ggpubr::grids() +
+  scale_x_continuous(label = comma) +
+  scale_y_continuous(label = comma) +
+  xlab("Discounted quality-adjusted life-years (QALY) gained over 70 years") +
+  ylab("Discounted incremental cost over 70 years (million GBP)") +
+  annotate(x = 1e4, y = 10, col = 2, geom = "text", label = "Costs more", fontface = "italic") +
+  annotate(x = 1e4, y = -10, col = 2, geom = "text", label = "Costs less", fontface = "italic")
+
+ggsave(file = here("transmission/plots/CEsimple.png"), w = 7, h = 6)
+ggsave(file = here("transmission/plots/CEsimple.pdf"), w = 7, h = 6)
+
+
+
 
 
 ## ========== Authors only:
