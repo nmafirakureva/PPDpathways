@@ -43,80 +43,80 @@ AddOutcomes <- function(D){
   ## === cost and probs (defaults)
   D$Set(p=1)
   D$Set(cost=0)
-  
+
   ## === merge 'New people in PPDs' with 'LTBI screening pathway' to create final tree ===
   # MergeByName(D,notb,'Not TB', leavesonly = TRUE) # first add a branch to 'No TB' for easy merging in the next step
   MergeByName(D,No_urgent_GP_referral,'No urgent prison GP referral',leavesonly = TRUE)
   MergeByName(D,Refer_to_TB_services,'Refer to TB services',leavesonly = TRUE)
   MergeByName(D,ltbi_pathway,'LTBI pathway',leavesonly = TRUE)
-  
+
   ## final outcomes
   MergeByName(D,tpt,'TPT outcomes',leavesonly = TRUE)
   MergeByName(D,tbtxo,'TB',leavesonly = TRUE)
-  
+
   ## ===========  other counters
   ## check
   D$Set(check=1)
   D$Set(check=0,filterFun=function(x) length(x$children)>0)
-  
+
   ## TB screening
   D$Set(screen=0)
   D$Set(screen=1,filterFun=function(x) x$name=='TB screening')
-  
+
   ## TB dx
   D$Set(prevtb=0)
   D$Set(prevtb=1,filterFun=function(x) x$name=='TB')
-  
+
   ## ATT courses
   D$Set(att=0)
   D$Set(att=1,
         filterFun=function(x)x$name=='ATT')
-  
-  ## prevtb no ATT 
+
+  ## prevtb no ATT
   D$Set(noatt=0)
   D$Set(noatt=1,
         filterFun=function(x)x$name=='no ATT')
-  
+
   ## tested on IGRA
   D$Set(igra=0)
   D$Set(igra=1,filterFun=function(x) x$name=='IGRA test')
-  
+
   ## positive IGRA
   D$Set(ltbi=0)
   D$Set(ltbi=1,filterFun=function(x) x$name=='IGRA test +')
-  
+
   ## negative IGRA
   D$Set(noltbi=0)
   D$Set(noltbi=1,filterFun=function(x) x$name=='IGRA test -')
-  
+
   ## TPT courses
   D$Set(tpt=0)
   D$Set(tpt=1,
         filterFun=function(x)x$name=='gets TPT')
-  
+
   ## positive IGRA no TPT
   D$Set(ltbinotpt=0)
   D$Set(ltbinotpt=1,filterFun=function(x) x$name=='does not get TPT')
-  
+
   ## negative IGRA no TPT
   D$Set(noltbinotpt=0)
   D$Set(noltbinotpt=1,filterFun=function(x) x$name=='IGRA test -')
-  
+
   ## attend
   D$Set(attend=0)
   D$Set(attend=1,filterFun=function(x) x$name=='completed ATT' & x$isLeaf)
   D$Set(attend=1,filterFun=function(x) x$name=='did not complete ATT' & x$isLeaf)
-  
+
   ## tptend
   D$Set(tptend=0)
   D$Set(tptend=1,filterFun=function(x) x$name=='completed TPT' & x$isLeaf)
   D$Set(tptend=1,filterFun=function(x) x$name=='did not complete TPT' & x$isLeaf)
-  
+
   ## no TPT & no ATT
   # D$Set(notxend=0)
   # D$Set(notxend=1,filterFun=function(x) x$name=='no ATT' & x$isLeaf)
   # D$Set(notxend=1,filterFun=function(x) x$name=='does not get TPT' & x$isLeaf)
-  
+
   return(D)
 }
 
@@ -140,7 +140,7 @@ SOC$AddChildNode(tempTree)
 
 SOC$name <- 'Standard of care pathway'
 
-## # defining tree quantities 
+## # defining tree quantities
 ## # p = probability/proportion
 ## # cost = cost
 ## # cost.screen = screening cost
@@ -154,7 +154,7 @@ SOC$name <- 'Standard of care pathway'
 ## # igra = IGRAS tested
 ## # ltbi = IGRAS test positive
 ## # noltbi = IGRAS test negative
-## # tpt = TPT initiation 
+## # tpt = TPT initiation
 ## # ltbinotpt = IGRAS test positive no TPT
 ## # noltbinotpt = IGRAS test negative no TPT
 ## # coprevtb = coprevalent TB diagnosed
@@ -163,13 +163,17 @@ SOC$name <- 'Standard of care pathway'
 ## # check = check
 
 labdat <- c('p','cost',	'cost.screen',	'cost.tb.assessment',	'cost.tpt',	'cost.att', 'cost.ppd',	'cost.nhs',
-            'screen', 'igra',	'ltbi', 
-            'tpt', 'prevtbdx', 'coprevtb','att',  'attend', 'tptend', 'check')
+            "cost.prison.gp.assessment", "cost.chest.xray","cost.prison.isolation.assess",
+            "cost.nhs.tb.service.assess",	"cost.prison.escort.xray", "cost.prison.escort.assess","cost.tb.investigations",
+            "cost.igra.test",	"cost.prison.isolation.att","cost.nhs.tb.service",	"cost.prison.escort",
+            "cost.drugs",	"cost.dots","cost.nhs.ipd",	"cost.prison.bedwatch", "cost.contact.management",
+            'screen', 'igra',	'ltbi', 'stayingo3m','tpt', 'tpt_complete',
+            'presumtb',	'prisongp',	'tbsuspicion','xray','attendnhs','prevtbdx', 'coprevtb','att', 'att_complete', 'isolated','attend', 'tptend', 'check')
 
 tree2file(SOC,filename = here('indata/CSV/SOC.csv'),
           'p','cost',	'cost.ppd',	'cost.nhs',
-          'screen', 'igra',	'ltbi', 
-          'tpt', 'prevtbdx', 'coprevtb','att',  'attend', 'tptend', 'check')
+          'screen', 'igra',	'ltbi', 'stayingo3m','tpt',
+          'presumtb',	'prisongp',	'tbsuspicion','xray','attendnhs','prevtbdx', 'coprevtb','att',  'isolated','attend', 'tptend', 'check')
 
 ## create version with probs/costs
 fn <- here('indata/CSV/SOC1.csv')
@@ -187,8 +191,12 @@ if(file.exists(fn)){
   ## save out
   tree2file(SOC,filename = here('indata/CSV/SOC2.csv'),
             'p','cost',	'cost.screen',	'cost.tb.assessment',	'cost.tpt',	'cost.att', 'cost.ppd',	'cost.nhs',
-            'screen', 'igra',	'ltbi', 
-            'tpt', 'prevtbdx', 'coprevtb','att',  'attend', 'tptend', 'check')
+            "cost.prison.gp.assessment", "cost.chest.xray","cost.prison.isolation.assess",
+            "cost.nhs.tb.service.assess",	"cost.prison.escort.xray", "cost.prison.escort.assess","cost.tb.investigations",
+            "cost.igra.test",	"cost.prison.isolation.att","cost.nhs.tb.service",	"cost.prison.escort",
+            "cost.drugs",	"cost.dots","cost.nhs.ipd",	"cost.prison.bedwatch", "cost.contact.management",
+            'screen', 'igra',	'ltbi', 'stayingo3m','tpt', 'tpt_complete',
+            'presumtb',	'prisongp',	'tbsuspicion','xray','xray','attendnhs','prevtbdx', 'coprevtb','att', 'att_complete', 'isolated','attend', 'tptend', 'check')
 }
 
 names(labz)
@@ -218,8 +226,8 @@ INT$name <- 'Intervention model'
 
 tree2file(INT,filename = here('indata/CSV/INT.csv'),
           'p','cost',	'cost.ppd',	'cost.nhs',
-          'screen', 'igra',	'ltbi', 
-          'tpt', 'prevtbdx', 'coprevtb','att',  'attend', 'tptend', 'check')
+          'screen', 'igra',	'ltbi', 'stayingo3m','tpt',
+          'presumtb',	'prisongp',	'tbsuspicion','xray','attendnhs','prevtbdx', 'coprevtb','att',  'isolated','attend', 'tptend', 'check')
 
 
 ## create version with probs/costs
@@ -239,8 +247,12 @@ if(file.exists(fn)){
   ## save out
   tree2file(INT,filename = here('indata/CSV/INT2.csv'),
             'p','cost',	'cost.screen',	'cost.tb.assessment',	'cost.tpt',	'cost.att', 'cost.ppd',	'cost.nhs',
-            'screen', 'igra',	'ltbi', 
-            'tpt', 'prevtbdx', 'coprevtb','att',  'attend', 'tptend', 'check')
+            "cost.prison.gp.assessment", "cost.chest.xray","cost.prison.isolation.assess",
+            "cost.nhs.tb.service.assess",	"cost.prison.escort.xray", "cost.prison.escort.assess","cost.tb.investigations",
+            "cost.igra.test",	"cost.prison.isolation.att","cost.nhs.tb.service",	"cost.prison.escort",
+            "cost.drugs",	"cost.dots","cost.nhs.ipd",	"cost.prison.bedwatch", "cost.contact.management",
+            'screen', 'igra',	'ltbi', 'stayingo3m','tpt', 'tpt_complete',
+            'presumtb',	'prisongp',	'tbsuspicion','xray','attendnhs','prevtbdx', 'coprevtb','att', 'att_complete', 'isolated','attend', 'tptend', 'check')
 }
 
 
@@ -335,8 +347,8 @@ runallfuns <- function(D,arm='all'){
       done <- TRUE
     }
   }
-  
-  
+
+
   if(!done)stop('Functions not run! Likely unrecognised arm supplied.')
   return(D)
 }
@@ -356,12 +368,12 @@ vrz.soc[grepl('cost',vrz.soc)]
 
 # # write out as csv
 # write.csv(data.frame(vrz),here('indata/CSV/parmz.csv'),row.names=FALSE)
-# 
+#
 # # save all as R.data
-# 
+#
 # # Save an object to a file
 # save.image(file = here("outdata/temp.RData"))
-# 
+#
 # # Restore the object
 # load(here("outdata/temp.RData"))
 
@@ -388,15 +400,15 @@ all(INT.F$attfun(A)>0)
 ## plotter(INT)
 ## full graph out
 # DiagrammeR::export_graph(ToDiagrammeRGraph(SOC),
-#              file_name=here('plots/SOC.pdf'))
+#              file_name=here('plots/SOC_new.pdf'))
 
 # DiagrammeR::export_graph(ToDiagrammeRGraph(SOC.att),
 #                          file_name=here('plots/SOC_att.pdf'))
 
-# 
+#
 # DiagrammeR::export_graph(ToDiagrammeRGraph(ltbi_pathway),
-#                          file_name=here('plots/ltbi_pathway.pdf'))
-# 
+#                          file_name=here('plots/ltbi_pathway_new.pdf'))
+#
 # DiagrammeR::export_graph(ToDiagrammeRGraph(new_people_in_PPDs),
 #                          file_name=here('plots/new_people_in_PPDs.pdf'))
 

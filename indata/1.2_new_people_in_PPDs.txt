@@ -4,22 +4,22 @@ New people in PPDs
 			Started TB treatment
 				Still on treatment for TB
 					Refer to TB services
-						Attended 
+						Attended TB referral 
 							continue ATT
 								completed ATT
 								did not complete ATT
 							did not continue ATT
-						did not attend
+						Did not attend TB referral
 				Not on treatment for TB
 					TB symptoms
 						Prison GP assessment
 							Clinical suspicion of TB
 								Urgent referral to local NHS TB service 
-									Attended
+									Attended TB referral
 										TB
 										Not TB
 											LTBI pathway
-									did not Attend
+									Did not attend TB referral
 							No clinical suspicion of TB
 								LTBI pathway
 						No prison GP assessment
@@ -27,22 +27,22 @@ New people in PPDs
 						Chest x-ray < 6 months
 							Abornomal chest x-ray
 								Urgent referral to local NHS TB service 
-									Attended
+									Attended TB referral
 										TB
 										Not TB
 											LTBI pathway
-									did not Attend
+									Did not attend TB referral
 							Normal chest x-ray
 								LTBI pathway
 						No chest x-ray < 6 months
 							Chest x-ray
 								Abornomal chest x-ray
 									Urgent referral to local NHS TB service 
-										Attended
+										Attended TB referral
 											TB
 											Not TB
 												LTBI pathway
-										did not Attend
+										Did not attend TB referral
 								Normal chest x-ray
 									LTBI pathway
 							No chest x-ray
@@ -54,11 +54,11 @@ New people in PPDs
 				Prison GP assessment
 					Clinical suspicion of TB
 						Urgent referral to local NHS TB service 
-							Attended
+							Attended TB referral
 								TB
 								Not TB
 									LTBI pathway
-							did not attend
+							Did not attend TB referral
 					No clinical suspicion of TB
 						LTBI pathway
 				No prison GP assessment
@@ -66,22 +66,22 @@ New people in PPDs
 				Chest x-ray < 6 months
 					Abornomal chest x-ray
 						Urgent referral to local NHS TB service 
-							Attended
+							Attended TB referral
 								TB
 								Not TB
 									LTBI pathway
-							did not Attend
+							Did not attend TB referral
 					Normal chest x-ray
 						LTBI pathway
 				No chest x-ray < 6 months
 					Chest x-ray
 						Abornomal chest x-ray
 							Urgent referral to local NHS TB service 
-								Attended
+								Attended TB referral
 									TB
 									Not TB
 										LTBI pathway
-								did not Attend
+								Did not attend TB referral
 						Normal chest x-ray
 							LTBI pathway
 					No chest x-ray
