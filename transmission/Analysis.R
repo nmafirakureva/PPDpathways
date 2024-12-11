@@ -74,7 +74,7 @@ tabout <- melt(tabout, id = "id")
 tabout[, c("arm", "quantity") := tstrsplit(variable, split = "\\.")]
 tabout <- tabout[,.(mid=mean(value),lo=lo(value),hi=hi(value)),by=.(arm,quantity)] #
 tabout[,txt:=brkt(mid,lo,hi)]
-## TODO formatting?
+## formatting
 tabout <- dcast(tabout, quantity ~ arm, value.var = "txt")
 tabout <- merge(tabout, tabkey, by = "quantity")
 tabout <- tabout[
@@ -374,6 +374,7 @@ GPA <- GP + annotate(geom = "point", x = se1x, y = sp1x, col = cl, size = sz, sh
   annotate(geom = "point", x = se2x, y = sp2x, col = cl, size = sz, shape = 1) +
   annotate(geom = "text", x = se2x, y = sp2x, col = cl, size = sz*0.9, label = "2")+
   theme(panel.grid = element_blank(), panel.border = element_blank())
+GPA
 
 ggsave(GPA, file = here("transmission/plots/p_target_tile_NB3.png"), w = 14, h = 7)
 ggsave(GPA, file = here("transmission/plots/p_target_tile_NB3.pdf"), w = 14, h = 7)
@@ -652,11 +653,19 @@ ggplot(CE, aes(
   xlab("Discounted quality-adjusted life-years (QALY) gained over 70 years") +
   ylab("Discounted incremental cost over 70 years (million GBP)") +
   annotate(x = 1e4, y = 10, col = 2, geom = "text", label = "Costs more", fontface = "italic") +
-  annotate(x = 1e4, y = -10, col = 2, geom = "text", label = "Costs less", fontface = "italic")
+  annotate(x = 1e4, y = -10, col = 2, geom = "text", label = "Costs less", fontface = "italic")+
+  geom_segment(aes(x = 1e4, y = 20, xend = 1e4, yend = 60),
+               col = 2,
+               arrow = arrow(length = unit(0.25, "cm"))
+               ) +
+  geom_segment(aes(x = 1e4, y = -20, xend = 1e4, yend = -60),
+               col = 2,
+               arrow = arrow(length = unit(0.25, "cm"))
+               )
+
 
 ggsave(file = here("transmission/plots/CEsimple.png"), w = 7, h = 6)
 ggsave(file = here("transmission/plots/CEsimple.pdf"), w = 7, h = 6)
-
 
 
 
