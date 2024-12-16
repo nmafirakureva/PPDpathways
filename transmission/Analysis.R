@@ -621,13 +621,24 @@ CE
 
 fwrite(CE, file = here("transmission/plots/CEdata.csv"))
 
+## ======== CE simple plot
 
-
+library(ggplot2)
 library(scales)
 library(geomtextpath)
 
+
+CE <- read.csv(here("transmission/plots/CEdata.csv"))
+nnmz <- c(
+  "No targeting",
+  "High/medium TB incidence country-of-birth",
+  "High/medium TB incidence country-of-birth,\nor a history of homelessness, injecting drug-use,\nor problematic alcohol use"
+)
+CE$scenario <- nnmz
+CE$scenario <- factor(CE$scenario,levels=nnmz)
+
+
 colz <- c("#000000", "#E69F00", "#56B4E9","#009E73")
-## ,  "#F0E442", "#0072B2", "#D55E00", "#CC79A7"
 
 
 ggplot(CE, aes(
@@ -653,20 +664,21 @@ ggplot(CE, aes(
   xlab("Discounted quality-adjusted life-years (QALY) gained over 70 years") +
   ylab("Discounted incremental cost over 70 years (million GBP)") +
   annotate(x = 1e4, y = 10, col = 2, geom = "text", label = "Costs more", fontface = "italic") +
-  annotate(x = 1e4, y = -10, col = 2, geom = "text", label = "Costs less", fontface = "italic")+
+  annotate(x = 1e4, y = -10, col = 2, geom = "text", label = "Costs less", fontface = "italic") +
   geom_segment(aes(x = 1e4, y = 20, xend = 1e4, yend = 60),
-               col = 2,
-               arrow = arrow(length = unit(0.25, "cm"))
-               ) +
+    col = 2,
+    arrow = arrow(length = unit(0.25, "cm"))
+  ) +
   geom_segment(aes(x = 1e4, y = -20, xend = 1e4, yend = -60),
-               col = 2,
-               arrow = arrow(length = unit(0.25, "cm"))
-               )
+    col = 2,
+    arrow = arrow(length = unit(0.25, "cm"))
+  )  +
+  theme(legend.position = "top",legend.title = element_blank())
 
 
-ggsave(file = here("transmission/plots/CEsimple.png"), w = 7, h = 6)
-ggsave(file = here("transmission/plots/CEsimple.pdf"), w = 7, h = 6)
 
+ggsave(file = here("transmission/plots/CEsimple.png"), w = 9, h = 6)
+ggsave(file = here("transmission/plots/CEsimple.pdf"), w = 9, h = 6)
 
 
 
