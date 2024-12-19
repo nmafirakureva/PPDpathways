@@ -22,7 +22,7 @@ E <- E[,.(Prison,Open)]
 E[,table(Open)]
 
 
-P <- fread("churn/indata/Population_data_tool_31Dec2023.csv")
+P <- fread(here("churn/indata/Population_data_tool_31Dec2023.csv"))
 P <- P[view=='a Establishment*Sex*Age Group']
 P <- merge(P,E,by.x='Establishment',by.y='Prison')
 P <- P[Date=="2023-12"]
