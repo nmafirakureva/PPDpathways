@@ -1,6 +1,6 @@
 name,variable,mean,sd
-Total Pop,N,87000,870
-Remand,R,16000,150
+Total Pop,N,87000,900
+Remand,R,16000,160
 Short,S,18000,4200
-Long,L,33000,8700
+Long,L,32000,8800
 Open,Omega,16000,6300

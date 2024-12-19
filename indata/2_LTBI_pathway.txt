@@ -4,68 +4,88 @@ No prevalent TB disease*
 			Previous chest x-ray
 				Abornomal chest x-ray
 					Referred to NHS TB service
-						Attended
+						Attended TB referral
 							TB
 							Not TB
 								In prison/IRC for >3 months
 									 Refer for treatment 
-										TPT outcomes
+										Attended TPT referral
+											TPT outcomes
+										Did not attend TB referral TPT referral
 								In prison/IRC for <3 months
 									 Remaining in the UK (community or other prison/IRC)
 										Refer for treatment and forward details to receiving prison/community TB nurse
-											TPT outcomes
+											Attended TPT referral
+												TPT outcomes
+											Did not attend TPT referral
 									Early removal scheme or deportation
-						did not Attend
+						Did not attend TB referral
 					Not referred to NHS TB service
 				Normal chest x-ray
 					In prison/IRC for >3 months
 						 Refer for treatment 
-							TPT outcomes
+							Attended TPT referral
+								TPT outcomes
+							Did not attend TPT referral
 					In prison/IRC for <3 months
 						 Remaining in the UK (community or other prison/IRC)
 							Refer for treatment and forward details to receiving prison/community TB nurse
-								TPT outcomes
+								Attended TPT referral
+									TPT outcomes
+								Did not attend TPT referral
 						Early removal scheme or deportation
 			No previous chest x-ray
 				Chest x-ray
 					Abornomal chest x-ray
 						Referred to NHS TB service
-							Attended
+							Attended TB referral
 								TB
 								Not TB
 									In prison/IRC for >3 months
 										 Refer for treatment 
-											TPT outcomes
+											Attended TPT referral
+												TPT outcomes
+											Did not attend TPT referral
 									In prison/IRC for <3 months
 										 Remaining in the UK (community or other prison/IRC)
 											Refer for treatment and forward details to receiving prison/community TB nurse
-												TPT outcomes
+												Attended TPT referral
+													TPT outcomes
+												Did not attend TPT referral
 										Early removal scheme or deportation
-							did not Attend
+							Did not attend TB referral
 						Not referred to NHS TB service
 					Normal chest x-ray
 						In prison/IRC for >3 months
 							 Refer for treatment 
-								TPT outcomes
+								Attended TPT referral
+									TPT outcomes
+								Did not attend TPT referral
 						In prison/IRC for <3 months
 							 Remaining in the UK (community or other prison/IRC)
 								Refer for treatment and forward details to receiving prison/community TB nurse
-									TPT outcomes
+									Attended TPT referral
+										TPT outcomes
+									Did not attend TPT referral
 							Early removal scheme or deportation
 				No chest x-ray
 					Referred to NHS TB service
-						Attended
+						Attended TB referral
 							TB
 							Not TB
 								In prison/IRC for >3 months
 									 Refer for treatment 
-										TPT outcomes
+										Attended TPT referral
+											TPT outcomes
+										Did not attend TPT referral
 								In prison/IRC for <3 months
 									 Remaining in the UK (community or other prison/IRC)
 										Refer for treatment and forward details to receiving prison/community TB nurse
-											TPT outcomes
+											Attended TPT referral
+												TPT outcomes
+											Did not attend TPT referral
 									Early removal scheme or deportation 
-						did not Attend
+						Did not attend TB referral
 					Not referred to NHS TB service
 		IGRA test -
 	no IGRA test
